@@ -1,0 +1,922 @@
+// Digital Human Learning Platform — Phase D schema.
+// Tenant-owned tables carry tenantId and are protected by Postgres RLS
+// (policies live in prisma/migrations/*/migration.sql; see docs/phase-d).
+// Global content tables (Structure, KnowledgeRecord, …) have no tenantId and are read-only
+// for tenants.
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  extensions = [vector, btree_gist, pg_trgm]
+}
+
+// ───────────────────────────── Tenancy ─────────────────────────────
+
+model Organisation {
+  id        String   @id @default(uuid())
+  name      String
+  kind      OrgKind  @default(INSTITUTION_GROUP)
+  createdAt DateTime @default(now())
+  tenants   Tenant[]
+}
+
+enum OrgKind {
+  INSTITUTION_GROUP
+  RESELLER
+  PLATFORM
+}
+
+model Tenant {
+  id             String    @id @default(uuid())
+  organisationId String?
+  organisation   Organisation? @relation(fields: [organisationId], references: [id])
+  slug           String    @unique
+  name           String
+  countryCode    String    @db.Char(2)
+  region         String    @default("ap-south-1") // data residency region
+  plan           Plan      @default(STARTER)
+  /// Feature entitlements evaluated by lib/entitlements.can()
+  entitlements   Json      @default("{}")
+  seatLimit      Int       @default(100)
+  status         TenantStatus @default(ACTIVE)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  branding      TenantBranding?
+  domains       TenantDomain[]
+  ssoConfigs    SsoConfig[]
+  departments   Department[]
+  cohorts       Cohort[]
+  memberships   Membership[]
+  subscriptions Subscription[]
+  overlays      TenantRecordOverlay[]
+  cases         TenantCase[]
+  lessons       Lesson[]
+  assessments   Assessment[]
+  items         Item[]
+  attempts      Attempt[]
+  savedViews    SavedView[]
+  bookmarks     Bookmark[]
+  events        LearningEvent[]
+  masteries     Mastery[]
+  conversations TutorConversation[]
+  auditLogs     AuditLog[]
+  errorReports  ErrorReport[]
+  frameworks    CurriculumFramework[]
+}
+
+enum Plan {
+  STARTER
+  PRO
+  ENTERPRISE
+}
+
+enum TenantStatus {
+  TRIAL
+  ACTIVE
+  SUSPENDED
+  CHURNED
+}
+
+model TenantBranding {
+  tenantId     String  @id
+  tenant       Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  productName  String  @default("Vesalia")
+  logoUrl      String?
+  faviconUrl   String?
+  /// Design tokens: { colorPrimary, colorAccent, colorBg, radius, fontSans, ... }
+  tokens       Json    @default("{}")
+  hidePlatformBrand Boolean @default(false)
+  emailSender  String?
+  updatedAt    DateTime @updatedAt
+}
+
+model TenantDomain {
+  id        String  @id @default(uuid())
+  tenantId  String
+  tenant    Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  host      String  @unique
+  verified  Boolean @default(false)
+  isPrimary Boolean @default(false)
+}
+
+model SsoConfig {
+  id        String   @id @default(uuid())
+  tenantId  String
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  kind      SsoKind
+  /// Provider configuration (issuer, clientId, metadata URL…). Secrets are stored in KMS
+  /// and referenced by key, never inline.
+  config    Json
+  enabled   Boolean  @default(true)
+}
+
+enum SsoKind {
+  OIDC
+  SAML
+  LTI13
+}
+
+model Department {
+  id       String   @id @default(uuid())
+  tenantId String
+  tenant   Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  name     String
+  cohorts  Cohort[]
+  @@unique([tenantId, name])
+}
+
+model Cohort {
+  id           String      @id @default(uuid())
+  tenantId     String
+  tenant       Tenant      @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  departmentId String?
+  department   Department? @relation(fields: [departmentId], references: [id])
+  name         String
+  mode         AudienceMode
+  startsOn     DateTime?
+  endsOn       DateTime?
+  members      Membership[]
+  assessments  Assessment[]
+  lessons      Lesson[]
+  @@index([tenantId])
+}
+
+enum AudienceMode {
+  SCHOOL
+  NEET
+  NURSING
+  PHARMACY
+  PHYSIOTHERAPY
+  ALLIED
+  MBBS
+  DENTAL
+  POSTGRADUATE
+  FACULTY
+}
+
+model Subscription {
+  id        String   @id @default(uuid())
+  tenantId  String
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  plan      Plan
+  seats     Int
+  currency  String   @db.Char(3)
+  amount    Decimal  @db.Decimal(12, 2)
+  startsAt  DateTime
+  endsAt    DateTime
+  provider  String   // razorpay | stripe | invoice
+  providerRef String?
+  status    String   @default("active")
+  @@index([tenantId])
+}
+
+// ───────────────────────────── Identity ─────────────────────────────
+
+model User {
+  id            String    @id @default(uuid())
+  email         String?   @unique
+  phone         String?   @unique
+  name          String
+  passwordHash  String?
+  locale        String    @default("en")
+  createdAt     DateTime  @default(now())
+  memberships   Membership[]
+  accounts      Account[]
+  sessions      Session[]
+  attempts      Attempt[]
+  savedViews    SavedView[]
+  bookmarks     Bookmark[]
+  events        LearningEvent[]
+  masteries     Mastery[]
+  conversations TutorConversation[]
+  authoredVersions RecordVersion[] @relation("author")
+  reviews       RecordReview[]
+}
+
+/// Auth.js account/session tables.
+model Account {
+  id                String  @id @default(uuid())
+  userId            String
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  provider          String
+  providerAccountId String
+  tenantId          String?
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token     String   @unique
+  expiresAt DateTime
+}
+
+model Membership {
+  id        String   @id @default(uuid())
+  tenantId  String
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role      Role
+  cohortId  String?
+  cohort    Cohort?  @relation(fields: [cohortId], references: [id])
+  mode      AudienceMode?
+  status    String   @default("active")
+  createdAt DateTime @default(now())
+  @@unique([tenantId, userId])
+  @@index([tenantId, role])
+}
+
+enum Role {
+  STUDENT
+  FACULTY
+  EXAMINER
+  REVIEWER
+  ADMIN
+  OWNER
+}
+
+// ───────────────────────────── Global content ─────────────────────────────
+
+model Body {
+  id         String      @id // "male" | "female"
+  name       String
+  sourcePack String      // manifest pack id
+  structures Structure[]
+  assets     Asset[]
+}
+
+model AnatomicalSystem {
+  id         String      @id // "skeletal" …
+  name       String
+  colorHex   String
+  order      Int
+  structures StructureSystem[]
+}
+
+model Region {
+  id         String      @id
+  name       String
+  parentId   String?
+  parent     Region?     @relation("regionTree", fields: [parentId], references: [id])
+  children   Region[]    @relation("regionTree")
+  structures StructureRegion[]
+}
+
+model Structure {
+  id           String   @id // stable slug e.g. "heart", "biceps-brachii-l"
+  fmaId        String?  @unique
+  uberonId     String?
+  ta2Code      String?
+  snomedId     String?  // tenant-gated exposure (A-05 §2.9)
+  name         String
+  latinName    String?
+  category     StructureCategory
+  laterality   Laterality @default(NONE)
+  sexPresence  SexPresence @default(BOTH)
+  parentId     String?
+  parent       Structure? @relation("partonomy", fields: [parentId], references: [id])
+  children     Structure[] @relation("partonomy")
+  bodyId       String?
+  body         Body?    @relation(fields: [bodyId], references: [id])
+  aliases      StructureAlias[]
+  systems      StructureSystem[]
+  regions      StructureRegion[]
+  assets       Asset[]
+  record       KnowledgeRecord?
+  competencies CompetencyStructure[]
+  slides       Slide[]
+  imagingLabels ImagingLabel[]
+  bookmarks    Bookmark[]
+  masteries    Mastery[]
+  overlays     TenantRecordOverlay[]
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  @@index([name])
+}
+
+enum StructureCategory {
+  ORGAN
+  BONE
+  MUSCLE
+  NERVE
+  ARTERY
+  VEIN
+  LYMPHATIC
+  GLAND
+  LIGAMENT
+  JOINT
+  FASCIA
+  SKIN
+  REGION
+  LANDMARK
+  OTHER
+}
+
+enum Laterality {
+  NONE
+  LEFT
+  RIGHT
+  BILATERAL
+}
+
+enum SexPresence {
+  BOTH
+  MALE
+  FEMALE
+}
+
+model StructureAlias {
+  id          String    @id @default(uuid())
+  structureId String
+  structure   Structure @relation(fields: [structureId], references: [id], onDelete: Cascade)
+  name        String
+  kind        String    @default("common") // common | eponym | latin | abbreviation
+  locale      String    @default("en")
+  @@index([name])
+}
+
+model StructureSystem {
+  structureId String
+  structure   Structure        @relation(fields: [structureId], references: [id], onDelete: Cascade)
+  systemId    String
+  system      AnatomicalSystem @relation(fields: [systemId], references: [id])
+  @@id([structureId, systemId])
+}
+
+model StructureRegion {
+  structureId String
+  structure   Structure @relation(fields: [structureId], references: [id], onDelete: Cascade)
+  regionId    String
+  region      Region    @relation(fields: [regionId], references: [id])
+  @@id([structureId, regionId])
+}
+
+model Asset {
+  id          String    @id @default(uuid())
+  structureId String
+  structure   Structure @relation(fields: [structureId], references: [id], onDelete: Cascade)
+  bodyId      String
+  body        Body      @relation(fields: [bodyId], references: [id])
+  kind        String    @default("mesh") // mesh | texture | lesion
+  packId      String    // manifest pack (carries licence + attribution)
+  centroid    Float[]   // [x,y,z] in body space
+  bounds      Float[]   // [minx,miny,minz,maxx,maxy,maxz]
+  lods        AssetLod[]
+  @@unique([structureId, bodyId, kind])
+}
+
+model AssetLod {
+  id        String @id @default(uuid())
+  assetId   String
+  asset     Asset  @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  level     Int    // 0 = full, 1, 2
+  url       String
+  bytes     Int
+  triangles Int
+  hash      String
+  @@unique([assetId, level])
+}
+
+// Knowledge
+
+model Source {
+  id              String     @id @default(uuid())
+  type            SourceType
+  title           String
+  authors         String?
+  year            Int?
+  edition         String?
+  publisher       String?
+  doi             String?
+  url             String?
+  licence         String     // SPDX-like, e.g. CC-BY-4.0, proprietary-cited-only
+  attributionText String?
+  citations       Citation[]
+}
+
+enum SourceType {
+  TEXTBOOK
+  OER
+  DATASET
+  JOURNAL
+  GUIDELINE
+  OTHER
+}
+
+model KnowledgeRecord {
+  structureId        String         @id
+  structure          Structure      @relation(fields: [structureId], references: [id], onDelete: Cascade)
+  publishedVersionId String?        @unique
+  publishedVersion   RecordVersion? @relation("published", fields: [publishedVersionId], references: [id])
+  versions           RecordVersion[] @relation("versions")
+  updatedAt          DateTime       @updatedAt
+}
+
+model RecordVersion {
+  id            String          @id @default(uuid())
+  structureId   String
+  record        KnowledgeRecord @relation("versions", fields: [structureId], references: [structureId], onDelete: Cascade)
+  publishedFor  KnowledgeRecord? @relation("published")
+  number        Int
+  status        RecordStatus    @default(DRAFT)
+  /// The 20 knowledge fields as { value, citations[], modes? } (Phase E). Authoritative.
+  fields        Json
+  aiAssisted    Boolean         @default(false)
+  changeSummary String?
+  authorId      String
+  author        User            @relation("author", fields: [authorId], references: [id])
+  reviews       RecordReview[]
+  citations     Citation[]
+  derivedFields RecordField[]
+  chunks        RecordChunk[]
+  createdAt     DateTime        @default(now())
+  approvedAt    DateTime?
+  publishedAt   DateTime?
+  @@unique([structureId, number])
+  @@index([status])
+}
+
+enum RecordStatus {
+  DRAFT
+  IN_REVIEW
+  CHANGES_REQUESTED
+  APPROVED
+  PUBLISHED
+  DEPRECATED
+}
+
+model RecordReview {
+  id         String        @id @default(uuid())
+  versionId  String
+  version    RecordVersion @relation(fields: [versionId], references: [id], onDelete: Cascade)
+  reviewerId String
+  reviewer   User          @relation(fields: [reviewerId], references: [id])
+  decision   String        // approve | request_changes
+  credential String?       // e.g. "MD Anatomy"
+  comment    String?
+  createdAt  DateTime      @default(now())
+}
+
+/// Derived one-row-per-field projection of RecordVersion.fields for FTS and joins.
+model RecordField {
+  id        String        @id @default(uuid())
+  versionId String
+  version   RecordVersion @relation(fields: [versionId], references: [id], onDelete: Cascade)
+  key       String
+  mode      String        @default("base")
+  text      String
+  // tsvector generated column added in migration SQL
+  @@unique([versionId, key, mode])
+}
+
+model Citation {
+  id        String        @id @default(uuid())
+  versionId String
+  version   RecordVersion @relation(fields: [versionId], references: [id], onDelete: Cascade)
+  sourceId  String
+  source    Source        @relation(fields: [sourceId], references: [id])
+  fieldKey  String
+  locator   String
+  quote     String?
+  note      String?
+  @@index([versionId, fieldKey])
+}
+
+/// Retrieval chunks for the tutor (ADR-009, ADR-012). Embedding column added in migration.
+model RecordChunk {
+  id          String        @id @default(uuid())
+  versionId   String
+  version     RecordVersion @relation(fields: [versionId], references: [id], onDelete: Cascade)
+  structureId String
+  fieldKey    String
+  mode        String        @default("base")
+  text        String
+  citationIds String[]
+  embedding   Unsupported("vector(1024)")?
+  @@index([structureId])
+}
+
+// Modules
+
+model Slide {
+  id           String      @id @default(uuid())
+  title        String
+  tissue       String
+  stain        String
+  isPathology  Boolean     @default(false)
+  diagnosis    String?
+  structureId  String?
+  structure    Structure?  @relation(fields: [structureId], references: [id])
+  tileBaseUrl  String      // DZI/IIIF base
+  width        Int
+  height       Int
+  micronsPerPx Float?
+  packId       String
+  annotations  SlideAnnotation[]
+}
+
+model SlideAnnotation {
+  id       String @id @default(uuid())
+  slideId  String
+  slide    Slide  @relation(fields: [slideId], references: [id], onDelete: Cascade)
+  label    String
+  /// normalised polygon [[x,y],…] in 0..1
+  polygon  Json
+  layer    String @default("faculty") // faculty | exam | guided
+  order    Int    @default(0)
+  note     String?
+}
+
+model EmbryoStage {
+  id            String @id // "cs10", "week-4"
+  carnegieStage Int?
+  weekPostFert  Float?
+  dayRange      String?
+  title         String
+  summary       String
+  events        Json   // [{ text, citations[] }]
+  anomalies     Json   // [{ name, mechanism, citations[] }]
+  assetUrl      String?
+  order         Int
+}
+
+model PathologyPair {
+  id             String  @id @default(uuid())
+  title          String
+  structureId    String?
+  normalAssetUrl String
+  diseaseAssetUrl String
+  kind           String  // gross3d | slide | image
+  description    Json    // { value, citations[] }
+}
+
+model ImagingCase {
+  id          String          @id @default(uuid())
+  title       String
+  modality    Modality
+  bodyRegion  String
+  packId      String
+  licence     String
+  sliceBase   String          // base URL for slice pyramids
+  dims        Int[]           // [x,y,z]
+  spacing     Float[]         // mm
+  labels      ImagingLabel[]
+}
+
+enum Modality {
+  XRAY
+  CT
+  MRI
+  ULTRASOUND
+}
+
+model ImagingLabel {
+  id          String      @id @default(uuid())
+  caseId      String
+  case        ImagingCase @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  labelValue  Int
+  structureId String
+  structure   Structure   @relation(fields: [structureId], references: [id])
+  centroid    Float[]     // voxel [x,y,z]
+  @@unique([caseId, labelValue])
+}
+
+model Simulation {
+  id          String @id // "cardiac-cycle", "action-potential"
+  title       String
+  module      String
+  parameters  Json
+  citations   Json
+}
+
+// Curriculum
+
+model CurriculumFramework {
+  id           String       @id @default(uuid())
+  tenantId     String?      // null = global (NMC CBME, NCERT…)
+  tenant       Tenant?      @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  name         String
+  competencies Competency[]
+}
+
+model Competency {
+  id          String              @id @default(uuid())
+  frameworkId String
+  framework   CurriculumFramework @relation(fields: [frameworkId], references: [id], onDelete: Cascade)
+  code        String
+  text        String
+  level       String?
+  structures  CompetencyStructure[]
+  items       ItemCompetency[]
+  @@unique([frameworkId, code])
+}
+
+model CompetencyStructure {
+  competencyId String
+  competency   Competency @relation(fields: [competencyId], references: [id], onDelete: Cascade)
+  structureId  String
+  structure    Structure  @relation(fields: [structureId], references: [id], onDelete: Cascade)
+  @@id([competencyId, structureId])
+}
+
+// ───────────────────────────── Tenant content ─────────────────────────────
+
+model TenantRecordOverlay {
+  id          String    @id @default(uuid())
+  tenantId    String
+  tenant      Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  structureId String
+  structure   Structure @relation(fields: [structureId], references: [id], onDelete: Cascade)
+  fields      Json
+  status      RecordStatus @default(DRAFT)
+  updatedAt   DateTime  @updatedAt
+  @@unique([tenantId, structureId])
+}
+
+model TenantCase {
+  id          String   @id @default(uuid())
+  tenantId    String
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  title       String
+  body        Json
+  structureIds String[]
+  createdAt   DateTime @default(now())
+  @@index([tenantId])
+}
+
+model Lesson {
+  id        String       @id @default(uuid())
+  tenantId  String
+  tenant    Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  cohortId  String?
+  cohort    Cohort?      @relation(fields: [cohortId], references: [id])
+  title     String
+  mode      AudienceMode
+  kind      String       @default("lesson") // lesson | practical_demo | assignment
+  status    String       @default("draft")
+  steps     LessonStep[]
+  createdBy String
+  createdAt DateTime     @default(now())
+  @@index([tenantId, cohortId])
+}
+
+model LessonStep {
+  id        String @id @default(uuid())
+  lessonId  String
+  lesson    Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  order     Int
+  title     String
+  narrative String?
+  /// Captured state: { kind: 'atlas'|'slide'|'slice'|'sim'|'stage', state: {...} }
+  capture   Json
+  checkItemId String?
+}
+
+// ───────────────────────────── Assessment ─────────────────────────────
+
+model Assessment {
+  id          String         @id @default(uuid())
+  tenantId    String
+  tenant      Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  cohortId    String?
+  cohort      Cohort?        @relation(fields: [cohortId], references: [id])
+  title       String
+  kind        AssessmentKind
+  mode        AudienceMode
+  config      Json           // timing, randomisation, attempts, station layout
+  status      String         @default("draft")
+  opensAt     DateTime?
+  closesAt    DateTime?
+  stations    Station[]
+  attempts    Attempt[]
+  createdBy   String
+  createdAt   DateTime       @default(now())
+  @@index([tenantId, status])
+}
+
+enum AssessmentKind {
+  SPOTTER
+  PRACTICAL
+  VIVA
+  QUIZ
+  OSPE
+  OSCE
+}
+
+model Item {
+  id          String       @id @default(uuid())
+  tenantId    String?      // null = global bank
+  tenant      Tenant?      @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  type        ItemType
+  mode        AudienceMode
+  systemId    String?
+  structureId String?
+  stem        String
+  /// Type-specific payload: options, hotspot polygon, capture state, rubric…
+  payload     Json
+  /// Accepted answers incl. synonyms for typed responses
+  answerKey   Json
+  difficulty  Float?
+  discrimination Float?
+  aiDrafted   Boolean      @default(false)
+  status      String       @default("draft")
+  competencies ItemCompetency[]
+  stations    Station[]
+  responses   Response[]
+  createdBy   String?
+  createdAt   DateTime     @default(now())
+  @@index([tenantId, mode, systemId])
+}
+
+enum ItemType {
+  MCQ
+  MULTI_SELECT
+  HOTSPOT
+  DRAG_LABEL
+  SHORT_ANSWER
+  SPOT_3D
+  SPOT_SLIDE
+  SPOT_IMAGE
+  CHECKLIST
+  VIVA_QUESTION
+}
+
+model ItemCompetency {
+  itemId       String
+  item         Item       @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  competencyId String
+  competency   Competency @relation(fields: [competencyId], references: [id], onDelete: Cascade)
+  @@id([itemId, competencyId])
+}
+
+model Station {
+  id           String     @id @default(uuid())
+  assessmentId String
+  assessment   Assessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  order        Int
+  itemId       String?
+  item         Item?      @relation(fields: [itemId], references: [id])
+  seconds      Int        @default(60)
+  roomId       String?
+  /// OSCE room booking window; exclusion constraint (roomId, period) added in migration.
+  startsAt     DateTime?
+  endsAt       DateTime?
+  observed     Boolean    @default(false)
+}
+
+model Attempt {
+  id           String     @id @default(uuid())
+  tenantId     String
+  tenant       Tenant     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  assessmentId String
+  assessment   Assessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  userId       String
+  user         User       @relation(fields: [userId], references: [id])
+  startedAt    DateTime   @default(now())
+  submittedAt  DateTime?
+  signingKey   String     // per-attempt HMAC key for offline submissions
+  responses    Response[]
+  score        Score?
+  @@index([tenantId, assessmentId, userId])
+}
+
+model Response {
+  id         String   @id @default(uuid())
+  attemptId  String
+  attempt    Attempt  @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+  itemId     String
+  item       Item     @relation(fields: [itemId], references: [id])
+  value      Json
+  submittedAt DateTime @default(now())
+  signature  String?
+  @@unique([attemptId, itemId])
+}
+
+model Score {
+  attemptId     String  @id
+  attempt       Attempt @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+  total         Float
+  max           Float
+  perItem       Json
+  scorerVersion String
+  examinerId    String?
+  computedAt    DateTime @default(now())
+}
+
+// ───────────────────────────── Learning ─────────────────────────────
+
+model SavedView {
+  id        String   @id @default(uuid())
+  tenantId  String
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name      String
+  /// Engine ViewState (src/engine/types.ts)
+  state     Json
+  shared    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  @@index([tenantId, userId])
+}
+
+model Bookmark {
+  id          String    @id @default(uuid())
+  tenantId    String
+  tenant      Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  structureId String
+  structure   Structure @relation(fields: [structureId], references: [id], onDelete: Cascade)
+  note        String?
+  createdAt   DateTime  @default(now())
+  @@unique([tenantId, userId, structureId])
+}
+
+/// Append-only; partitioned by month in migration SQL.
+model LearningEvent {
+  id        BigInt   @id @default(autoincrement())
+  tenantId  String
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      String
+  payload   Json
+  createdAt DateTime @default(now())
+  @@index([tenantId, userId, createdAt])
+}
+
+model Mastery {
+  id          String    @id @default(uuid())
+  tenantId    String
+  tenant      Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  structureId String
+  structure   Structure @relation(fields: [structureId], references: [id], onDelete: Cascade)
+  pKnown      Float     @default(0.2)
+  attempts    Int       @default(0)
+  correct     Int       @default(0)
+  lastSeenAt  DateTime?
+  nextReviewAt DateTime?
+  @@unique([tenantId, userId, structureId])
+}
+
+model TutorConversation {
+  id        String         @id @default(uuid())
+  tenantId  String
+  tenant    Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  mode      AudienceMode
+  context   Json?          // current structure/view/slide
+  messages  TutorMessage[]
+  createdAt DateTime       @default(now())
+  @@index([tenantId, userId])
+}
+
+model TutorMessage {
+  id             String            @id @default(uuid())
+  conversationId String
+  conversation   TutorConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  role           String
+  content        String
+  citations      Json?
+  refused        Boolean           @default(false)
+  createdAt      DateTime          @default(now())
+}
+
+// ───────────────────────────── Ops ─────────────────────────────
+
+model AuditLog {
+  id        BigInt   @id @default(autoincrement())
+  tenantId  String
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  actorId   String?
+  action    String
+  target    String?
+  meta      Json?
+  createdAt DateTime @default(now())
+  @@index([tenantId, createdAt])
+}
+
+model ErrorReport {
+  id          String   @id @default(uuid())
+  tenantId    String
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  reporterId  String?
+  structureId String?
+  fieldKey    String?
+  message     String
+  status      String   @default("open")
+  slaDueAt    DateTime?
+  createdAt   DateTime @default(now())
+  @@index([tenantId, status])
+}

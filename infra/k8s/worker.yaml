@@ -1,0 +1,15 @@
+# Background worker: BullMQ consumers (asset pipeline, embeddings, analytics roll-ups).
+apiVersion: apps/v1
+kind: Deployment
+metadata: { name: vesalia-worker }
+spec:
+  replicas: 2
+  selector: { matchLabels: { app: vesalia-worker } }
+  template:
+    metadata: { labels: { app: vesalia-worker } }
+    spec:
+      containers:
+        - name: worker
+          image: ghcr.io/vesalia/worker:latest
+          envFrom: [{ secretRef: { name: vesalia-web-env } }]
+          resources: { requests: { cpu: 500m, memory: 1Gi }, limits: { cpu: '2', memory: 4Gi } }

@@ -1,0 +1,48 @@
+# Kubernetes manifests (Phase C §9). Secrets via external-secrets; TLS for tenant domains via cert-manager.
+apiVersion: apps/v1
+kind: Deployment
+metadata: { name: vesalia-web, labels: { app: vesalia-web } }
+spec:
+  replicas: 3
+  selector: { matchLabels: { app: vesalia-web } }
+  template:
+    metadata: { labels: { app: vesalia-web } }
+    spec:
+      containers:
+        - name: web
+          image: ghcr.io/vesalia/web:latest
+          ports: [{ containerPort: 3000 }]
+          envFrom: [{ secretRef: { name: vesalia-web-env } }]
+          resources: { requests: { cpu: 250m, memory: 512Mi }, limits: { cpu: '1', memory: 1Gi } }
+          readinessProbe: { httpGet: { path: /, port: 3000 }, initialDelaySeconds: 5 }
+          livenessProbe: { httpGet: { path: /, port: 3000 }, initialDelaySeconds: 15 }
+---
+apiVersion: v1
+kind: Service
+metadata: { name: vesalia-web }
+spec: { selector: { app: vesalia-web }, ports: [{ port: 80, targetPort: 3000 }] }
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata: { name: vesalia-web }
+spec:
+  scaleTargetRef: { apiVersion: apps/v1, kind: Deployment, name: vesalia-web }
+  minReplicas: 3
+  maxReplicas: 30
+  metrics: [{ type: Resource, resource: { name: cpu, target: { type: Utilization, averageUtilization: 65 } } }]
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata: { name: vesalia-web }
+spec: { minAvailable: 2, selector: { matchLabels: { app: vesalia-web } } }
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: vesalia-web
+  annotations: { cert-manager.io/cluster-issuer: letsencrypt, nginx.ingress.kubernetes.io/proxy-body-size: 64m }
+spec:
+  tls: [{ hosts: ['*.vesalia.app'], secretName: vesalia-wildcard-tls }]
+  rules:
+    - host: '*.vesalia.app'
+      http: { paths: [{ path: /, pathType: Prefix, backend: { service: { name: vesalia-web, port: { number: 80 } } } }] }

@@ -1,11 +1,11 @@
 'use client';
 import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
-import { Canvas, useFrame, useThree, type ThreeEvent } from '@react-three/fiber';
+import { Canvas, useThree, type ThreeEvent } from '@react-three/fiber';
 import { OrbitControls, AdaptiveDpr, PerformanceMonitor, Html } from '@react-three/drei';
 import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
 import { computeBoundsTree, disposeBoundsTree, acceleratedRaycast } from 'three-mesh-bvh';
-import { useEngineStore, structureVisibility } from '@/store/engine';
+import { useEngineStore, structureVisibility, type EngineState } from '@/store/engine';
 import { SYSTEM_META, type BodyManifest, type ManifestStructure, type SystemId } from './types';
 import { chooseLod, loadStructureGeometry, proceduralGeometry } from './loader';
 
@@ -102,22 +102,43 @@ function Body({ manifest, onSelect }: { manifest: BodyManifest; onSelect?: (id: 
 
 function StructureMesh({ structure: s, systemCentroid, onSelect }: { structure: ManifestStructure; systemCentroid: THREE.Vector3; onSelect?: (id: string | null) => void }) {
   const meshRef = useRef<THREE.Mesh>(null);
-  const { gl, camera, invalidate } = useThree();
-  const lowBandwidth = useEngineStore((st) => st.lowBandwidth);
+  const { gl, invalidate } = useThree();
   const [geometry, setGeometry] = useState<THREE.BufferGeometry | null>(() => (s.lods ? null : proceduralGeometry(s)));
   const lodRef = useRef(-1);
 
-  // Real assets: choose LOD by distance and stream it (Phase G §3).
-  useFrame(() => {
-    if (!s.lods?.length || !meshRef.current) return;
-    const d = camera.position.distanceTo(meshRef.current.position);
-    const r = Math.max(s.bounds[3] - s.bounds[0], s.bounds[4] - s.bounds[1], s.bounds[5] - s.bounds[2]) / 2;
-    const want = chooseLod(d, r, s.lods.length, lowBandwidth);
-    if (want !== lodRef.current) {
+  /**
+   * Stream the right level of detail for the current camera (Phase G §3, §6).
+   *
+   * This deliberately does not run per frame: the canvas uses `frameloop="demand"` to save
+   * battery, so a per-frame hook would never tick on a still scene and nothing would ever
+   * load. Instead it runs once on mount — giving a fast coarse first paint — and again
+   * whenever the camera settles or the quality setting changes.
+   */
+  useEffect(() => {
+    if (!s.lods?.length) return;
+    let cancelled = false;
+    const radius = Math.max(s.bounds[3] - s.bounds[0], s.bounds[4] - s.bounds[1], s.bounds[5] - s.bounds[2]) / 2;
+
+    const resolve = (st: EngineState) => {
+      const c = st.camera.position;
+      const distance = Math.hypot(c[0] - s.centroid[0], c[1] - s.centroid[1], c[2] - s.centroid[2]);
+      const want = chooseLod(distance, radius, s.lods!.length, st.lowBandwidth || st.qualityTier === 'low');
+      if (want === lodRef.current) return;
       lodRef.current = want;
-      loadStructureGeometry(s.lods[want]!.url, gl).then((g) => { if (lodRef.current === want) { g.computeBoundsTree(); setGeometry(g); invalidate(); } });
-    }
-  });
+      loadStructureGeometry(s.lods![want]!.url, gl).then((g) => {
+        if (cancelled || lodRef.current !== want) return;
+        g.computeBoundsTree();
+        setGeometry(g);
+        invalidate();
+      }).catch(() => { if (lodRef.current === want) lodRef.current = -1; });
+    };
+
+    resolve(useEngineStore.getState());
+    const unsub = useEngineStore.subscribe((st, prev) => {
+      if (st.camera !== prev.camera || st.lowBandwidth !== prev.lowBandwidth || st.qualityTier !== prev.qualityTier) resolve(st);
+    });
+    return () => { cancelled = true; unsub(); };
+  }, [s, gl, invalidate]);
 
   useEffect(() => { if (geometry && !geometry.boundsTree) geometry.computeBoundsTree(); }, [geometry]);
 
@@ -166,12 +187,25 @@ function StructureMesh({ structure: s, systemCentroid, onSelect }: { structure: 
   );
 }
 
-/** Move the camera to frame a structure (FR-E11 double-tap focus). */
-export function focusOn(s: ManifestStructure) {
+/**
+ * Frame a structure (FR-E11 double-tap focus).
+ *
+ * `ghostOthers` matters for anything deep: moving the camera close to a kidney puts it
+ * inside the liver and bowel, so the student sees the inside of whatever is in front. Fading
+ * the rest to a ghost keeps the target readable while preserving spatial context, which is
+ * what isolate-with-context is for.
+ */
+export function focusOn(s: ManifestStructure, ghostOthers = false) {
   const st = useEngineStore.getState();
   const size = Math.max(s.bounds[3] - s.bounds[0], s.bounds[4] - s.bounds[1], s.bounds[5] - s.bounds[2]);
-  const dist = Math.max(0.35, size * 3);
-  const dir = new THREE.Vector3(...st.camera.position).sub(new THREE.Vector3(...st.camera.target)).normalize();
+  const dist = Math.max(0.45, size * 4);
+  const dir = new THREE.Vector3(...st.camera.position).sub(new THREE.Vector3(...st.camera.target));
+  if (dir.lengthSq() < 1e-6) dir.set(0, 0, 1);
+  dir.normalize();
   const pos = new THREE.Vector3(...s.centroid).add(dir.multiplyScalar(dist));
-  st.applyViewState({ ...st.snapshot(), camera: { position: [pos.x, pos.y, pos.z], target: s.centroid } });
+  st.applyViewState({
+    ...st.snapshot(),
+    isolated: ghostOthers ? [s.id] : st.isolated,
+    camera: { position: [pos.x, pos.y, pos.z], target: s.centroid },
+  });
 }

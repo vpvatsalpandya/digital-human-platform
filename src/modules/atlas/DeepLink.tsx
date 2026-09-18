@@ -13,7 +13,7 @@ export function AtlasDeepLink({ structureId }: { structureId?: string }) {
     if (!s) return;
     st.setVisibleSystems([...new Set([...st.visibleSystems, ...s.systems])]);
     st.select(s.id);
-    setTimeout(() => focusOn(s), 50);
+    setTimeout(() => focusOn(s, true), 50);
   }, [structureId]);
   return null;
 }

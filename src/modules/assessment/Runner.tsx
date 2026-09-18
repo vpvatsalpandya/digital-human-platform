@@ -3,7 +3,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { ITEM_BANK, type Item } from './item-bank';
 import { scoreMcq, scoreMultiSelect, scoreTypedAnswer, type ScoreResult } from './scoring';
-import { demoManifest } from '@/engine/demo-manifest';
+import { useBodyManifest } from '@/engine/useBodyManifest';
 import { useEngineStore } from '@/store/engine';
 import { updateMastery } from './mastery';
 import { useAnalytics } from '@/lib/analytics';
@@ -63,7 +63,7 @@ export function AssessmentRunner({ structureId }: { structureId?: string }) {
 
 function SpotStation({ item, onScore, onNext }: { item: Extract<Item, { type: 'spot3d' }>; onScore: (r: ScoreResult) => void; onNext: () => void }) {
   const body = useEngineStore((s) => s.body);
-  const manifest = useMemo(() => demoManifest(body), [body]);
+  const { manifest } = useBodyManifest(body);
   const target = manifest.structures.find((s) => s.id === item.structureId) ?? manifest.structures[0]!;
   const [answer, setAnswer] = useState('');
   const [result, setResult] = useState<ScoreResult | null>(null);

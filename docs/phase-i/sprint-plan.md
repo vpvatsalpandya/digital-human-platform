@@ -21,11 +21,18 @@ Goal: a running, multi-tenant, mobile-first skeleton with the engine rendering.
 Demo: on a phone, load the demo body, isolate a structure, read its cited record, run the
 cardiac simulation, take a 5-item spotter, ask the tutor.
 
-## Sprint 1 · Asset pipeline and real meshes
-- `scripts/assets/*`: Blender export of Z-Anatomy, gltf-transform LODs, meshopt/Draco/KTX2,
-  manifest with licence; upload to CDN.
-- Engine loads real manifest; system packs; progressive LOD; memory governor.
-- Device lab baseline on Redmi Note-class; budgets recorded.
+## Sprint 1 · Asset pipeline and real meshes — **built**
+- `scripts/assets/build.ts`: gltf-transform LOD generation (100/35/12%), quantisation and
+  meshopt compression, per-structure GLB output, per-system LOD2 bundles, and a manifest
+  carrying licence, attribution, bytes, triangles and content hashes. Two source kinds:
+  `procedural` (bakes the development body, committed as `demo-baked`) and `gltf-dir`
+  (the Z-Anatomy / HRA export path).
+- Engine loads and validates the manifest, streams levels of detail by camera distance, and
+  falls back to procedural stand-ins when no pack is deployed.
+- Measured: 26,936 → 9,474 → 3,541 triangles across the three levels; 1.3 MB for both bodies;
+  largest per-system first-paint bundle 27 kB against the 8 MB budget.
+- Outstanding: CDN upload, KTX2 textures (nothing is textured yet), memory governor, and a
+  device-lab baseline on physical Redmi Note-class hardware.
 Demo: full male skeleton + muscles at LOD2 in < 4 s on 4G.
 
 ## Sprint 2 · Atlas UX and knowledge authoring

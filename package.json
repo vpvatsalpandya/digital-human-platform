@@ -2,7 +2,7 @@
   "name": "vesalia-digital-human",
   "version": "0.1.0",
   "private": true,
-  "description": "Digital Human Learning Platform — mobile-first medical education SaaS",
+  "description": "Digital Human Learning Platform \u2014 mobile-first medical education SaaS",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -15,7 +15,8 @@
     "db:migrate": "prisma migrate dev",
     "db:deploy": "prisma migrate deploy",
     "licenses": "tsx scripts/licenses.ts",
-    "manifest:validate": "tsx scripts/validate-manifests.ts"
+    "manifest:validate": "tsx scripts/validate-manifests.ts",
+    "assets:build": "tsx scripts/assets/build.ts --source procedural --pack demo-baked"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.125.0",
@@ -32,6 +33,9 @@
     "zustand": "^5.0.15"
   },
   "devDependencies": {
+    "@gltf-transform/core": "^4.5.0",
+    "@gltf-transform/extensions": "^4.5.0",
+    "@gltf-transform/functions": "^4.5.0",
     "@types/node": "^22.7.5",
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",
@@ -39,6 +43,7 @@
     "autoprefixer": "^10.4.20",
     "eslint": "^8.57.1",
     "eslint-config-next": "^15.5.0",
+    "meshoptimizer": "^1.2.0",
     "postcss": "^8.4.47",
     "prisma": "^6.19.3",
     "tailwindcss": "^3.4.19",

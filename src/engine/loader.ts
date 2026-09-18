@@ -4,7 +4,6 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js';
 import { KTX2Loader } from 'three/examples/jsm/loaders/KTX2Loader.js';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
-import type { ManifestStructure } from './types';
 
 /**
  * Asset loading (ADR-007, Phase G §3): per-structure GLB with meshopt (primary), Draco
@@ -73,17 +72,4 @@ export function chooseLod(distance: number, radius: number, lodCount: number, lo
   return lodCount - 1;
 }
 
-/** Build a procedural geometry for development stand-ins. */
-export function proceduralGeometry(s: ManifestStructure): THREE.BufferGeometry {
-  const p = s.procedural;
-  if (!p) return new THREE.SphereGeometry(0.02, 8, 8);
-  switch (p.kind) {
-    case 'box': return new THREE.BoxGeometry(...p.size, 1, 1, 1);
-    case 'sphere': { const g = new THREE.SphereGeometry(p.radius, 24, 18); if (p.scale) g.scale(...p.scale); return g; }
-    case 'capsule': { const g = new THREE.CapsuleGeometry(p.radius, p.length, 4, 12); if (p.rotation) g.rotateZ(p.rotation[2]); return g; }
-    case 'tube': {
-      const curve = new THREE.CatmullRomCurve3(p.points.map((q) => new THREE.Vector3(q[0] - s.centroid[0], q[1] - s.centroid[1], q[2] - s.centroid[2])));
-      return new THREE.TubeGeometry(curve, 32, p.radius, 10, false);
-    }
-  }
-}
+export { proceduralGeometry } from './procedural';

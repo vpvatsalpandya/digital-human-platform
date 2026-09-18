@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { useEngineStore } from '@/store/engine';
 import { demoManifest } from '@/engine/demo-manifest';
+import { useBodyManifest } from '@/engine/useBodyManifest';
 import { StructureSearch } from '@/engine/search';
 import { SYSTEM_IDS, SYSTEM_META, type ManifestStructure, type SystemId } from '@/engine/types';
 import { Slider, Sheet, Tabs } from '@/components/ui';
@@ -17,7 +18,7 @@ type Tool = 'view' | 'explode' | 'transparency' | 'clip' | 'compare' | 'views';
 export function AtlasScreen({ mode = 'mbbs' }: { mode?: string }) {
   const body = useEngineStore((s) => s.body);
   const setBody = useEngineStore((s) => s.setBody);
-  const manifest = useMemo(() => demoManifest(body), [body]);
+  const { manifest, baked } = useBodyManifest(body);
   const search = useMemo(() => new StructureSearch(manifest.structures), [manifest]);
   const byId = useMemo(() => new Map(manifest.structures.map((s) => [s.id, s])), [manifest]);
   const [q, setQ] = useState('');
@@ -48,7 +49,7 @@ export function AtlasScreen({ mode = 'mbbs' }: { mode?: string }) {
               <ul className="absolute z-30 mt-1 max-h-64 w-full overflow-y-auto rounded border border-border bg-surface shadow-xl" role="listbox">
                 {hits.map((h) => (
                   <li key={h.structure.id}>
-                    <button className="flex w-full items-center justify-between px-3 py-2 text-left text-sm hover:bg-surface-2 min-h-[44px]" onClick={() => { s.select(h.structure.id); s.setVisibleSystems([...new Set([...s.visibleSystems, ...h.structure.systems])]); setQ(''); setListView(false); focusOn(h.structure); }}>
+                    <button className="flex w-full items-center justify-between px-3 py-2 text-left text-sm hover:bg-surface-2 min-h-[44px]" onClick={() => { s.select(h.structure.id); s.setVisibleSystems([...new Set([...s.visibleSystems, ...h.structure.systems])]); setQ(''); setListView(false); focusOn(h.structure, true); }}>
                       <span>{h.structure.name}</span><span className="text-[11px] text-muted">{h.structure.systems.map((x) => SYSTEM_META[x].name).join(', ')}</span>
                     </button>
                   </li>
@@ -57,6 +58,9 @@ export function AtlasScreen({ mode = 'mbbs' }: { mode?: string }) {
             )}
           </div>
           <button className="btn-ghost !min-h-[40px]" onClick={() => setListView((v) => !v)} aria-pressed={listView} title="Accessible structure list">☰</button>
+        </div>
+        <div className="pointer-events-none absolute inset-x-0 top-14 z-10 px-3 text-[11px] text-accent">
+          {baked ? `${manifest.pack} · ${manifest.licence}` : 'Procedural stand-ins — no anatomical mesh data'}
         </div>
 
         {listView ? <StructureList manifest={manifest} /> : <Viewer manifest={manifest} className="h-full w-full" />}

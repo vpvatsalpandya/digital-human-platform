@@ -40,7 +40,7 @@ npx prisma validate           # DATABASE_URL must be set (any value)
 
 | Area | Real now | Scaffolded / next sprint |
 |---|---|---|
-| Digital Human Engine (`src/engine`, `src/store/engine.ts`) | R3F viewer; male/female bodies; 14 system toggles; search (name/alias/Latin/FMA, fuzzy); select, multi-select, isolate, isolate-with-region, hide, fade, explode, global transparency, axial/coronal/sagittal clipping, saved views, bookmarks, deep links, accessible list view; BVH picking; adaptive DPR and demand-driven frameloop; LOD chooser and GLB loader (meshopt/Draco/KTX2) | Meshes are **procedural stand-ins**; the Z-Anatomy/HRA asset pipeline (Sprint 1) produces the real manifests. Compare mode UI is not wired yet. |
+| Digital Human Engine (`src/engine`, `src/store/engine.ts`) | R3F viewer; male/female bodies; 14 system toggles; search (name/alias/Latin/FMA, fuzzy); select, multi-select, isolate, isolate-with-region, hide, fade, explode, global transparency, axial/coronal/sagittal clipping, saved views, bookmarks, deep links, accessible list view; BVH picking; adaptive DPR and demand-driven frameloop; **streams real GLB level-of-detail meshes from a baked pack**, falling back to procedural stand-ins when no pack is deployed | The baked pack is built from the procedural shapes, so the *shapes* are still stand-ins; pointing the pipeline at a Z-Anatomy or HRA export (Sprint 1 §2 below) is a data change, not a code change. Compare mode UI is not wired yet. |
 | Knowledge Engine (`src/knowledge`) | Zod schema for the 20 fields with per-field citations and audience-mode overrides; publishability rule (non-empty ⇒ cited) enforced in Zod and in a DB trigger; review state machine; 6 seed records (10 structure ids) citing OpenStax A&P 2e and standard textbooks | Seed records are `in_review`, not published. Authoring UI with source picker (Sprint 2). |
 | Physiology (`src/simulations`) | Time-varying elastance LV + Windkessel cardiac model (RK4), Hodgkin–Huxley action potential, alveolar gas equation; unit tests assert textbook ranges | Nephron, synaptic transmission, endocrine axes (Sprint 6). |
 | Histology (`src/modules/histology`) | Deep-zoom tile viewer with pyramid levels, pinch/wheel zoom, pan, minimap, scale bar, annotation layers, guided/self/assessment modes; DZI tile source | Slides are procedural schematics; partner whole-slide images (Sprint 5). |
@@ -56,10 +56,11 @@ npx prisma validate           # DATABASE_URL must be set (any value)
 
 ## Verified
 
-`npm run typecheck`, `npm run lint`, `npm test` (46 tests) and `npm run build` pass. The built
-app was driven in headless Chromium at a 390x844 mobile viewport: the 3D canvas renders, search
-selects and frames a structure and opens its cited record, and every route returns 200 with no
-console or hydration errors. Tenant resolution was checked by requesting the same build with a
+`npm run typecheck`, `npm run lint`, `npm test` (58 tests) and `npm run build` pass. The built
+app was driven in headless Chromium at a 390x844 mobile viewport: the 3D canvas renders, the
+atlas streams 58 mesh files from the baked pack on first load and 103 after focusing a
+structure with every request returning 200, search selects and frames a structure and opens
+its cited record, and every route returns 200 with no console or hydration errors. Tenant resolution was checked by requesting the same build with a
 second `Host` header and getting the second tenant's brand back.
 
 Known gaps, both tracked in the roadmap:
@@ -69,6 +70,37 @@ Known gaps, both tracked in the roadmap:
   tree-shaking drei and moving the decoders to workers (Phase G).
 - Histology annotation labels can overlap at low magnification, and the zoom presets sit close
   to the placeholder banner. Cosmetic, fixed when real slides replace the schematics.
+
+## Asset pipeline
+
+`npm run assets:build` turns source geometry into a deployable pack:
+
+```
+source geometry -> weld/dedupe/prune -> 3 levels of detail (100% / 35% / 12%)
+ -> quantise + meshopt compression -> one GLB per structure per level
+ -> one LOD2 bundle per system -> a manifest with licence, attribution,
+    byte counts, triangle counts and content hashes
+```
+
+The committed `demo-baked` pack is 1.3 MB for both bodies: 57 male structures, 26,936
+triangles at full detail falling to 3,541 at the coarsest level, and the largest per-system
+first-paint bundle is 27 kB against an 8 MB budget. The engine picks a level from the
+camera distance, so a phone downloads coarse meshes first and refines only what is looked at.
+
+Two source kinds are supported. `--source procedural` bakes the development body, which is
+what the committed pack is. `--source gltf-dir --in <dir>` reads `<structureId>.glb` plus a
+`<body>.structures.json` sidecar, which is how the Z-Anatomy and Human Reference Atlas
+exports enter once downloaded:
+
+```bash
+npx tsx scripts/assets/build.ts --source gltf-dir --in ../exports/z-anatomy \
+  --pack z-anatomy-male --licence CC-BY-SA-4.0 \
+  --attribution "Z-Anatomy, CC BY-SA 4.0, derived from BodyParts3D (DBCLS), CC BY-SA 2.1 JP"
+```
+
+The manifest schema rejects any licence that is not on the commercially usable list, so a
+NonCommercial pack cannot be baked, let alone shipped. The atlas shows the pack name and
+licence on screen, and says "procedural stand-ins" when no pack is loaded.
 
 ## Content policy in code
 

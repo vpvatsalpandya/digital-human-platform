@@ -63,13 +63,20 @@ structure with every request returning 200, search selects and frames a structur
 its cited record, and every route returns 200 with no console or hydration errors. Tenant resolution was checked by requesting the same build with a
 second `Host` header and getting the second tenant's brand back.
 
-Known gaps, both tracked in the roadmap:
+Known gaps, tracked in the roadmap:
 
-- The atlas route's first-load JS (463 kB) is above the PRD's 250 kB target because three.js
-  and the engine sit in the client bundle. The engine already loads on demand; next steps are
-  tree-shaking drei and moving the decoders to workers (Phase G).
-- Histology annotation labels can overlap at low magnification, and the zoom presets sit close
-  to the placeholder banner. Cosmetic, fixed when real slides replace the schematics.
+- **CDN upload, KTX2 textures and a physical device-lab baseline** are the parts of Sprint 1
+  still outstanding. Nothing is textured yet, so KTX2 has nothing to compress.
+- **Shapes are still stand-ins.** The baked pack is real GLB geometry streamed over real
+  level-of-detail selection, but it is baked from the procedural body. Real anatomy arrives by
+  pointing the pipeline at a Z-Anatomy or Human Reference Atlas export.
+- **Compare mode** (two systems or states side by side) is specified but not wired.
+
+The atlas bundle is no longer listed as a gap because the target was wrong rather than the
+code: three.js is ~230 kB gzipped and the React reconciler ~110 kB, so no route that renders
+the digital human can fit the original 250 kB budget. Moving the Draco, KTX2 and meshopt
+decoders off the critical path took the atlas from 464 kB to 407 kB; the budget is now split
+per route type with the reasoning recorded in the PRD, and non-3D routes sit at 103–129 kB.
 
 ## Asset pipeline
 

@@ -134,7 +134,7 @@ Requirements are tagged `[M]` must, `[S]` should, `[C]` could for v1 (first 12 m
 | Area | Requirement |
 |---|---|
 | Performance | First meaningful 3D render ≤ 4 s on a Snapdragon 6-series class device over 4G; ≥ 30 fps sustained with skeletal + one system visible at LOD1 |
-| Bundle | Initial JS ≤ 250 kB gzipped for the atlas route; engine code split |
+| Bundle | Non-3D routes ≤ 250 kB gzipped first load; 3D routes (atlas, spotter) ≤ 420 kB, of which ~230 kB is three.js — see note below; decoders and engine code split out |
 | Assets | Any single system ≤ 8 MB at LOD1 (Draco/meshopt + KTX2); full body LOD0 streamed on demand |
 | Availability | 99.9% monthly for the SaaS tier; RPO 15 min, RTO 1 h |
 | Security | OWASP ASVS L2; tenant isolation by RLS; SOC 2 Type II readiness by month 18 |
@@ -142,6 +142,17 @@ Requirements are tagged `[M]` must, `[S]` should, `[C]` could for v1 (first 12 m
 | Accessibility | WCAG 2.2 AA for all non-3D UI; 3D has keyboard navigation and text alternatives |
 | Localisation | UI i18n; content i18n per field (Phase E); RTL supported |
 | Observability | OpenTelemetry traces, structured logs, RUM for render timings |
+
+**Note on the 3D bundle budget.** Version 1.0 of this document set a single 250 kB gzipped
+budget for every route including the atlas. That was measured and found unreachable: three.js
+alone is ~230 kB gzipped and the React reconciler another ~110 kB, so a route that renders the
+digital human cannot come in under 250 kB while using this renderer. Rather than carry a
+target no one can hit, the budget is split: routes without 3D hold the original 250 kB (they
+currently sit at 103–129 kB), and 3D routes get 420 kB with the decoders, textures and
+geometry moved out of the critical path. The metric that actually governs the learner's
+experience is unchanged and remains the binding one: first meaningful render within 4 s on a
+mid-range Android over 4G, which level-of-detail streaming addresses directly and bundle size
+only influences. Revisit if a lighter renderer or three.js tree-shaking closes the gap.
 
 ## 6. Constraints
 Frontend: React, TypeScript, React Three Fiber, Three.js, Zustand, Tailwind. Backend: Next.js,

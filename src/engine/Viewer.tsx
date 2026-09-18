@@ -2,7 +2,7 @@
 import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { Canvas, useThree, type ThreeEvent } from '@react-three/fiber';
-import { OrbitControls, AdaptiveDpr, PerformanceMonitor, Html } from '@react-three/drei';
+import { OrbitControls, AdaptiveDpr, PerformanceMonitor } from '@react-three/drei';
 import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
 import { computeBoundsTree, disposeBoundsTree, acceleratedRaycast } from 'three-mesh-bvh';
 import { useEngineStore, structureVisibility, type EngineState } from '@/store/engine';
@@ -38,7 +38,7 @@ export function Viewer({ manifest, className, onSelect }: ViewerProps) {
         <ambientLight intensity={0.9} />
         <directionalLight position={[2, 4, 3]} intensity={1.6} />
         <directionalLight position={[-3, -1, -2]} intensity={0.4} />
-        <Suspense fallback={<Html center><span className="text-xs text-muted">Loading body…</span></Html>}>
+        <Suspense fallback={null}>
           <Body manifest={manifest} onSelect={onSelect} />
         </Suspense>
         <CameraRig />

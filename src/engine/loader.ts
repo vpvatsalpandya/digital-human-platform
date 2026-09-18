@@ -1,30 +1,47 @@
 'use client';
 import * as THREE from 'three';
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
-import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js';
-import { KTX2Loader } from 'three/examples/jsm/loaders/KTX2Loader.js';
-import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
+import type { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
 /**
  * Asset loading (ADR-007, Phase G §3): per-structure GLB with meshopt (primary), Draco
- * (fallback) and KTX2 textures. Decoders are self-hosted under /public/decoders so the
- * platform works offline and inside white-label domains with strict CSP.
+ * (fallback) and KTX2 textures.
+ *
+ * The loader and every decoder are imported dynamically. They are large, they embed WebAssembly,
+ * and a learner who never opens the atlas should not pay for them; Draco and KTX2 in particular
+ * are only fetched when a pack actually contains geometry or textures that need them. Decoders
+ * are self-hosted under /public/decoders so the platform works offline and under the strict
+ * content security policy a white-label domain runs with.
  */
-let loader: GLTFLoader | null = null;
-export function getLoader(renderer?: THREE.WebGLRenderer): GLTFLoader {
-  if (loader) return loader;
-  loader = new GLTFLoader();
-  loader.setMeshoptDecoder(MeshoptDecoder);
-  const draco = new DRACOLoader();
-  draco.setDecoderPath((process.env.NEXT_PUBLIC_ASSET_BASE ?? '') + '/decoders/draco/');
-  loader.setDRACOLoader(draco);
-  if (renderer) {
-    const ktx2 = new KTX2Loader();
-    ktx2.setTranscoderPath((process.env.NEXT_PUBLIC_ASSET_BASE ?? '') + '/decoders/basis/');
-    ktx2.detectSupport(renderer);
-    loader.setKTX2Loader(ktx2);
-  }
-  return loader;
+let loaderPromise: Promise<GLTFLoader> | null = null;
+
+export function getLoader(renderer?: THREE.WebGLRenderer): Promise<GLTFLoader> {
+  loaderPromise ??= (async () => {
+    const [{ GLTFLoader }, { MeshoptDecoder }] = await Promise.all([
+      import('three/examples/jsm/loaders/GLTFLoader.js'),
+      import('three/examples/jsm/libs/meshopt_decoder.module.js'),
+    ]);
+    const loader = new GLTFLoader();
+    loader.setMeshoptDecoder(MeshoptDecoder);
+    const base = process.env.NEXT_PUBLIC_ASSET_BASE ?? '';
+    // Draco and KTX2 are wired lazily on top, so their WASM never enters the atlas bundle.
+    void (async () => {
+      const [{ DRACOLoader }, { KTX2Loader }] = await Promise.all([
+        import('three/examples/jsm/loaders/DRACOLoader.js'),
+        import('three/examples/jsm/loaders/KTX2Loader.js'),
+      ]);
+      const draco = new DRACOLoader();
+      draco.setDecoderPath(`${base}/decoders/draco/`);
+      loader.setDRACOLoader(draco);
+      if (renderer) {
+        const ktx2 = new KTX2Loader();
+        ktx2.setTranscoderPath(`${base}/decoders/basis/`);
+        ktx2.detectSupport(renderer);
+        loader.setKTX2Loader(ktx2);
+      }
+    })();
+    return loader;
+  })();
+  return loaderPromise;
 }
 
 const cache = new Map<string, Promise<THREE.BufferGeometry>>();
@@ -33,7 +50,7 @@ const cache = new Map<string, Promise<THREE.BufferGeometry>>();
 export function loadStructureGeometry(url: string, renderer?: THREE.WebGLRenderer): Promise<THREE.BufferGeometry> {
   const hit = cache.get(url);
   if (hit) return hit;
-  const p = getLoader(renderer).loadAsync(url).then((gltf) => {
+  const p = getLoader(renderer).then((loader) => loader.loadAsync(url)).then((gltf) => {
     const geoms: THREE.BufferGeometry[] = [];
     gltf.scene.updateMatrixWorld(true);
     gltf.scene.traverse((o) => {

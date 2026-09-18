@@ -58,14 +58,36 @@ export function Microscope({ source, annotations }: { source: TileSource; annota
     }
     // annotations
     const toScreen = ([nx, ny]: [number, number]): [number, number] => [(nx * source.width - originX) / scale, (ny * source.height - originY) / scale];
+    // Labels are placed so they do not sit on top of each other: each one is nudged upward
+    // past any label already drawn, which at low magnification is the difference between a
+    // legible slide and a pile of overlapping text.
+    const placed: { x: number; y: number; w: number; h: number }[] = [];
+    const placeLabel = (x: number, y: number, w: number, h: number) => {
+      let ty = y;
+      for (let guard = 0; guard < 12; guard++) {
+        const hit = placed.find((r) => x < r.x + r.w && x + w > r.x && ty - h < r.y && ty > r.y - r.h);
+        if (!hit) break;
+        ty = hit.y - hit.h - 2;
+      }
+      placed.push({ x, y: ty, w, h });
+      return ty;
+    };
     for (const a of annotations) {
-      if (mode === 'assessment' && a.layer !== 'exam') continue;
-      if (mode === 'assessment') continue; // never reveal exam polygons
+      // The exam layer marks the answer regions, so it is never drawn: not in assessment
+      // mode, where it would give the answer away, and not in the study modes either.
+      if (a.layer === 'exam' || mode === 'assessment') continue;
       if (mode === 'guided' && a.layer === 'guided' && guided[step]?.id !== a.id) continue;
       if (!showLabels && mode === 'self') continue;
       ctx.beginPath(); a.polygon.forEach((p, i) => { const [x, y] = toScreen(p); if (i) ctx.lineTo(x, y); else ctx.moveTo(x, y); }); ctx.closePath();
       ctx.strokeStyle = a.layer === 'guided' ? '#f59e0b' : '#22d3ee'; ctx.lineWidth = 2; ctx.stroke();
-      const [lx, ly] = toScreen(a.polygon[0]!); ctx.fillStyle = '#0b1020cc'; ctx.fillRect(lx, ly - 16, ctx.measureText(a.label).width + 8, 16); ctx.fillStyle = '#fff'; ctx.font = '12px system-ui'; ctx.fillText(a.label, lx + 4, ly - 4);
+      ctx.font = '12px system-ui';
+      const [rawX, ly] = toScreen(a.polygon[0]!);
+      const lw = ctx.measureText(a.label).width + 8;
+      const lx = Math.max(4, Math.min(rawX, W - lw - 4));
+      const ty = placeLabel(lx, ly, lw, 16);
+      ctx.fillStyle = '#0b1020cc'; ctx.fillRect(lx, ty - 16, lw, 16);
+      ctx.fillStyle = '#fff'; ctx.fillText(a.label, lx + 4, ty - 4);
+      if (ty !== ly) { ctx.strokeStyle = '#ffffff55'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(lx + 2, ty); ctx.lineTo(lx + 2, ly); ctx.stroke(); }
     }
     // scale bar
     const microns = [10, 20, 50, 100, 200, 500, 1000, 2000].find((m) => m / (source.micronsPerPixel * scale) > 60) ?? 2000;
@@ -75,7 +97,7 @@ export function Microscope({ source, annotations }: { source: TileSource; annota
     const mmW = 96, mmH = (mmW * source.height) / source.width;
     ctx.fillStyle = '#ffffff22'; ctx.fillRect(W - mmW - 8, 8, mmW, mmH);
     ctx.strokeStyle = '#f59e0b'; ctx.strokeRect(W - mmW - 8 + (originX / source.width) * mmW, 8 + (originY / source.height) * mmH, (W * scale / source.width) * mmW, (H * scale / source.height) * mmH);
-    if (source.isPlaceholder) { ctx.fillStyle = '#fbbf24'; ctx.fillText('Schematic placeholder slide — partner WSI pending', 12, 16); }
+    if (source.isPlaceholder) { ctx.fillStyle = '#fbbf24'; ctx.font = '11px system-ui'; ctx.fillText('Schematic placeholder slide — partner WSI pending', 12, H - 44); }
   }, [view, source, annotations, mode, showLabels, step, guided]);
 
   // Guided step: fly to annotation

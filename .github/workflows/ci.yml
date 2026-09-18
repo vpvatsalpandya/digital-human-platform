@@ -1,0 +1,27 @@
+name: CI
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    env:
+      # Prisma needs a URL to parse the schema; no database is contacted by these checks.
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/vesalia
+      NEXT_TELEMETRY_DISABLED: 1
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - run: npm ci
+      - name: Validate the Prisma schema
+        run: npx prisma validate
+      - name: Reject asset packs that cannot be used commercially
+        run: npm run manifest:validate
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm test
+      - run: npm run build

@@ -1,10 +1,6 @@
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
-
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  outputFileTracingRoot: path.dirname(fileURLToPath(import.meta.url)),
   // Standalone output makes the Docker image small (infra/Dockerfile). Vercel ignores it.
   output: process.env.DOCKER_BUILD ? 'standalone' : undefined,
   transpilePackages: ['three'],

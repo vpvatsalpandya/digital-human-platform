@@ -5,8 +5,8 @@ knowledge, real physiology simulations, a virtual microscope, an embryology time
 pathology comparison, radiology synchronised with the atlas, six assessment modes, a
 retrieval-only AI tutor, and multi-tenant white-label SaaS plumbing.
 
-This directory is self-contained (its own `package.json`) and lives alongside the Turf
-Community app in the same repository by request; nothing in the host app is touched.
+This repository is the platform. It was developed briefly inside another project and was
+split out with `git subtree split`, so the commit history below predates this repository.
 
 ## Planning documents (Phases A–J)
 
@@ -20,7 +20,6 @@ architecture decision records. Implementation started only after those were writ
 ## Quick start
 
 ```bash
-cd digital-human
 npm install
 cp .env.example .env         # DATABASE_URL optional for the demo; ANTHROPIC_API_KEY optional
 npm run dev                   # http://localhost:3000

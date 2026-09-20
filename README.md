@@ -39,7 +39,7 @@ npx prisma validate           # DATABASE_URL must be set (any value)
 
 | Area | Real now | Scaffolded / next sprint |
 |---|---|---|
-| Digital Human Engine (`src/engine`, `src/store/engine.ts`) | R3F viewer; male/female bodies; 14 system toggles; search (name/alias/Latin/FMA, fuzzy); select, multi-select, isolate, isolate-with-region, hide, fade, explode, global transparency, axial/coronal/sagittal clipping, saved views, bookmarks, deep links, accessible list view; BVH picking; adaptive DPR and demand-driven frameloop; **streams real GLB level-of-detail meshes from a baked pack**, falling back to procedural stand-ins when no pack is deployed | The baked pack is built from the procedural shapes, so the *shapes* are still stand-ins; pointing the pipeline at a Z-Anatomy or HRA export (Sprint 1 §2 below) is a data change, not a code change. Compare mode UI is not wired yet. |
+| Digital Human Engine (`src/engine`, `src/store/engine.ts`) | R3F viewer; male/female bodies; 14 system toggles; search (name/alias/Latin/FMA, fuzzy); select, multi-select, isolate, isolate-with-region, hide, fade, explode, global transparency, axial/coronal/sagittal clipping, saved views, bookmarks, deep links, accessible list view; BVH picking; adaptive DPR and demand-driven frameloop; **streams real anatomical meshes** from the Human Reference Atlas with level of detail chosen by camera distance | 21 of 57 male structures (23 of 59 female) are real anatomy; the rest are generated stand-ins, hidden by default and labelled in the interface. Compare mode UI is not wired yet. |
 | Knowledge Engine (`src/knowledge`) | Zod schema for the 20 fields with per-field citations and audience-mode overrides; publishability rule (non-empty ⇒ cited) enforced in Zod and in a DB trigger; review state machine; 6 seed records (10 structure ids) citing OpenStax A&P 2e and standard textbooks | Seed records are `in_review`, not published. Authoring UI with source picker (Sprint 2). |
 | Physiology (`src/simulations`) | Time-varying elastance LV + Windkessel cardiac model (RK4), Hodgkin–Huxley action potential, alveolar gas equation; unit tests assert textbook ranges | Nephron, synaptic transmission, endocrine axes (Sprint 6). |
 | Histology (`src/modules/histology`) | Deep-zoom tile viewer with pyramid levels, pinch/wheel zoom, pan, minimap, scale bar, annotation layers, guided/self/assessment modes; DZI tile source | Slides are procedural schematics; partner whole-slide images (Sprint 5). |
@@ -55,11 +55,11 @@ npx prisma validate           # DATABASE_URL must be set (any value)
 
 ## Verified
 
-`npm run typecheck`, `npm run lint`, `npm test` (58 tests) and `npm run build` pass. The built
+`npm run typecheck`, `npm run lint`, `npm test` (68 tests) and `npm run build` pass. The built
 app was driven in headless Chromium at a 390x844 mobile viewport: the 3D canvas renders, the
-atlas streams 58 mesh files from the baked pack on first load and 103 after focusing a
-structure with every request returning 200, search selects and frames a structure and opens
-its cited record, and every route returns 200 with no console or hydration errors. Tenant resolution was checked by requesting the same build with a
+atlas streams 57 mesh files from the anatomy pack with every request returning 200, search
+selects and frames a structure and opens its cited record, and every route returns 200 with
+no console or hydration errors. Tenant resolution was checked by requesting the same build with a
 second `Host` header and getting the second tenant's brand back.
 
 Known gaps, tracked in the roadmap:
@@ -77,6 +77,25 @@ the digital human can fit the original 250 kB budget. Moving the Draco, KTX2 and
 decoders off the critical path took the atlas from 464 kB to 407 kB; the budget is now split
 per route type with the reasoning recorded in the PRD, and non-3D routes sit at 103–129 kB.
 
+## Where the anatomy comes from
+
+The viscera, brain, skin, pelvis, femur, tibia and great vessels are real meshes from the
+**HuBMAP Human Reference Atlas 3D Reference Object Library** (CC BY 4.0), with brain regions
+from the Allen Human Reference Atlas. The library models these in one body coordinate space
+in metres, which is why organs from separate files line up without any per-organ fitting, and
+the shipped meshes check out against adult reference dimensions: a 19 cm liver, a 12 cm
+heart, a 10.7 cm kidney, a 48.5 cm femur, a 1.8 m body.
+
+It does not model lung parenchyma, stomach, thyroid, adrenals, skull, ribs, or limb bones
+above the femur, and models no muscle or peripheral nerve. Those structures keep generated
+stand-in shapes. Stand-ins are **hidden by default** — a sphere standing in for the rib cage
+does not merely look wrong, it encloses the heart and hides it — and a chip in the atlas
+turns them on. Every structure carries its provenance in the manifest, the card says so when
+a shape is a stand-in, and searching for one still shows it.
+
+Replacing a stand-in with real anatomy is a data change: add an entry to
+`scripts/assets/hra-sources.ts`, or point the pipeline at a Z-Anatomy export, and rebuild.
+
 ## Asset pipeline
 
 `npm run assets:build` turns source geometry into a deployable pack:
@@ -88,15 +107,19 @@ source geometry -> weld/dedupe/prune -> 3 levels of detail (100% / 35% / 12%)
     byte counts, triangle counts and content hashes
 ```
 
-The committed `demo-baked` pack is 1.3 MB for both bodies: 57 male structures, 26,936
-triangles at full detail falling to 3,541 at the coarsest level, and the largest per-system
-first-paint bundle is 27 kB against an 8 MB budget. The engine picks a level from the
-camera distance, so a phone downloads coarse meshes first and refines only what is looked at.
+The committed `hra-v1` pack is 4.2 MB for both bodies: 420,696 triangles at full detail
+falling to about 8,000 per organ and then 2,400, with the largest per-system first-paint
+bundle well inside the 8 MB budget. The engine picks a level from the camera distance, so a
+phone downloads coarse meshes first and refines only what is looked at.
 
-Two source kinds are supported. `--source procedural` bakes the development body, which is
-what the committed pack is. `--source gltf-dir --in <dir>` reads `<structureId>.glb` plus a
-`<body>.structures.json` sidecar, which is how the Z-Anatomy and Human Reference Atlas
-exports enter once downloaded:
+Real organs are decimated to absolute triangle budgets rather than proportional ratios,
+because the library ships some organs at 300,000 triangles and others at 3,000, and a ratio
+would leave the first unusable and destroy the second.
+
+Three source kinds are supported. `--source hra --in <dir>` reads the reference atlas files
+and is what the committed pack was built with. `--source procedural` bakes the development
+body. `--source gltf-dir --in <dir>` reads `<structureId>.glb` plus a `<body>.structures.json`
+sidecar, which is how a Z-Anatomy export enters:
 
 ```bash
 npx tsx scripts/assets/build.ts --source gltf-dir --in ../exports/z-anatomy \

@@ -60,13 +60,23 @@ export function AtlasScreen({ mode = 'mbbs' }: { mode?: string }) {
           <button className="btn-ghost !min-h-[40px]" onClick={() => setListView((v) => !v)} aria-pressed={listView} title="Accessible structure list">☰</button>
         </div>
         <div className="pointer-events-none absolute inset-x-0 top-14 z-10 px-3 text-[11px] text-accent">
-          {baked ? `${manifest.pack} · ${manifest.licence}` : 'Procedural stand-ins — no anatomical mesh data'}
+          {baked
+            ? `${manifest.structures.filter((x) => x.provenance === 'hra').length} structures from real anatomy · ${manifest.licence}`
+            : 'Procedural stand-ins — no anatomical mesh data'}
         </div>
 
         {listView ? <StructureList manifest={manifest} /> : <Viewer manifest={manifest} className="h-full w-full" />}
 
         {/* system chips */}
-        <div className="absolute inset-x-0 bottom-0 z-20 flex gap-1 overflow-x-auto p-2 md:top-14">
+        <div className="absolute inset-x-0 bottom-0 z-20 flex gap-1 overflow-x-auto p-2">
+          <button
+            className={`chip ${s.showStandIns ? 'chip-on' : ''}`}
+            onClick={() => s.setShowStandIns(!s.showStandIns)}
+            aria-pressed={s.showStandIns}
+            title="Structures with no openly licensed mesh yet are drawn as generated shapes"
+          >
+            Stand-ins
+          </button>
           {SYSTEM_IDS.map((id) => (
             <button key={id} className={`chip ${s.visibleSystems.includes(id) ? 'chip-on' : ''}`} onClick={() => s.toggleSystem(id)} aria-pressed={s.visibleSystems.includes(id)}>
               <span className="h-2 w-2 rounded-full" style={{ background: SYSTEM_META[id].color }} aria-hidden />{SYSTEM_META[id].name}
@@ -78,7 +88,7 @@ export function AtlasScreen({ mode = 'mbbs' }: { mode?: string }) {
       <div className="min-h-0 flex-1 overflow-y-auto border-t border-border md:w-[380px] md:flex-none md:border-l md:border-t-0">
         <Sheet title={selected ? selected.name : 'Tools'} right={<button className="btn-ghost !min-h-[36px] text-xs" onClick={() => s.resetVisibility()}>Reset</button>}>
           {/* tool tray */}
-          <div className="mb-3 grid grid-cols-4 gap-1 md:grid-cols-8">
+          <div className="mb-3 flex flex-wrap gap-1">
             <button className="btn-ghost" disabled={!selected} onClick={() => s.isolateSelected()} title="Isolate">Isolate</button>
             <button className="btn-ghost" disabled={!selected} onClick={() => selected && s.isolateSelected(related(selected))} title="Isolate with region">+Region</button>
             <button className="btn-ghost" disabled={!selected} onClick={() => s.hideSelected()}>Hide</button>

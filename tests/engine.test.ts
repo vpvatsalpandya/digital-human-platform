@@ -35,7 +35,7 @@ describe('search', () => {
 });
 
 describe('visibility resolution', () => {
-  const base = { hidden: [], faded: [], isolated: null, visibleSystems: ['skeletal' as const], transparency: 0 };
+  const base = { hidden: [], faded: [], isolated: null, visibleSystems: ['skeletal' as const], transparency: 0, showStandIns: true };
   it('hides structures whose systems are off', () => { expect(structureVisibility(base, 'heart', ['cardiovascular']).visible).toBe(false); });
   it('isolate dims others, fade reduces opacity, hidden hides', () => {
     expect(structureVisibility({ ...base, isolated: ['skull'] }, 'pelvis', ['skeletal']).opacity).toBeLessThan(0.1);
@@ -43,6 +43,14 @@ describe('visibility resolution', () => {
     expect(structureVisibility({ ...base, hidden: ['skull'] }, 'skull', ['skeletal']).visible).toBe(false);
   });
   it('low-bandwidth forces the coarsest LOD', () => { expect(chooseLod(0.5, 0.5, 3, true)).toBe(2); expect(chooseLod(0.5, 0.5, 3, false)).toBe(0); });
+
+  it('hides generated stand-ins unless asked for, but never hides an isolated one', () => {
+    const off = { ...base, showStandIns: false };
+    expect(structureVisibility(off, 'rib-cage', ['skeletal'], 'procedural').visible).toBe(false);
+    expect(structureVisibility(off, 'pelvis', ['skeletal'], 'hra').visible).toBe(true);
+    expect(structureVisibility({ ...off, isolated: ['rib-cage'] }, 'rib-cage', ['skeletal'], 'procedural').visible).toBe(true);
+    expect(structureVisibility(base, 'rib-cage', ['skeletal'], 'procedural').visible).toBe(true);
+  });
 });
 
 describe('radiology phantom ↔ 3D sync', () => {

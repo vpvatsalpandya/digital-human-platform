@@ -3,10 +3,10 @@ import { readFileSync, existsSync } from 'node:fs';
 import { bodyManifest, ALLOWED_PACK_LICENCES } from '@/engine/manifest';
 import { demoManifest } from '@/engine/demo-manifest';
 
-const PACK = 'public/assets/demo-baked';
+const PACK = 'public/assets/hra-v1';
 const built = existsSync(`${PACK}/male.manifest.json`);
 
-describe.runIf(built)('baked asset pack', () => {
+describe.runIf(built)('anatomy asset pack', () => {
   const male = JSON.parse(readFileSync(`${PACK}/male.manifest.json`, 'utf8'));
   const female = JSON.parse(readFileSync(`${PACK}/female.manifest.json`, 'utf8'));
 
@@ -21,6 +21,41 @@ describe.runIf(built)('baked asset pack', () => {
     expect(male.licence).not.toMatch(/NC|ND/);
   });
 
+  it('carries real anatomical meshes for the major viscera, not stand-ins', () => {
+    const real = new Set(male.structures.filter((s: { provenance?: string }) => s.provenance === 'hra').map((s: { id: string }) => s.id));
+    for (const id of ['heart', 'liver', 'spleen', 'pancreas', 'kidney-l', 'kidney-r', 'small-intestine', 'large-intestine', 'brain', 'skin', 'pelvis'])
+      expect(real.has(id), `${id} should come from the reference atlas`).toBe(true);
+    expect(real.size).toBeGreaterThanOrEqual(20);
+  });
+
+  it('labels every structure with where its geometry came from', () => {
+    for (const s of male.structures) expect(['hra', 'procedural'], s.id).toContain(s.provenance);
+  });
+
+  it('real organs are anatomically plausible in size', () => {
+    const size = (id: string) => {
+      const s = male.structures.find((x: { id: string }) => x.id === id)!;
+      const b = s.bounds as number[];
+      return [b[3]! - b[0]!, b[4]! - b[1]!, b[5]! - b[2]!];
+    };
+    const span = (id: string) => Math.max(...size(id));
+    // Adult reference ranges, in metres.
+    expect(span('liver')).toBeGreaterThan(0.12); expect(span('liver')).toBeLessThan(0.32);
+    expect(span('heart')).toBeGreaterThan(0.08); expect(span('heart')).toBeLessThan(0.20);
+    expect(span('kidney-l')).toBeGreaterThan(0.07); expect(span('kidney-l')).toBeLessThan(0.16);
+    expect(span('femur-l')).toBeGreaterThan(0.35); expect(span('femur-l')).toBeLessThan(0.55);
+    expect(span('skin')).toBeGreaterThan(1.4); expect(span('skin')).toBeLessThan(2.1);
+  });
+
+  it('places organs on the correct side of the body', () => {
+    const cx = (id: string) => (male.structures.find((x: { id: string }) => x.id === id)!.centroid as number[])[0]!;
+    // Anatomical right is negative X in this body space; the liver sits to the right of the
+    // midline and the spleen to the left, which is the classic orientation check.
+    expect(cx('liver')).toBeLessThan(0);
+    expect(cx('spleen')).toBeGreaterThan(0);
+    expect(cx('kidney-r')).toBeLessThan(cx('kidney-l'));
+  });
+
   it('carries three level-of-detail meshes per structure, never coarsening to nothing', () => {
     for (const s of male.structures) {
       expect(s.lods, s.id).toHaveLength(3);
@@ -30,14 +65,17 @@ describe.runIf(built)('baked asset pack', () => {
     }
   });
 
-  it('simplifies every mesh that has room to simplify', () => {
-    // A closed box is 12 triangles and cannot be reduced further without holes, so the floor
-    // is a property of the surface, not a pipeline failure. Anything above it must shrink.
-    const FLOOR = 12;
+  it('simplifies every mesh that is over its level-of-detail budget', () => {
+    // Two floors apply. A closed box is 12 triangles and cannot shrink without holes, and a
+    // mesh already under the budget for a level is left alone rather than degraded for
+    // nothing. Only meshes above both are required to come down.
+    const BUDGET = [26000, 8000, 2400];
     for (const s of male.structures) {
-      if (s.lods[0].triangles <= FLOOR * 2) continue;
-      expect(s.lods[1].triangles, `${s.id} lod1 did not simplify`).toBeLessThan(s.lods[0].triangles);
-      expect(s.lods[2].triangles, `${s.id} lod2 did not simplify`).toBeLessThan(s.lods[1].triangles);
+      if (s.lods[0].triangles <= 24) continue;
+      for (const level of [1, 2]) {
+        if (s.lods[level - 1].triangles <= BUDGET[level]!) continue;
+        expect(s.lods[level].triangles, `${s.id} lod${level} did not simplify`).toBeLessThan(s.lods[level - 1].triangles);
+      }
     }
   });
 
@@ -48,7 +86,7 @@ describe.runIf(built)('baked asset pack', () => {
     expect(lod2 / lod0).toBeLessThan(0.2);
   });
 
-  it('drops the procedural fallback so a baked pack cannot silently render stand-ins', () => {
+  it('never ships a procedural shape definition inside a baked pack', () => {
     for (const s of male.structures) expect(s.procedural, s.id).toBeUndefined();
   });
 

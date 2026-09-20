@@ -6,7 +6,8 @@ import { OrbitControls, AdaptiveDpr, PerformanceMonitor } from '@react-three/dre
 import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
 import { computeBoundsTree, disposeBoundsTree, acceleratedRaycast } from 'three-mesh-bvh';
 import { useEngineStore, structureVisibility, type EngineState } from '@/store/engine';
-import { SYSTEM_META, type BodyManifest, type ManifestStructure, type SystemId } from './types';
+import { type BodyManifest, type ManifestStructure, type SystemId } from './types';
+import { tissueFor } from './tissue';
 import { chooseLod, loadStructureGeometry, proceduralGeometry } from './loader';
 
 // BVH-accelerated raycasting for picking (Phase G §5).
@@ -31,13 +32,26 @@ export function Viewer({ manifest, className, onSelect }: ViewerProps) {
         frameloop="demand"
         gl={{ antialias: dprCap <= 1.5, powerPreference: 'default', localClippingEnabled: true, alpha: true }}
         camera={{ fov: 40, near: 0.05, far: 50 }}
-        onCreated={({ gl }) => { gl.localClippingEnabled = true; }}
+        onCreated={({ gl }) => {
+          gl.localClippingEnabled = true;
+          // Filmic tone mapping keeps the bright speculars on wet serosa from clipping to
+          // flat white, which is the other half of the plastic look.
+          gl.toneMapping = THREE.ACESFilmicToneMapping;
+          gl.toneMappingExposure = 1.05;
+        }}
       >
         <PerformanceMonitor onDecline={() => setDprCap((d) => Math.max(1, d - 0.25))} onIncline={() => qualityTier !== 'low' && setDprCap((d) => Math.min(2, d + 0.25))} />
         <AdaptiveDpr pixelated />
-        <ambientLight intensity={0.9} />
-        <directionalLight position={[2, 4, 3]} intensity={1.6} />
-        <directionalLight position={[-3, -1, -2]} intensity={0.4} />
+        {/*
+          A three-point rig with a hemisphere bounce. A single flat ambient light removes the
+          shading gradient that tells the eye an organ is a curved wet surface, which is most
+          of why primitive-lit anatomy looks like a cartoon. The rim light behind separates
+          overlapping viscera that share a colour.
+        */}
+        <hemisphereLight args={['#dfe6f2', '#4a3a33', 0.55]} />
+        <directionalLight position={[2.2, 3.4, 2.8]} intensity={2.1} color="#fff4e8" />
+        <directionalLight position={[-2.8, 0.6, 1.6]} intensity={0.55} color="#cfe0ff" />
+        <directionalLight position={[0, 1.2, -3.2]} intensity={0.85} color="#ffd9c4" />
         <Suspense fallback={null}>
           <Body manifest={manifest} onSelect={onSelect} />
         </Suspense>
@@ -142,19 +156,46 @@ function StructureMesh({ structure: s, systemCentroid, onSelect }: { structure: 
 
   useEffect(() => { if (geometry && !geometry.boundsTree) geometry.computeBoundsTree(); }, [geometry]);
 
-  const material = useMemo(() => new THREE.MeshStandardMaterial({ color: new THREE.Color(SYSTEM_META[s.systems[0]!].color), roughness: 0.6, metalness: 0.05 }), [s.systems]);
+  const tissue = useMemo(() => tissueFor(s.id, s.systems), [s.id, s.systems]);
+  const material = useMemo(() => {
+    const color = new THREE.Color(tissue.color);
+    // Nudge lightness per structure so adjacent organs of one system are distinguishable
+    // without departing from the tissue's real colour.
+    const hsl = { h: 0, s: 0, l: 0 };
+    color.getHSL(hsl);
+    color.setHSL(hsl.h, hsl.s, Math.min(0.92, Math.max(0.08, hsl.l + tissue.shade)));
+    const m = new THREE.MeshPhysicalMaterial({
+      color,
+      roughness: tissue.roughness,
+      metalness: 0.0,
+      sheen: tissue.sheen,
+      sheenColor: new THREE.Color('#ffd8cf'),
+      sheenRoughness: 0.75,
+      clearcoat: tissue.sheen * 0.35,
+      clearcoatRoughness: 0.55,
+      flatShading: false,
+    });
+    return m;
+  }, [tissue]);
 
   // Apply visual state transiently (no React re-render per structure per change).
-  useEffect(() => useEngineStore.subscribe((st) => {
+  useEffect(() => {
+    const apply = (st: EngineState) => {
     const m = meshRef.current; if (!m) return;
-    const { visible, opacity } = structureVisibility(st, s.id, s.systems);
+    const { visible, opacity: rawOpacity } = structureVisibility(st, s.id, s.systems, s.provenance);
+    const opacity = rawOpacity * (tissue.baseOpacity ?? 1);
     m.visible = visible;
     const selected = st.selected.includes(s.id), hovered = st.hoverId === s.id;
     material.opacity = opacity;
     material.transparent = opacity < 1;
     material.depthWrite = opacity >= 0.5;
-    material.emissive.set(selected ? '#ffd166' : hovered ? '#66d9ef' : '#000000');
-    material.emissiveIntensity = selected ? 0.55 : hovered ? 0.35 : 0;
+    // A selection highlight has to survive being looked at by someone who knows what a liver
+    // looks like: flooding the mesh with yellow emissive announces the selection and destroys
+    // the tissue colour that makes the organ recognisable. Lift it gently instead, and let
+    // the raised clearcoat do most of the work.
+    material.emissive.set(selected ? '#ffb703' : hovered ? '#66d9ef' : '#000000');
+    material.emissiveIntensity = selected ? 0.16 : hovered ? 0.1 : 0;
+    material.clearcoat = (tissue.sheen * 0.35) + (selected ? 0.35 : 0);
     material.clippingPlanes = st.clip?.enabled ? [new THREE.Plane(new THREE.Vector3(...st.clip.normal), st.clip.constant)] : [];
     material.clipShadows = false;
     material.needsUpdate = true;
@@ -162,10 +203,13 @@ function StructureMesh({ structure: s, systemCentroid, onSelect }: { structure: 
     const offset = c.clone().sub(systemCentroid).multiplyScalar(st.explode * 1.2);
     m.position.copy(c.add(offset));
     invalidate();
-  }), [s, material, systemCentroid, invalidate]);
-
-  // Initial state
-  useEffect(() => { useEngineStore.setState({}); }, []);
+    };
+    apply(useEngineStore.getState());
+    return useEngineStore.subscribe(apply);
+    // `geometry` is a dependency because the mesh does not exist until its level of detail
+    // has downloaded. Without it the first pass runs against a null ref, returns early, and
+    // the structure renders with default visibility — showing systems the user switched off.
+  }, [s, material, systemCentroid, invalidate, tissue, geometry]);
 
   const select = useEngineStore((st) => st.select);
   const setHover = useEngineStore((st) => st.setHover);

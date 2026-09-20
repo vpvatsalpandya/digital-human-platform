@@ -10,6 +10,12 @@ import { SYSTEM_IDS } from '@/engine/types';
  */
 export interface EngineState extends ViewState {
   hoverId: string | null;
+  /**
+   * Whether to draw structures that have no real mesh yet. Off by default: a generated
+   * sphere standing in for the rib cage does not merely look wrong, it encloses the heart
+   * and hides it. Students can switch them on to see the full structure list in space.
+   */
+  showStandIns: boolean;
   lowBandwidth: boolean;
   qualityTier: 'auto' | 'high' | 'low';
   savedViews: SavedView[];
@@ -33,6 +39,7 @@ export interface EngineState extends ViewState {
   setClip: (c: ClipState | null) => void;
   setCompare: (c: CompareState | null) => void;
   setCamera: (position: [number, number, number], target: [number, number, number]) => void;
+  setShowStandIns: (v: boolean) => void;
   setLowBandwidth: (v: boolean) => void;
   setQualityTier: (t: EngineState['qualityTier']) => void;
   saveView: (name: string) => SavedView;
@@ -43,12 +50,12 @@ export interface EngineState extends ViewState {
   snapshot: () => ViewState;
 }
 
-export const DEFAULT_CAMERA: ViewState['camera'] = { position: [0, 0.2, 3.2], target: [0, 0.1, 0] };
+export const DEFAULT_CAMERA: ViewState['camera'] = { position: [0, 0.02, 2.6], target: [0, 0.02, 0] };
 
 const initialView: ViewState = {
   body: 'male',
   camera: DEFAULT_CAMERA,
-  visibleSystems: ['skeletal', 'cardiovascular', 'respiratory', 'digestive', 'urinary'],
+  visibleSystems: ['skeletal', 'cardiovascular', 'digestive', 'urinary', 'lymphatic', 'endocrine', 'nervous', 'respiratory', 'reproductive'],
   hidden: [],
   faded: [],
   isolated: null,
@@ -68,6 +75,7 @@ export const useEngineStore = create<EngineState>()(
     (set, get) => ({
       ...initialView,
       hoverId: null,
+      showStandIns: false,
       lowBandwidth: false,
       qualityTier: 'auto',
       savedViews: [],
@@ -101,6 +109,7 @@ export const useEngineStore = create<EngineState>()(
       setClip: (clip) => set({ clip }),
       setCompare: (compare) => set({ compare }),
       setCamera: (position, target) => set({ camera: { position, target } }),
+      setShowStandIns: (showStandIns) => set({ showStandIns }),
       setLowBandwidth: (lowBandwidth) => set({ lowBandwidth }),
       setQualityTier: (qualityTier) => set({ qualityTier }),
       snapshot: () => {
@@ -132,7 +141,7 @@ export const useEngineStore = create<EngineState>()(
       name: 'vesalia.engine',
       storage: createJSONStorage(() => (typeof window === 'undefined' ? noopStorage : window.localStorage)),
       // Persist only user data; view state is restored from URL/saved views, not silently.
-      partialize: (s) => ({ savedViews: s.savedViews, bookmarks: s.bookmarks, lowBandwidth: s.lowBandwidth, qualityTier: s.qualityTier, body: s.body }),
+      partialize: (s) => ({ savedViews: s.savedViews, bookmarks: s.bookmarks, lowBandwidth: s.lowBandwidth, qualityTier: s.qualityTier, body: s.body, showStandIns: s.showStandIns }),
       // The server renders initial state; rehydrating during the first client render would
       // change the markup underneath React (hydration mismatch). StoreHydration triggers it
       // in an effect instead, after the first paint.
@@ -146,10 +155,15 @@ function clamp01(v: number) { return Math.min(1, Math.max(0, v)); }
 
 /** Visibility resolution used by the renderer and by the accessible structure list. */
 export function structureVisibility(
-  st: Pick<EngineState, 'hidden' | 'faded' | 'isolated' | 'visibleSystems' | 'transparency'>,
+  st: Pick<EngineState, 'hidden' | 'faded' | 'isolated' | 'visibleSystems' | 'transparency' | 'showStandIns'>,
   id: string,
   systems: SystemId[],
+  provenance?: 'hra' | 'procedural',
 ): { visible: boolean; opacity: number } {
+  // An explicit selection always wins: a student who searched for a structure should see it
+  // even if it is a stand-in.
+  const selected = st.isolated?.includes(id) ?? false;
+  if (provenance === 'procedural' && !st.showStandIns && !selected) return { visible: false, opacity: 0 };
   if (!systems.some((s) => st.visibleSystems.includes(s))) return { visible: false, opacity: 0 };
   if (st.hidden.includes(id)) return { visible: false, opacity: 0 };
   if (st.isolated && !st.isolated.includes(id)) return { visible: true, opacity: 0.08 };

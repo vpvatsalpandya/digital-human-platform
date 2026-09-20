@@ -34,6 +34,9 @@ export function StructureCard({ structure, mode }: { structure: ManifestStructur
       <header className="flex items-start justify-between gap-2">
         <div>
           <div className="text-[11px] text-muted">{systemsLabel(structure.systems)}{structure.fmaId ? ` · ${structure.fmaId}` : ''}</div>
+          {structure.provenance === 'procedural' && (
+            <div className="text-[11px] text-accent">Shape is a stand-in — no openly licensed mesh of this structure yet</div>
+          )}
           {structure.latinName && <div className="text-xs italic text-muted">{structure.latinName}</div>}
         </div>
         <button className={`btn-ghost ${marked ? '!bg-accent !text-black' : ''}`} onClick={() => toggleBookmark(structure.id)} aria-pressed={marked} aria-label="Bookmark structure">★</button>

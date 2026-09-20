@@ -29,6 +29,7 @@ export const manifestStructure = z.object({
   bounds: z.tuple([z.number(), z.number(), z.number(), z.number(), z.number(), z.number()]),
   lods: z.array(manifestLod).min(1).optional(),
   procedural: z.unknown().optional(),
+  provenance: z.enum(['hra', 'procedural']).optional(),
 });
 
 /** Licences the platform may ship. NonCommercial and NoDerivatives packs are rejected here
@@ -63,7 +64,7 @@ export function assetBase(): string {
  * Fetch a built pack's manifest. Returns null when no pack is deployed, so the atlas falls
  * back to procedural stand-ins instead of showing an empty scene.
  */
-export async function fetchManifest(body: BodyId, pack = 'demo-baked'): Promise<BodyManifest | null> {
+export async function fetchManifest(body: BodyId, pack = 'hra-v1'): Promise<BodyManifest | null> {
   try {
     const res = await fetch(`${assetBase()}/assets/${pack}/${body}.manifest.json`, { cache: 'force-cache' });
     if (!res.ok) return null;

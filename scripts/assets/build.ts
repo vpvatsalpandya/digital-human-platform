@@ -27,13 +27,28 @@ import * as THREE from 'three';
 import { demoManifest } from '../../src/engine/demo-manifest';
 import { proceduralGeometry } from '../../src/engine/procedural';
 import { bodyManifest } from '../../src/engine/manifest';
+import { HRA_SOURCES, matchesNode, sourceFileFor } from './hra-sources';
 import { SYSTEM_IDS, type BodyId, type ManifestStructure, type SystemId } from '../../src/engine/types';
 
 /** Ratios from Phase G §2: full, 35%, 12%. */
 const LOD_RATIOS = [1, 0.35, 0.12];
 const LOD_ERROR = [0, 0.02, 0.06];
 
-interface Args { source: 'procedural' | 'gltf-dir'; pack: string; in?: string; licence: string; attribution: string; out: string }
+interface Args { source: 'procedural' | 'gltf-dir' | 'hra'; pack: string; in?: string; licence: string; attribution: string; out: string }
+
+/**
+ * Triangle budgets per level of detail for real anatomy. The library ships organs at up to
+ * 300k triangles each, which is film-quality and unusable on a phone; these are absolute
+ * targets rather than ratios so a dense organ and a sparse one both land in budget.
+ */
+const HRA_TRIANGLE_TARGETS = [26000, 8000, 2400];
+/**
+ * How far a simplified vertex may move, as a fraction of the mesh extent. Real organs need a
+ * far looser budget than the default: a structure like the brain is hundreds of separate
+ * closed surfaces, and under a tight error bound the simplifier refuses to collapse them and
+ * the triangle target is missed by an order of magnitude.
+ */
+const HRA_ERROR = [0.008, 0.02, 0.05];
 
 function parseArgs(argv: string[]): Args {
   const get = (flag: string, fallback?: string) => {
@@ -97,6 +112,64 @@ async function gltfDirSource(io: NodeIO, file: string): Promise<SourceMesh> {
   };
 }
 
+/**
+ * Collect every node of a file that belongs to one structure and merge it into a single mesh,
+ * baking each node's world transform so the result sits in the library's body coordinate
+ * space. Normals are recomputed after the merge rather than transformed, which avoids the
+ * non-uniform-scale pitfall for no meaningful cost at build time.
+ */
+async function hraSource(io: NodeIO, file: string, structureId: string, sex: BodyId): Promise<SourceMesh | null> {
+  const source = HRA_SOURCES[structureId];
+  if (!source) return null;
+  if (source.only && source.only !== sex) return null;
+  if (!existsSync(file)) { console.warn(`  ! ${structureId}: ${path.basename(file)} not downloaded`); return null; }
+
+  const doc = await io.read(file);
+  const positions: number[] = [], indices: number[] = [];
+  let matched = 0;
+
+  const walk = (node: ReturnType<Document['createNode']>) => {
+    const mesh = node.getMesh();
+    if (mesh && matchesNode(source, node.getName() || '')) {
+      matched++;
+      const m = node.getWorldMatrix();
+      for (const prim of mesh.listPrimitives()) {
+        const pos = prim.getAttribute('POSITION'); if (!pos) continue;
+        const base = positions.length / 3;
+        const el = [0, 0, 0];
+        for (let i = 0; i < pos.getCount(); i++) {
+          pos.getElement(i, el);
+          // column-major mat4 from glTF
+          positions.push(
+            m[0]! * el[0]! + m[4]! * el[1]! + m[8]! * el[2]! + m[12]!,
+            m[1]! * el[0]! + m[5]! * el[1]! + m[9]! * el[2]! + m[13]!,
+            m[2]! * el[0]! + m[6]! * el[1]! + m[10]! * el[2]! + m[14]!,
+          );
+        }
+        const idx = prim.getIndices();
+        if (idx) { const ia = idx.getArray()!; for (let i = 0; i < ia.length; i++) indices.push(base + ia[i]!); }
+        else for (let i = 0; i < pos.getCount(); i++) indices.push(base + i);
+      }
+    }
+    node.listChildren().forEach(walk);
+  };
+  doc.getRoot().listScenes().forEach((sc) => sc.listChildren().forEach(walk));
+
+  if (!matched || !indices.length) { console.warn(`  ! ${structureId}: no nodes matched in ${path.basename(file)}`); return null; }
+  return { positions: new Float32Array(positions), normals: null, indices: new Uint32Array(indices) };
+}
+
+/** Recentre a mesh on its own bounding-box centre, returning the world placement. */
+function recentre(src: SourceMesh): { centroid: [number, number, number]; bounds: [number, number, number, number, number, number] } {
+  const min = [Infinity, Infinity, Infinity], max = [-Infinity, -Infinity, -Infinity];
+  for (let i = 0; i < src.positions.length; i += 3)
+    for (let k = 0; k < 3; k++) { const v = src.positions[i + k]!; if (v < min[k]!) min[k] = v; if (v > max[k]!) max[k] = v; }
+  const centroid: [number, number, number] = [(min[0]! + max[0]!) / 2, (min[1]! + max[1]!) / 2, (min[2]! + max[2]!) / 2];
+  for (let i = 0; i < src.positions.length; i += 3)
+    for (let k = 0; k < 3; k++) src.positions[i + k] -= centroid[k]!;
+  return { centroid, bounds: [min[0]!, min[1]!, min[2]!, max[0]!, max[1]!, max[2]!] };
+}
+
 /** Build a single-mesh glTF Document from raw arrays. */
 function toDocument(src: SourceMesh, name: string): Document {
   const doc = new Document();
@@ -133,31 +206,52 @@ async function main() {
 
   const outRoot = path.resolve(process.cwd(), args.out, args.pack);
   await rm(outRoot, { recursive: true, force: true });
-  await mkdir(outRoot, { recursive: true });
 
   const bodies: BodyId[] = ['male', 'female'];
   let totalBytes = 0;
 
   for (const body of bodies) {
-    const structures: ManifestStructure[] = args.source === 'procedural'
-      ? demoManifest(body).structures
-      : await structuresFromDir(args.in!, body);
+    const bodyDir = path.join(outRoot, body);
+    await mkdir(bodyDir, { recursive: true });
+    // The structure catalogue — ids, names, aliases, FMA ids, systems — is the platform's
+    // own. The library supplies geometry for the structures it models; the rest keep their
+    // stand-in shapes, so the atlas never loses a structure just because no mesh exists.
+    const structures: ManifestStructure[] = args.source === 'gltf-dir'
+      ? await structuresFromDir(args.in!, body)
+      : demoManifest(body).structures;
 
     const out: ManifestStructure[] = [];
     const lod2ByStructure = new Map<string, Uint8Array>();
 
     for (const s of structures) {
-      const src = args.source === 'procedural'
-        ? proceduralSource(s)
-        : await gltfDirSource(io, path.join(args.in!, `${s.id}.glb`));
-      if (src.indices.length === 0) { console.warn(`  ! ${s.id}: no geometry, skipped`); continue; }
+      let src: SourceMesh | null = null;
+      let provenance: 'hra' | 'procedural' = 'procedural';
+      let placement: { centroid: [number, number, number]; bounds: ManifestStructure['bounds'] } | null = null;
 
+      if (args.source === 'hra' && HRA_SOURCES[s.id]) {
+        const file = path.join(args.in!, sourceFileFor(HRA_SOURCES[s.id]!, body));
+        src = await hraSource(io, file, s.id, body);
+        if (src) { provenance = 'hra'; placement = recentre(src); }
+      }
+      if (!src) {
+        if (args.source === 'gltf-dir') src = await gltfDirSource(io, path.join(args.in!, `${s.id}.glb`));
+        else src = proceduralSource(s);
+      }
+      if (!src || src.indices.length === 0) { console.warn(`  ! ${s.id}: no geometry, skipped`); continue; }
+
+      const sourceTriangles = src.indices.length / 3;
       const lods: NonNullable<ManifestStructure['lods']> = [];
       for (let level = 0; level < LOD_RATIOS.length; level++) {
         const doc = toDocument(src, s.id);
         await doc.transform(weld(), dedup(), prune());
-        if (level > 0) {
-          await doc.transform(simplify({ simplifier: MeshoptSimplifier, ratio: LOD_RATIOS[level]!, error: LOD_ERROR[level]! }));
+        // Real anatomy is decimated to an absolute triangle budget; stand-ins, which start
+        // tiny, keep the proportional ratios so they are not reduced to nothing.
+        const ratio = provenance === 'hra'
+          ? Math.min(1, HRA_TRIANGLE_TARGETS[level]! / sourceTriangles)
+          : LOD_RATIOS[level]!;
+        if (ratio < 0.999) {
+          const error = provenance === 'hra' ? HRA_ERROR[level]! : Math.max(LOD_ERROR[level]!, 0.001);
+          await doc.transform(simplify({ simplifier: MeshoptSimplifier, ratio, error }));
         }
         // Quantisation shrinks attributes; meshopt then compresses, and decodes fast on the
         // low-end CPUs that are the target device (Phase G §14).
@@ -165,10 +259,10 @@ async function main() {
         doc.createExtension(EXTMeshoptCompression).setRequired(true).setEncoderOptions({ method: EXTMeshoptCompression.EncoderMethod.QUANTIZE });
         const glb = new Uint8Array(await io.writeBinary(doc));
         const file = `${s.id}.lod${level}.glb`;
-        await writeFile(path.join(outRoot, file), glb);
+        await writeFile(path.join(bodyDir, file), glb);
         totalBytes += glb.byteLength;
         lods.push({
-          url: `/assets/${args.pack}/${file}`,
+          url: `/assets/${args.pack}/${body}/${file}`,
           bytes: glb.byteLength,
           triangles: triangleCount(doc),
           hash: createHash('sha256').update(glb).digest('hex').slice(0, 16),
@@ -177,10 +271,10 @@ async function main() {
       }
       // `procedural` is dropped: a baked pack must not silently fall back to a stand-in.
       const { procedural: _drop, ...rest } = s;
-      out.push({ ...rest, lods });
+      out.push({ ...rest, ...(placement ?? {}), provenance, lods });
     }
 
-    const packs = await writeSystemPacks(outRoot, args.pack, out, lod2ByStructure);
+    const packs = await writeSystemPacks(bodyDir, `${args.pack}/${body}`, out, lod2ByStructure);
     const manifest = {
       body, version: new Date().toISOString().slice(0, 10), pack: args.pack,
       licence: args.licence, attribution: args.attribution, packs, structures: out,
@@ -189,7 +283,8 @@ async function main() {
     await writeFile(path.join(outRoot, `${body}.manifest.json`), JSON.stringify(manifest, null, 1));
     const tris = out.reduce((a, s) => a + (s.lods?.[0]?.triangles ?? 0), 0);
     const lod2 = out.reduce((a, s) => a + (s.lods?.[2]?.bytes ?? 0), 0);
-    console.log(`${body}: ${out.length} structures, ${tris.toLocaleString()} triangles at LOD0, ${(lod2 / 1024).toFixed(0)} kB at LOD2`);
+    const real = out.filter((s) => s.provenance === 'hra').length;
+    console.log(`${body}: ${out.length} structures (${real} real anatomy, ${out.length - real} stand-ins), ${tris.toLocaleString()} triangles at LOD0, ${(lod2 / 1024).toFixed(0)} kB at LOD2`);
   }
   console.log(`pack "${args.pack}" written to ${outRoot} (${(totalBytes / 1024 / 1024).toFixed(2)} MB total)`);
 }

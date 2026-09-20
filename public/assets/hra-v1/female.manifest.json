@@ -1,0 +1,3007 @@
+{
+ "body": "female",
+ "version": "2026-09-20",
+ "pack": "hra-v1",
+ "licence": "CC-BY-4.0",
+ "attribution": "Human Reference Atlas 3D Reference Object Library, HuBMAP Consortium, CC BY 4.0. Brain regions from the Allen Human Reference Atlas. Structures marked as stand-ins are generated placeholders, not anatomical data.",
+ "packs": [
+  {
+   "system": "skeletal",
+   "url": "/assets/hra-v1/female/system-skeletal.lod2.bin",
+   "bytes": 77828,
+   "structureIds": [
+    "skull",
+    "vertebral-column",
+    "rib-cage",
+    "pelvis",
+    "humerus-r",
+    "humerus-l",
+    "radius-ulna-r",
+    "radius-ulna-l",
+    "femur-r",
+    "femur-l",
+    "tibia-fibula-r",
+    "tibia-fibula-l"
+   ]
+  },
+  {
+   "system": "muscular",
+   "url": "/assets/hra-v1/female/system-muscular.lod2.bin",
+   "bytes": 25152,
+   "structureIds": [
+    "deltoid-r",
+    "deltoid-l",
+    "biceps-brachii-r",
+    "biceps-brachii-l",
+    "pectoralis-major-r",
+    "pectoralis-major-l",
+    "rectus-abdominis",
+    "quadriceps-femoris-r",
+    "quadriceps-femoris-l",
+    "gastrocnemius-r",
+    "gastrocnemius-l"
+   ]
+  },
+  {
+   "system": "nervous",
+   "url": "/assets/hra-v1/female/system-nervous.lod2.bin",
+   "bytes": 27008,
+   "structureIds": [
+    "brain",
+    "spinal-cord",
+    "median-nerve-r",
+    "median-nerve-l",
+    "sciatic-nerve-r",
+    "sciatic-nerve-l"
+   ]
+  },
+  {
+   "system": "endocrine",
+   "url": "/assets/hra-v1/female/system-endocrine.lod2.bin",
+   "bytes": 8864,
+   "structureIds": [
+    "thyroid-gland",
+    "adrenal-gland-r",
+    "adrenal-gland-l"
+   ]
+  },
+  {
+   "system": "cardiovascular",
+   "url": "/assets/hra-v1/female/system-cardiovascular.lod2.bin",
+   "bytes": 43336,
+   "structureIds": [
+    "heart",
+    "aorta",
+    "inferior-vena-cava"
+   ]
+  },
+  {
+   "system": "respiratory",
+   "url": "/assets/hra-v1/female/system-respiratory.lod2.bin",
+   "bytes": 19936,
+   "structureIds": [
+    "trachea",
+    "lung-r",
+    "lung-l"
+   ]
+  },
+  {
+   "system": "digestive",
+   "url": "/assets/hra-v1/female/system-digestive.lod2.bin",
+   "bytes": 60500,
+   "structureIds": [
+    "liver",
+    "stomach",
+    "small-intestine",
+    "large-intestine",
+    "pancreas"
+   ]
+  },
+  {
+   "system": "urinary",
+   "url": "/assets/hra-v1/female/system-urinary.lod2.bin",
+   "bytes": 44976,
+   "structureIds": [
+    "kidney-r",
+    "kidney-l",
+    "urinary-bladder"
+   ]
+  },
+  {
+   "system": "reproductive",
+   "url": "/assets/hra-v1/female/system-reproductive.lod2.bin",
+   "bytes": 21148,
+   "structureIds": [
+    "uterus",
+    "ovary-r",
+    "ovary-l"
+   ]
+  },
+  {
+   "system": "lymphatic",
+   "url": "/assets/hra-v1/female/system-lymphatic.lod2.bin",
+   "bytes": 23960,
+   "structureIds": [
+    "spleen",
+    "thymus"
+   ]
+  },
+  {
+   "system": "integumentary",
+   "url": "/assets/hra-v1/female/system-integumentary.lod2.bin",
+   "bytes": 22316,
+   "structureIds": [
+    "skin",
+    "mammary-gland-r",
+    "mammary-gland-l"
+   ]
+  },
+  {
+   "system": "connective",
+   "url": "/assets/hra-v1/female/system-connective.lod2.bin",
+   "bytes": 4008,
+   "structureIds": [
+    "patellar-ligament-r",
+    "patellar-ligament-l"
+   ]
+  },
+  {
+   "system": "fascial",
+   "url": "/assets/hra-v1/female/system-fascial.lod2.bin",
+   "bytes": 1996,
+   "structureIds": [
+    "thoracolumbar-fascia"
+   ]
+  },
+  {
+   "system": "surface",
+   "url": "/assets/hra-v1/female/system-surface.lod2.bin",
+   "bytes": 5692,
+   "structureIds": [
+    "jugular-notch",
+    "umbilicus"
+   ]
+  }
+ ],
+ "structures": [
+  {
+   "id": "skull",
+   "name": "Skull",
+   "systems": [
+    "skeletal"
+   ],
+   "centroid": [
+    0,
+    0.72,
+    0
+   ],
+   "bounds": [
+    -0.1,
+    0.605,
+    -0.11000000000000001,
+    0.1,
+    0.835,
+    0.11000000000000001
+   ],
+   "laterality": "none",
+   "fmaId": "FMA:46565",
+   "latinName": "Cranium",
+   "region": "head",
+   "aliases": [
+    "cranium"
+   ],
+   "provenance": "procedural",
+   "lods": [
+    {
+     "url": "/assets/hra-v1/female/skull.lod0.glb",
+     "bytes": 8108,
+     "triangles": 816,
+     "hash": "8b7974b2083ca93f"
+    },
+    {
+     "url": "/assets/hra-v1/female/skull.lod1.glb",
+     "bytes": 4452,
+     "triangles": 284,
+     "hash": "794bd1a943e8e55c"
+    },
+    {
+     "url": "/assets/hra-v1/female/skull.lod2.glb",
+     "bytes": 2876,
+     "triangles": 97,
+     "hash": "14d14e2d400209d6"
+    }
+   ]
+  },
+  {
+   "id": "vertebral-column",
+   "name": "Vertebral column",
+   "systems": [
+    "skeletal"
+   ],
+   "centroid": [
+    0,
+    0.28,
+    -0.05
+   ],
+   "bounds": [
+    -0.03,
+    -0.05999999999999994,
+    -0.08,
+    0.03,
+    0.62,
+    -0.020000000000000004
+   ],
+   "laterality": "none",
+   "fmaId": "FMA:13478",
+   "latinName": "Columna vertebralis",
+   "region": "back",
+   "aliases": [
+    "spine",
+    "backbone"
+   ],
+   "provenance": "procedural",
+   "lods": [
+    {
+     "url": "/assets/hra-v1/female/vertebral-column.lod0.glb",
+     "bytes": 3276,
+     "triangles": 216,
+     "hash": "ab86fa18ac1eba80"
+    },
+    {
+     "url": "/assets/hra-v1/female/vertebral-column.lod1.glb",
+     "bytes": 2368,
+     "triangles": 74,
+     "hash": "7d8ff42d0fa14830"
+    },
+    {
+     "url": "/assets/hra-v1/female/vertebral-column.lod2.glb",
+     "bytes": 2124,
+     "triangles": 32,
+     "hash": "ff5761cd3abbae64"
+    }
+   ]
+  },
+  {
+   "id": "rib-cage",
+   "name": "Rib cage",
+   "systems": [
+    "skeletal"
+   ],
+   "centroid": [
+    0,
+    0.42,
+    0
+   ],
+   "bounds": [
+    -0.17,
+    0.21599999999999997,
+    -0.1275,
+    0.17,
+    0.624,
+    0.1275
+   ],
+   "laterality": "none",
+   "fmaId": "FMA:7480",
+   "latinName": "Cavea thoracis",
+   "region": "thorax",
+   "aliases": [
+    "thoracic cage"
+   ],
+   "provenance": "procedural",
+   "lods": [
+    {
+     "url": "/assets/hra-v1/female/rib-cage.lod0.glb",
+     "bytes": 8180,
+     "triangles": 816,
+     "hash": "14913f4061093ef9"
+    },
+    {
+     "url": "/assets/hra-v1/female/rib-cage.lod1.glb",
+     "bytes": 4504,
+     "triangles": 285,
+     "hash": "a6208f90cab0d46b"
+    },
+    {
+     "url": "/assets/hra-v1/female/rib-cage.lod2.glb",
+     "bytes": 2884,
+     "triangles": 97,
+     "hash": "2ce9fee55e077f22"
+    }
+   ]
+  },
+  {
+   "id": "pelvis",
+   "name": "Pelvis",
+   "systems": [
+    "skeletal"
+   ],
+   "centroid": [
+    -0.000350266695022583,
+    0.05849830619990826,
+    -0.04372680187225342
+   ],
+   "bounds": [
+    -0.16334518790245056,
+    -0.04019378498196602,
+    -0.13773833215236664,
+    0.1626446545124054,
+    0.15719039738178253,
+    0.0502847284078598
+   ],
+   "laterality": "none",
+   "fmaId": "FMA:9578",
+   "latinName": "Pelvis",
+   "region": "pelvis",
+   "aliases": [
+    "bony pelvis"
+   ],
+   "provenance": "hra",
+   "lods": [
+    {
+     "url": "/assets/hra-v1/female/pelvis.lod0.glb",
+     "bytes": 101220,
+     "triangles": 23922,
+     "hash": "aecd43ea4f71f1e4"
+    },
+    {
+     "url": "/assets/hra-v1/female/pelvis.lod1.glb",
+     "bytes": 35712,
+     "triangles": 7428,
+     "hash": "7dcbee39553eef5f"
+    },
+    {
+     "url": "/assets/hra-v1/female/pelvis.lod2.glb",
+     "bytes": 12484,
+     "triangles": 2312,
+     "hash": "a0c1ddd165d9ccb3"
+    }
+   ]
+  },
+  {
+   "id": "humerus-r",
+   "name": "Right humerus",
+   "systems": [
+    "skeletal"
+   ],
+   "centroid": [
+    -0.24,
+    0.35,
+    0
+   ],
+   "bounds": [
+    -0.26,
+    0.18,
+    -0.02,
+    -0.22,
+    0.52,
+    0.02
+   ],
+   "laterality": "right",
+   "fmaId": "FMA:9611",
+   "latinName": "Humerus",
+   "region": "upper-limb",
+   "aliases": [
+    "Humerus"
+   ],
+   "provenance": "procedural",
+   "lods": [
+    {
+     "url": "/assets/hra-v1/female/humerus-r.lod0.glb",
+     "bytes": 3276,
+     "triangles": 216,
+     "hash": "8bf17f53f70884e9"
+    },
+    {
+     "url": "/assets/hra-v1/female/humerus-r.lod1.glb",
+     "bytes": 2384,
+     "triangles": 75,
+     "hash": "2fd9cc1270fdbbf4"
+    },
+    {
+     "url": "/assets/hra-v1/female/humerus-r.lod2.glb",
+     "bytes": 2060,
+     "triangles": 30,
+     "hash": "9d532356d7a8db6b"
+    }
+   ]
+  },
+  {
+   "id": "humerus-l",
+   "name": "Left humerus",
+   "systems": [
+    "skeletal"
+   ],
+   "centroid": [
+    0.24,
+    0.35,
+    0
+   ],
+   "bounds": [
+    0.22,
+    0.18,
+    -0.02,
+    0.26,
+    0.52,
+    0.02
+   ],
+   "laterality": "left",
+   "fmaId": "FMA:9611",
+   "latinName": "Humerus",
+   "region": "upper-limb",
+   "aliases": [
+    "Humerus"
+   ],
+   "provenance": "procedural",
+   "lods": [
+    {
+     "url": "/assets/hra-v1/female/humerus-l.lod0.glb",
+     "bytes": 3276,
+     "triangles": 216,
+     "hash": "823bdcc89cd35af1"
+    },
+    {
+     "url": "/assets/hra-v1/female/humerus-l.lod1.glb",
+     "bytes": 2384,
+     "triangles": 75,
+     "hash": "d1ba24a16601c79a"
+    },
+    {
+     "url": "/assets/hra-v1/female/humerus-l.lod2.glb",
+     "bytes": 2060,
+     "triangles": 30,
+     "hash": "f8102c4d24dd3244"
+    }
+   ]
+  },
+  {
+   "id": "radius-ulna-r",
+   "name": "Right radius and ulna",
+   "systems": [
+    "skeletal"
+   ],
+   "centroid": [
+    -0.26,
+    0.05,
+    0.02
+   ],
+   "bounds": [
+    -0.278,
+    -0.103,
+    0.0020000000000000018,
+    -0.24200000000000002,
+    0.203,
+    0.038
+   ],
+   "laterality": "right",
+   "region": "upper-limb",
+   "aliases": [
+    "forearm bones",
+    "Radius and ulna"
+   ],
+   "provenance": "procedural",
+   "lods": [
+    {
+     "url": "/assets/hra-v1/female/radius-ulna-r.lod0.glb",
+     "bytes": 3288,
+     "triangles": 216,
+     "hash": "a9ddf77157505128"
+    },
+    {
+     "url": "/assets/hra-v1/female/radius-ulna-r.lod1.glb",
+     "bytes": 2396,
+     "triangles": 74,
+     "hash": "eb66d4de916d9031"
+    },
+    {
+     "url": "/assets/hra-v1/female/radius-ulna-r.lod2.glb",
+     "bytes": 2160,
+     "triangles": 43,
+     "hash": "59080c201198bc2d"
+    }
+   ]
+  },
+  {
+   "id": "radius-ulna-l",
+   "name": "Left radius and ulna",
+   "systems": [
+    "skeletal"
+   ],
+   "centroid": [
+    0.26,
+    0.05,
+    0.02
+   ],
+   "bounds": [
+    0.24200000000000002,
+    -0.103,
+    0.0020000000000000018,
+    0.278,
+    0.203,
+    0.038
+   ],
+   "laterality": "left",
+   "region": "upper-limb",
+   "aliases": [
+    "forearm bones",
+    "Radius and ulna"
+   ],
+   "provenance": "procedural",
+   "lods": [
+    {
+     "url": "/assets/hra-v1/female/radius-ulna-l.lod0.glb",
+     "bytes": 3288,
+     "triangles": 216,
+     "hash": "b6741db66f57b7fe"
+    },
+    {
+     "url": "/assets/hra-v1/female/radius-ulna-l.lod1.glb",
+     "bytes": 2396,
+     "triangles": 74,
+     "hash": "1fbb74cd4f117d65"
+    },
+    {
+     "url": "/assets/hra-v1/female/radius-ulna-l.lod2.glb",
+     "bytes": 2160,
+     "triangles": 43,
+     "hash": "57c2fd5c7608aeea"
+    }
+   ]
+  },
+  {
+   "id": "femur-r",
+   "name": "Right femur",
+   "systems": [
+    "skeletal"
+   ],
+   "centroid": [
+    -0.13772639632225037,
+    -0.17167237773537636,
+    -0.06612081080675125
+   ],
+   "bounds": [
+    -0.18676763772964478,
+    -0.3820740878582001,
+    -0.09865763783454895,
+    -0.08868515491485596,
+    0.03872933238744736,
+    -0.03358398377895355
+   ],
+   "laterality": "right",
+   "fmaId": "FMA:9611",
+   "latinName": "Femur",
+   "region": "lower-limb",
+   "aliases": [
+    "thigh bone",
+    "Femur"
+   ],
+   "provenance": "hra",
+   "lods": [
+    {
+     "url": "/assets/hra-v1/female/femur-r.lod0.glb",
+     "bytes": 34840,
+     "triangles": 9162,
+     "hash": "46410b487e39a604"
+    },
+    {
+     "url": "/assets/hra-v1/female/femur-r.lod1.glb",
+     "bytes": 31200,
+     "triangles": 8000,
+     "hash": "2225f4aedaad6c4d"
+    },
+    {
+     "url": "/assets/hra-v1/female/femur-r.lod2.glb",
+     "bytes": 12344,
+     "triangles": 2400,
+     "hash": "faf292abc9bf72c9"
+    }
+   ]
+  },
+  {
+   "id": "femur-l",
+   "name": "Left femur",
+   "systems": [
+    "skeletal"
+   ],
+   "centroid": [
+    0.11685021966695786,
+    -0.17167237773537636,
+    -0.06985304318368435
+   ],
+   "bounds": [
+    0.06780898571014404,
+    -0.3820740878582001,
+    -0.1023898646235466,
+    0.16589145362377167,
+    0.03872933238744736,
+    -0.0373162217438221
+   ],
+   "laterality": "left",
+   "fmaId": "FMA:9611",
+   "latinName": "Femur",
+   "region": "lower-limb",
+   "aliases": [
+    "thigh bone",
+    "Femur"
+   ],
+   "provenance": "hra",
+   "lods": [
+    {
+     "url": "/assets/hra-v1/female/femur-l.lod0.glb",
+     "bytes": 35932,
+     "triangles": 9162,
+     "hash": "15c1a1dc3eff9569"
+    },
+    {
+     "url": "/assets/hra-v1/female/femur-l.lod1.glb",
+     "bytes": 31872,
+     "triangles": 7999,
+     "hash": "793b2efd8095ccd9"
+    },
+    {
+     "url": "/assets/hra-v1/female/femur-l.lod2.glb",
+     "bytes": 12424,
+     "triangles": 2400,
+     "hash": "aaf0586c2bbcf485"
+    }
+   ]
+  },
+  {
+   "id": "tibia-fibula-r",
+   "name": "Right tibia and fibula",
+   "systems": [
+    "skeletal"
+   ],
+   "centroid": [
+    -0.14547839760780334,
+    -0.5316595286130905,
+    -0.06429868889972568
+   ],
+   "bounds": [
+    -0.19032388925552368,
+    -0.7330566048622131,
+    -0.11953744292259216,
+    -0.10063290596008301,
+    -0.3302624523639679,
+    -0.009059934876859188
+   ],
+   "laterality": "right",
+   "region": "lower-limb",
+   "aliases": [
+    "leg bones",
+    "shin bone",
+    "Tibia and fibula"
+   ],
+   "provenance": "hra",
+   "lods": [
+    {
+     "url": "/assets/hra-v1/female/tibia-fibula-r.lod0.glb",
+     "bytes": 21000,
+     "triangles": 5114,
+     "hash": "5f0d41b1a0334041"
+    },
+    {
+     "url": "/assets/hra-v1/female/tibia-fibula-r.lod1.glb",
+     "bytes": 21000,
+     "triangles": 5114,
+     "hash": "5f0d41b1a0334041"
+    },
+    {
+     "url": "/assets/hra-v1/female/tibia-fibula-r.lod2.glb",
+     "bytes": 12044,
+     "triangles": 2400,
+     "hash": "f2593ea6aa93f4fb"
+    }
+   ]
+  },
+  {
+   "id": "tibia-fibula-l",
+   "name": "Left tibia and fibula",
+   "systems": [
+    "skeletal"
+   ],
+   "centroid": [
+    0.12425319850444794,
+    -0.5316595286130905,
+    -0.06803092733025551
+   ],
+   "bounds": [
+    0.0790586769580841,
+    -0.7330566048622131,
+    -0.1232696920633316,
+    0.16944772005081177,
+    -0.3302624523639679,
+    -0.012792162597179413
+   ],
+   "laterality": "left",
+   "region": "lower-limb",
+   "aliases": [
+    "leg bones",
+    "shin bone",
+    "Tibia and fibula"
+   ],
+   "provenance": "hra",
+   "lods": [
+    {
+     "url": "/assets/hra-v1/female/tibia-fibula-l.lod0.glb",
+     "bytes": 21576,
+     "triangles": 5114,
+     "hash": "3c2d85325eed00e4"
+    },
+    {
+     "url": "/assets/hra-v1/female/tibia-fibula-l.lod1.glb",
+     "bytes": 21576,
+     "triangles": 5114,
+     "hash": "3c2d85325eed00e4"
+    },
+    {
+     "url": "/assets/hra-v1/female/tibia-fibula-l.lod2.glb",
+     "bytes": 12160,
+     "triangles": 2400,
+     "hash": "64432e494dea9a02"
+    }
+   ]
+  },
+  {
+   "id": "deltoid-r",
+   "name": "Right deltoid",
+   "systems": [
+    "muscular"
+   ],
+   "centroid": [
+    -0.2,
+    0.5,
+    0
+   ],
+   "bounds": [
+    -0.265,
+    0.422,
+    -0.065,
+    -0.135,
+    0.578,
+    0.065
+   ],
+   "laterality": "right",
+   "fmaId": "FMA:32521",
+   "latinName": "Musculus deltoideus",
+   "region": "upper-limb",
+   "aliases": [
+    "Deltoid"
+   ],
+   "provenance": "procedural",
+   "lods": [
+    {
+     "url": "/assets/hra-v1/female/deltoid-r.lod0.glb",
+     "bytes": 7828,
+     "triangles": 816,
+     "hash": "d0795c5ca9f87937"
+    },
+    {
+     "url": "/assets/hra-v1/female/deltoid-r.lod1.glb",
+     "bytes": 4236,
+     "triangles": 284,
+     "hash": "3156f7f753fe6148"
+    },
+    {
+     "url": "/assets/hra-v1/female/deltoid-r.lod2.glb",
+     "bytes": 2860,
+     "triangles": 96,
+     "hash": "593bc193cbb2e1f2"
+    }
+   ]
+  },
+  {
+   "id": "deltoid-l",
+   "name": "Left deltoid",
+   "systems": [
+    "muscular"
+   ],
+   "centroid": [
+    0.2,
+    0.5,
+    0
+   ],
+   "bounds": [
+    0.135,
+    0.422,
+    -0.065,
+    0.265,
+    0.578,
+    0.065
+   ],
+   "laterality": "left",
+   "fmaId": "FMA:32521",
+   "latinName": "Musculus deltoideus",
+   "region": "upper-limb",
+   "aliases": [
+    "Deltoid"
+   ],
+   "provenance": "procedural",
+   "lods": [
+    {
+     "url": "/assets/hra-v1/female/deltoid-l.lod0.glb",
+     "bytes": 7828,
+     "triangles": 816,
+     "hash": "f4e4b9aaf57977ac"
+    },
+    {
+     "url": "/assets/hra-v1/female/deltoid-l.lod1.glb",
+     "bytes": 4236,
+     "triangles": 284,
+     "hash": "a025a4d00076e41d"
+    },
+    {
+     "url": "/assets/hra-v1/female/deltoid-l.lod2.glb",
+     "bytes": 2860,
+     "triangles": 96,
+     "hash": "ccd9c27a77418fe4"
+    }
+   ]
+  },
+  {
+   "id": "biceps-brachii-r",
+   "name": "Right biceps brachii",
+   "systems": [
+    "muscular"
+   ],
+   "centroid": [
+    -0.24,
+    0.35,
+    0.04
+   ],
+   "bounds": [
+    -0.27,
+    0.20999999999999996,
+    0.010000000000000002,
+    -0.21,
+    0.49,
+    0.07
+   ],
+   "laterality": "right",
+   "fmaId": "FMA:37670",
+   "latinName": "Musculus biceps brachii",
+   "region": "upper-limb",
+   "aliases": [
+    "biceps",
+    "Biceps brachii"
+   ],
+   "provenance": "procedural",
+   "lods": [
+    {
+     "url": "/assets/hra-v1/female/biceps-brachii-r.lod0.glb",
+     "bytes": 3388,
+     "triangles": 216,
+     "hash": "fb32b36197f6d398"
+    },
+    {
+     "url": "/assets/hra-v1/female/biceps-brachii-r.lod1.glb",
+     "bytes": 2424,
+     "triangles": 75,
+     "hash": "8acbe6c0c2628424"
+    },
+    {
+     "url": "/assets/hra-v1/female/biceps-brachii-r.lod2.glb",
+     "bytes": 2236,
+     "triangles": 40,
+     "hash": "30527f11580c3b9b"
+    }
+   ]
+  },
+  {
+   "id": "biceps-brachii-l",
+   "name": "Left biceps brachii",
+   "systems": [
+    "muscular"
+   ],
+   "centroid": [
+    0.24,
+    0.35,
+    0.04
+   ],
+   "bounds": [
+    0.21,
+    0.20999999999999996,
+    0.010000000000000002,
+    0.27,
+    0.49,
+    0.07
+   ],
+   "laterality": "left",
+   "fmaId": "FMA:37670",
+   "latinName": "Musculus biceps brachii",
+   "region": "upper-limb",
+   "aliases": [
+    "biceps",
+    "Biceps brachii"
+   ],
+   "provenance": "procedural",
+   "lods": [
+    {
+     "url": "/assets/hra-v1/female/biceps-brachii-l.lod0.glb",
+     "bytes": 3388,
+     "triangles": 216,
+     "hash": "5d129c260a840086"
+    },
+    {
+     "url": "/assets/hra-v1/female/biceps-brachii-l.lod1.glb",
+     "bytes": 2424,
+     "triangles": 75,
+     "hash": "c99fab8cd73dd2a5"
+    },
+    {
+     "url": "/assets/hra-v1/female/biceps-brachii-l.lod2.glb",
+     "bytes": 2236,
+     "triangles": 40,
+     "hash": "9a01fcbd2317acbf"
+    }
+   ]
+  },
+  {
+   "id": "pectoralis-major-r",
+   "name": "Right pectoralis major",
+   "systems": [
+    "muscular"
+   ],
+   "centroid": [
+    -0.09,
+    0.45,
+    0.14
+   ],
+   "bounds": [
+    -0.16999999999999998,
+    0.38,
+    0.125,
+    -0.009999999999999995,
+    0.52,
+    0.15500000000000003
+   ],
+   "laterality": "right",
+   "fmaId": "FMA:9627",
+   "latinName": "Musculus pectoralis major",
+   "region": "thorax",
+   "aliases": [
+    "pecs",
+    "Pectoralis major"
+   ],
+   "provenance": "procedural",
+   "lods": [
+    {
+     "url": "/assets/hra-v1/female/pectoralis-major-r.lod0.glb",
+     "bytes": 1984,
+     "triangles": 12,
+     "hash": "8a38d37140944e34"
+    },
+    {
+     "url": "/assets/hra-v1/female/pectoralis-major-r.lod1.glb",
+     "bytes": 1984,
+     "triangles": 12,
+     "hash": "8a38d37140944e34"
+    },
+    {
+     "url": "/assets/hra-v1/female/pectoralis-major-r.lod2.glb",
+     "bytes": 1984,
+     "triangles": 12,
+     "hash": "8a38d37140944e34"
+    }
+   ]
+  },
+  {
+   "id": "pectoralis-major-l",
+   "name": "Left pectoralis major",
+   "systems": [
+    "muscular"
+   ],
+   "centroid": [
+    0.09,
+    0.45,
+    0.14
+   ],
+   "bounds": [
+    0.009999999999999995,
+    0.38,
+    0.125,
+    0.16999999999999998,
+    0.52,
+    0.15500000000000003
+   ],
+   "laterality": "left",
+   "fmaId": "FMA:9627",
+   "latinName": "Musculus pectoralis major",
+   "region": "thorax",
+   "aliases": [
+    "pecs",
+    "Pectoralis major"
+   ],
+   "provenance": "procedural",
+   "lods": [
+    {
+     "url": "/assets/hra-v1/female/pectoralis-major-l.lod0.glb",
+     "bytes": 1984,
+     "triangles": 12,
+     "hash": "9f485de9b86b9f48"
+    },
+    {
+     "url": "/assets/hra-v1/female/pectoralis-major-l.lod1.glb",
+     "bytes": 1984,
+     "triangles": 12,
+     "hash": "9f485de9b86b9f48"
+    },
+    {
+     "url": "/assets/hra-v1/female/pectoralis-major-l.lod2.glb",
+     "bytes": 1984,
+     "triangles": 12,
+     "hash": "9f485de9b86b9f48"
+    }
+   ]
+  },
+  {
+   "id": "rectus-abdominis",
+   "name": "Rectus abdominis",
+   "systems": [
+    "muscular"
+   ],
+   "centroid": [
+    0,
+    0.2,
+    0.13
+   ],
+   "bounds": [
+    -0.07,
+    0.05000000000000002,
+    0.11750000000000001,
+    0.07,
+    0.35,
+    0.14250000000000002
+   ],
+   "laterality": "none",
+   "fmaId": "FMA:9628",
+   "latinName": "Musculus rectus abdominis",
+   "region": "abdomen",
+   "aliases": [
+    "abs"
+   ],
+   "provenance": "procedural",
+   "lods": [
+    {
+     "url": "/assets/hra-v1/female/rectus-abdominis.lod0.glb",
+     "bytes": 1988,
+     "triangles": 12,
+     "hash": "66f59753f7314c38"
+    },
+    {
+     "url": "/assets/hra-v1/female/rectus-abdominis.lod1.glb",
+     "bytes": 1988,
+     "triangles": 12,
+     "hash": "66f59753f7314c38"
+    },
+    {
+     "url": "/assets/hra-v1/female/rectus-abdominis.lod2.glb",
+     "bytes": 1988,
+     "triangles": 12,
+     "hash": "66f59753f7314c38"
+    }
+   ]
+  },
+  {
+   "id": "quadriceps-femoris-r",
+   "name": "Right quadriceps femoris",
+   "systems": [
+    "muscular"
+   ],
+   "centroid": [
+    -0.1,
+    -0.28,
+    0.05
+   ],
+   "bounds": [
+    -0.15000000000000002,
+    -0.5,
+    0,
+    -0.05,
+    -0.06,
+    0.1
+   ],
+   "laterality": "right",
+   "fmaId": "FMA:22428",
+   "latinName": "Musculus quadriceps femoris",
+   "region": "lower-limb",
+   "aliases": [
+    "quads",
+    "Quadriceps femoris"
+   ],
+   "provenance": "procedural",
+   "lods": [
+    {
+     "url": "/assets/hra-v1/female/quadriceps-femoris-r.lod0.glb",
+     "bytes": 3408,
+     "triangles": 216,
+     "hash": "c7a16870e8d474af"
+    },
+    {
+     "url": "/assets/hra-v1/female/quadriceps-femoris-r.lod1.glb",
+     "bytes": 2456,
+     "triangles": 81,
+     "hash": "cdcd94cbfd902840"
+    },
+    {
+     "url": "/assets/hra-v1/female/quadriceps-femoris-r.lod2.glb",
+     "bytes": 2244,
+     "triangles": 43,
+     "hash": "fa723d16f506ed40"
+    }
+   ]
+  },
+  {
+   "id": "quadriceps-femoris-l",
+   "name": "Left quadriceps femoris",
+   "systems": [
+    "muscular"
+   ],
+   "centroid": [
+    0.1,
+    -0.28,
+    0.05
+   ],
+   "bounds": [
+    0.05,
+    -0.5,
+    0,
+    0.15000000000000002,
+    -0.06,
+    0.1
+   ],
+   "laterality": "left",
+   "fmaId": "FMA:22428",
+   "latinName": "Musculus quadriceps femoris",
+   "region": "lower-limb",
+   "aliases": [
+    "quads",
+    "Quadriceps femoris"
+   ],
+   "provenance": "procedural",
+   "lods": [
+    {
+     "url": "/assets/hra-v1/female/quadriceps-femoris-l.lod0.glb",
+     "bytes": 3408,
+     "triangles": 216,
+     "hash": "4bf2f78781c09dfa"
+    },
+    {
+     "url": "/assets/hra-v1/female/quadriceps-femoris-l.lod1.glb",
+     "bytes": 2456,
+     "triangles": 81,
+     "hash": "7a8ee623ae07c410"
+    },
+    {
+     "url": "/assets/hra-v1/female/quadriceps-femoris-l.lod2.glb",
+     "bytes": 2244,
+     "triangles": 43,
+     "hash": "aa47942eb5dcad38"
+    }
+   ]
+  },
+  {
+   "id": "gastrocnemius-r",
+   "name": "Right gastrocnemius",
+   "systems": [
+    "muscular"
+   ],
+   "centroid": [
+    -0.1,
+    -0.68,
+    -0.05
+   ],
+   "bounds": [
+    -0.14,
+    -0.8600000000000001,
+    -0.09,
+    -0.060000000000000005,
+    -0.5,
+    -0.010000000000000002
+   ],
+   "laterality": "right",
+   "fmaId": "FMA:22541",
+   "latinName": "Musculus gastrocnemius",
+   "region": "lower-limb",
+   "aliases": [
+    "calf muscle",
+    "Gastrocnemius"
+   ],
+   "provenance": "procedural",
+   "lods": [
+    {
+     "url": "/assets/hra-v1/female/gastrocnemius-r.lod0.glb",
+     "bytes": 3392,
+     "triangles": 216,
+     "hash": "d8f1a684c58df7a0"
+    },
+    {
+     "url": "/assets/hra-v1/female/gastrocnemius-r.lod1.glb",
+     "bytes": 2444,
+     "triangles": 81,
+     "hash": "e12770224dbed2cf"
+    },
+    {
+     "url": "/assets/hra-v1/female/gastrocnemius-r.lod2.glb",
+     "bytes": 2236,
+     "triangles": 43,
+     "hash": "10e3292f4965ca7e"
+    }
+   ]
+  },
+  {
+   "id": "gastrocnemius-l",
+   "name": "Left gastrocnemius",
+   "systems": [
+    "muscular"
+   ],
+   "centroid": [
+    0.1,
+    -0.68,
+    -0.05
+   ],
+   "bounds": [
+    0.060000000000000005,
+    -0.8600000000000001,
+    -0.09,
+    0.14,
+    -0.5,
+    -0.010000000000000002
+   ],
+   "laterality": "left",
+   "fmaId": "FMA:22541",
+   "latinName": "Musculus gastrocnemius",
+   "region": "lower-limb",
+   "aliases": [
+    "calf muscle",
+    "Gastrocnemius"
+   ],
+   "provenance": "procedural",
+   "lods": [
+    {
+     "url": "/assets/hra-v1/female/gastrocnemius-l.lod0.glb",
+     "bytes": 3392,
+     "triangles": 216,
+     "hash": "c11a031355a3911a"
+    },
+    {
+     "url": "/assets/hra-v1/female/gastrocnemius-l.lod1.glb",
+     "bytes": 2444,
+     "triangles": 81,
+     "hash": "5b5fe064f5b0bc6b"
+    },
+    {
+     "url": "/assets/hra-v1/female/gastrocnemius-l.lod2.glb",
+     "bytes": 2236,
+     "triangles": 43,
+     "hash": "dd5ce5994db53afa"
+    }
+   ]
+  },
+  {
+   "id": "brain",
+   "name": "Brain",
+   "systems": [
+    "nervous"
+   ],
+   "centroid": [
+    -0.0011840388178825378,
+    0.7776385247707367,
+    0.007458452135324478
+   ],
+   "bounds": [
+    -0.06908942013978958,
+    0.7051413655281067,
+    -0.0765426903963089,
+    0.0667213425040245,
+    0.8501356840133667,
+    0.09145959466695786
+   ],
+   "laterality": "none",
+   "fmaId": "FMA:50801",
+   "latinName": "Encephalon",
+   "region": "head",
+   "aliases": [
+    "encephalon"
+   ],
+   "provenance": "hra",
+   "lods": [
+    {
+     "url": "/assets/hra-v1/female/brain.lod0.glb",
+     "bytes": 210828,
+     "triangles": 28976,
+     "hash": "17d9bd3184e01743"
+    },
+    {
+     "url": "/assets/hra-v1/female/brain.lod1.glb",
+     "bytes": 54988,
+     "triangles": 7990,
+     "hash": "2dfbd9c5eabea7a0"
+    },
+    {
+     "url": "/assets/hra-v1/female/brain.lod2.glb",
+     "bytes": 16268,
+     "triangles": 2366,
+     "hash": "6b8a3f40299e56e2"
+    }
+   ]
+  },
+  {
+   "id": "spinal-cord",
+   "name": "Spinal cord",
+   "systems": [
+    "nervous"
+   ],
+   "centroid": [
+    0,
+    0.3,
+    -0.05
+   ],
+   "bounds": [
+    -0.008,
+    0.01699999999999996,
+    -0.058,
+    0.008,
+    0.583,
+    -0.042
+   ],
+   "laterality": "none",
+   "fmaId": "FMA:7647",
+   "latinName": "Medulla spinalis",
+   "region": "back",
+   "provenance": "procedural",
+   "lods": [
+    {
+     "url": "/assets/hra-v1/female/spinal-cord.lod0.glb",
+     "bytes": 3232,
+     "triangles": 216,
+     "hash": "65e4989ccbb2a1e3"
+    },
+    {
+     "url": "/assets/hra-v1/female/spinal-cord.lod1.glb",
+     "bytes": 2324,
+     "triangles": 74,
+     "hash": "a1a7f6be0c4e2b2c"
+    },
+    {
+     "url": "/assets/hra-v1/female/spinal-cord.lod2.glb",
+     "bytes": 2180,
+     "triangles": 38,
+     "hash": "9ee1e41de941f386"
+    }
+   ]
+  },
+  {
+   "id": "median-nerve-r",
+   "name": "Right median nerve",
+   "systems": [
+    "nervous"
+   ],
+   "centroid": [
+    -0.25,
+    0.2,
+    0.03
+   ],
+   "bounds": [
+    -0.254,
+    -0.07900000000000001,
+    0.026,
+    -0.246,
+    0.47900000000000004,
+    0.034
+   ],
+   "laterality": "right",
+   "fmaId": "FMA:14385",
+   "latinName": "Nervus medianus",
+   "region": "upper-limb",
+   "aliases": [
+    "Median nerve"
+   ],
+   "provenance": "procedural",
+   "lods": [
+    {
+     "url": "/assets/hra-v1/female/median-nerve-r.lod0.glb",
+     "bytes": 3188,
+     "triangles": 216,
+     "hash": "0e8bb2c64505cee2"
+    },
+    {
+     "url": "/assets/hra-v1/female/median-nerve-r.lod1.glb",
+     "bytes": 2320,
+     "triangles": 74,
+     "hash": "9304711fe85b0ba7"
+    },
+    {
+     "url": "/assets/hra-v1/female/median-nerve-r.lod2.glb",
+     "bytes": 2164,
+     "triangles": 39,
+     "hash": "664ed0c681194cbb"
+    }
+   ]
+  },
+  {
+   "id": "median-nerve-l",
+   "name": "Left median nerve",
+   "systems": [
+    "nervous"
+   ],
+   "centroid": [
+    0.25,
+    0.2,
+    0.03
+   ],
+   "bounds": [
+    0.246,
+    -0.07900000000000001,
+    0.026,
+    0.254,
+    0.47900000000000004,
+    0.034
+   ],
+   "laterality": "left",
+   "fmaId": "FMA:14385",
+   "latinName": "Nervus medianus",
+   "region": "upper-limb",
+   "aliases": [
+    "Median nerve"
+   ],
+   "provenance": "procedural",
+   "lods": [
+    {
+     "url": "/assets/hra-v1/female/median-nerve-l.lod0.glb",
+     "bytes": 3188,
+     "triangles": 216,
+     "hash": "101345029454c392"
+    },
+    {
+     "url": "/assets/hra-v1/female/median-nerve-l.lod1.glb",
+     "bytes": 2320,
+     "triangles": 74,
+     "hash": "3500ebf837635ee3"
+    },
+    {
+     "url": "/assets/hra-v1/female/median-nerve-l.lod2.glb",
+     "bytes": 2164,
+     "triangles": 39,
+     "hash": "bde44957aecf6864"
+    }
+   ]
+  },
+  {
+   "id": "sciatic-nerve-r",
+   "name": "Right sciatic nerve",
+   "systems": [
+    "nervous"
+   ],
+   "centroid": [
+    -0.1,
+    -0.3,
+    -0.04
+   ],
+   "bounds": [
+    -0.10600000000000001,
+    -0.556,
+    -0.046,
+    -0.094,
+    -0.043999999999999984,
+    -0.034
+   ],
+   "laterality": "right",
+   "fmaId": "FMA:19034",
+   "latinName": "Nervus ischiadicus",
+   "region": "lower-limb",
+   "aliases": [
+    "Sciatic nerve"
+   ],
+   "provenance": "procedural",
+   "lods": [
+    {
+     "url": "/assets/hra-v1/female/sciatic-nerve-r.lod0.glb",
+     "bytes": 3216,
+     "triangles": 216,
+     "hash": "89963f384da56950"
+    },
+    {
+     "url": "/assets/hra-v1/female/sciatic-nerve-r.lod1.glb",
+     "bytes": 2356,
+     "triangles": 74,
+     "hash": "17262ef1466b680d"
+    },
+    {
+     "url": "/assets/hra-v1/female/sciatic-nerve-r.lod2.glb",
+     "bytes": 2104,
+     "triangles": 25,
+     "hash": "dd425ef52b8da00f"
+    }
+   ]
+  },
+  {
+   "id": "sciatic-nerve-l",
+   "name": "Left sciatic nerve",
+   "systems": [
+    "nervous"
+   ],
+   "centroid": [
+    0.1,
+    -0.3,
+    -0.04
+   ],
+   "bounds": [
+    0.094,
+    -0.556,
+    -0.046,
+    0.10600000000000001,
+    -0.043999999999999984,
+    -0.034
+   ],
+   "laterality": "left",
+   "fmaId": "FMA:19034",
+   "latinName": "Nervus ischiadicus",
+   "region": "lower-limb",
+   "aliases": [
+    "Sciatic nerve"
+   ],
+   "provenance": "procedural",
+   "lods": [
+    {
+     "url": "/assets/hra-v1/female/sciatic-nerve-l.lod0.glb",
+     "bytes": 3216,
+     "triangles": 216,
+     "hash": "3745d01605b3bc07"
+    },
+    {
+     "url": "/assets/hra-v1/female/sciatic-nerve-l.lod1.glb",
+     "bytes": 2356,
+     "triangles": 74,
+     "hash": "43dd10f12e7319f8"
+    },
+    {
+     "url": "/assets/hra-v1/female/sciatic-nerve-l.lod2.glb",
+     "bytes": 2104,
+     "triangles": 25,
+     "hash": "f2d7a2018ad8185b"
+    }
+   ]
+  },
+  {
+   "id": "heart",
+   "name": "Heart",
+   "systems": [
+    "cardiovascular"
+   ],
+   "centroid": [
+    0.04746284708380699,
+    0.4152117967605591,
+    -0.002062397077679634
+   ],
+   "bounds": [
+    -0.03225875645875931,
+    0.3627380430698395,
+    -0.05949565768241882,
+    0.1271844506263733,
+    0.4676855504512787,
+    0.055370863527059555
+   ],
+   "laterality": "none",
+   "fmaId": "FMA:7088",
+   "latinName": "Cor",
+   "region": "thorax",
+   "aliases": [
+    "cor"
+   ],
+   "provenance": "hra",
+   "lods": [
+    {
+     "url": "/assets/hra-v1/female/heart.lod0.glb",
+     "bytes": 125304,
+     "triangles": 26000,
+     "hash": "96282693577026a3"
+    },
+    {
+     "url": "/assets/hra-v1/female/heart.lod1.glb",
+     "bytes": 44972,
+     "triangles": 7999,
+     "hash": "c3cd91bd15c5c773"
+    },
+    {
+     "url": "/assets/hra-v1/female/heart.lod2.glb",
+     "bytes": 15476,
+     "triangles": 2383,
+     "hash": "3f437482f1afa72d"
+    }
+   ]
+  },
+  {
+   "id": "aorta",
+   "name": "Aorta",
+   "systems": [
+    "cardiovascular"
+   ],
+   "centroid": [
+    0.017062225379049778,
+    0.333546906709671,
+    -0.03185682278126478
+   ],
+   "bounds": [
+    -0.018101805821061134,
+    0.15234756469726562,
+    -0.08693378418684006,
+    0.05222625657916069,
+    0.5147462487220764,
+    0.023220138624310493
+   ],
+   "laterality": "none",
+   "fmaId": "FMA:3734",
+   "latinName": "Aorta",
+   "region": "thorax",
+   "provenance": "hra",
+   "lods": [
+    {
+     "url": "/assets/hra-v1/female/aorta.lod0.glb",
+     "bytes": 92100,
+     "triangles": 25296,
+     "hash": "d15968dbf14404c4"
+    },
+    {
+     "url": "/assets/hra-v1/female/aorta.lod1.glb",
+     "bytes": 36076,
+     "triangles": 8000,
+     "hash": "4b7f7309e11915a4"
+    },
+    {
+     "url": "/assets/hra-v1/female/aorta.lod2.glb",
+     "bytes": 13696,
+     "triangles": 2399,
+     "hash": "f4039d6865cef003"
+    }
+   ]
+  },
+  {
+   "id": "inferior-vena-cava",
+   "name": "Inferior vena cava",
+   "systems": [
+    "cardiovascular"
+   ],
+   "centroid": [
+    -0.01021041814237833,
+    0.2690340280532837,
+    -0.03479888755828142
+   ],
+   "bounds": [
+    -0.033758848905563354,
+    0.1425047218799591,
+    -0.05911758169531822,
+    0.013338012620806694,
+    0.3955633342266083,
+    -0.010480193421244621
+   ],
+   "laterality": "none",
+   "fmaId": "FMA:10951",
+   "latinName": "Vena cava inferior",
+   "region": "abdomen",
+   "aliases": [
+    "IVC"
+   ],
+   "provenance": "hra",
+   "lods": [
+    {
+     "url": "/assets/hra-v1/female/inferior-vena-cava.lod0.glb",
+     "bytes": 55076,
+     "triangles": 14356,
+     "hash": "38914f31a72cb09e"
+    },
+    {
+     "url": "/assets/hra-v1/female/inferior-vena-cava.lod1.glb",
+     "bytes": 34508,
+     "triangles": 8000,
+     "hash": "e6c535dd0d5439c6"
+    },
+    {
+     "url": "/assets/hra-v1/female/inferior-vena-cava.lod2.glb",
+     "bytes": 14152,
+     "triangles": 2400,
+     "hash": "dc35614b82ddc43a"
+    }
+   ]
+  },
+  {
+   "id": "trachea",
+   "name": "Trachea",
+   "systems": [
+    "respiratory"
+   ],
+   "centroid": [
+    -0.003996244631707668,
+    0.5426956862211227,
+    0.006096674129366875
+   ],
+   "bounds": [
+    -0.018176667392253876,
+    0.48363593220710754,
+    -0.040120918303728104,
+    0.010184178128838539,
+    0.6017554402351379,
+    0.05231426656246185
+   ],
+   "laterality": "none",
+   "fmaId": "FMA:7394",
+   "latinName": "Trachea",
+   "region": "neck",
+   "aliases": [
+    "windpipe"
+   ],
+   "provenance": "hra",
+   "lods": [
+    {
+     "url": "/assets/hra-v1/female/trachea.lod0.glb",
+     "bytes": 112080,
+     "triangles": 26000,
+     "hash": "b97dc21b8ba35d54"
+    },
+    {
+     "url": "/assets/hra-v1/female/trachea.lod1.glb",
+     "bytes": 40564,
+     "triangles": 7999,
+     "hash": "46e63c23b87e8af4"
+    },
+    {
+     "url": "/assets/hra-v1/female/trachea.lod2.glb",
+     "bytes": 14132,
+     "triangles": 2399,
+     "hash": "e06558bda21ee360"
+    }
+   ]
+  },
+  {
+   "id": "lung-r",
+   "name": "Right lung",
+   "systems": [
+    "respiratory"
+   ],
+   "centroid": [
+    -0.11,
+    0.42,
+    0
+   ],
+   "bounds": [
+    -0.178,
+    0.301,
+    -0.07650000000000001,
+    -0.041999999999999996,
+    0.5389999999999999,
+    0.07650000000000001
+   ],
+   "laterality": "right",
+   "fmaId": "FMA:7195",
+   "latinName": "Pulmo",
+   "region": "thorax",
+   "aliases": [
+    "Lung"
+   ],
+   "provenance": "procedural",
+   "lods": [
+    {
+     "url": "/assets/hra-v1/female/lung-r.lod0.glb",
+     "bytes": 8124,
+     "triangles": 816,
+     "hash": "3c75a136da2ea7c5"
+    },
+    {
+     "url": "/assets/hra-v1/female/lung-r.lod1.glb",
+     "bytes": 4460,
+     "triangles": 285,
+     "hash": "f3c83f25865ae62a"
+    },
+    {
+     "url": "/assets/hra-v1/female/lung-r.lod2.glb",
+     "bytes": 2896,
+     "triangles": 97,
+     "hash": "e219b82b4af58843"
+    }
+   ]
+  },
+  {
+   "id": "lung-l",
+   "name": "Left lung",
+   "systems": [
+    "respiratory"
+   ],
+   "centroid": [
+    0.11,
+    0.42,
+    0
+   ],
+   "bounds": [
+    0.041999999999999996,
+    0.301,
+    -0.07650000000000001,
+    0.178,
+    0.5389999999999999,
+    0.07650000000000001
+   ],
+   "laterality": "left",
+   "fmaId": "FMA:7195",
+   "latinName": "Pulmo",
+   "region": "thorax",
+   "aliases": [
+    "Lung"
+   ],
+   "provenance": "procedural",
+   "lods": [
+    {
+     "url": "/assets/hra-v1/female/lung-l.lod0.glb",
+     "bytes": 8124,
+     "triangles": 816,
+     "hash": "ef23af814149b44d"
+    },
+    {
+     "url": "/assets/hra-v1/female/lung-l.lod1.glb",
+     "bytes": 4460,
+     "triangles": 285,
+     "hash": "e4b62b6ba6662e05"
+    },
+    {
+     "url": "/assets/hra-v1/female/lung-l.lod2.glb",
+     "bytes": 2896,
+     "triangles": 97,
+     "hash": "a8e371b126c1f08c"
+    }
+   ]
+  },
+  {
+   "id": "liver",
+   "name": "Liver",
+   "systems": [
+    "digestive"
+   ],
+   "centroid": [
+    -0.011333577334880829,
+    0.3475114107131958,
+    -0.07070436235517263
+   ],
+   "bounds": [
+    -0.13488732278347015,
+    0.2625250816345215,
+    -0.15384282171726227,
+    0.1122201681137085,
+    0.4324977397918701,
+    0.012434097006917
+   ],
+   "laterality": "none",
+   "fmaId": "FMA:7197",
+   "latinName": "Hepar",
+   "region": "abdomen",
+   "aliases": [
+    "hepar"
+   ],
+   "provenance": "hra",
+   "lods": [
+    {
+     "url": "/assets/hra-v1/female/liver.lod0.glb",
+     "bytes": 107164,
+     "triangles": 26000,
+     "hash": "c9a3e4df80bdba23"
+    },
+    {
+     "url": "/assets/hra-v1/female/liver.lod1.glb",
+     "bytes": 40264,
+     "triangles": 7999,
+     "hash": "b534cb83debf460c"
+    },
+    {
+     "url": "/assets/hra-v1/female/liver.lod2.glb",
+     "bytes": 15152,
+     "triangles": 2400,
+     "hash": "4fe3bc8cb4538e74"
+    }
+   ]
+  },
+  {
+   "id": "stomach",
+   "name": "Stomach",
+   "systems": [
+    "digestive"
+   ],
+   "centroid": [
+    0.07,
+    0.24,
+    0.05
+   ],
+   "bounds": [
+    0,
+    0.15599999999999997,
+    -0.006000000000000005,
+    0.14,
+    0.324,
+    0.10600000000000001
+   ],
+   "laterality": "none",
+   "fmaId": "FMA:7148",
+   "latinName": "Gaster",
+   "region": "abdomen",
+   "aliases": [
+    "gaster"
+   ],
+   "provenance": "procedural",
+   "lods": [
+    {
+     "url": "/assets/hra-v1/female/stomach.lod0.glb",
+     "bytes": 8164,
+     "triangles": 816,
+     "hash": "acb0c342c6b70cff"
+    },
+    {
+     "url": "/assets/hra-v1/female/stomach.lod1.glb",
+     "bytes": 4424,
+     "triangles": 285,
+     "hash": "974fd3b7b2446e11"
+    },
+    {
+     "url": "/assets/hra-v1/female/stomach.lod2.glb",
+     "bytes": 2952,
+     "triangles": 97,
+     "hash": "6ab5b464c6eb0f48"
+    }
+   ]
+  },
+  {
+   "id": "small-intestine",
+   "name": "Small intestine",
+   "systems": [
+    "digestive"
+   ],
+   "centroid": [
+    -0.007066249847412109,
+    0.1875005066394806,
+    -0.02816878817975521
+   ],
+   "bounds": [
+    -0.08713378012180328,
+    0.07888415455818176,
+    -0.07816566526889801,
+    0.07300128042697906,
+    0.2961168587207794,
+    0.02182808890938759
+   ],
+   "laterality": "none",
+   "fmaId": "FMA:7200",
+   "latinName": "Intestinum tenue",
+   "region": "abdomen",
+   "provenance": "hra",
+   "lods": [
+    {
+     "url": "/assets/hra-v1/female/small-intestine.lod0.glb",
+     "bytes": 101300,
+     "triangles": 26000,
+     "hash": "baf313f30bbac31b"
+    },
+    {
+     "url": "/assets/hra-v1/female/small-intestine.lod1.glb",
+     "bytes": 39756,
+     "triangles": 7999,
+     "hash": "b7875e78ccf6733b"
+    },
+    {
+     "url": "/assets/hra-v1/female/small-intestine.lod2.glb",
+     "bytes": 15188,
+     "triangles": 2399,
+     "hash": "92c42c7c2a048099"
+    }
+   ]
+  },
+  {
+   "id": "large-intestine",
+   "name": "Large intestine",
+   "systems": [
+    "digestive"
+   ],
+   "centroid": [
+    0.0009554997086524963,
+    0.1235906220972538,
+    -0.0034770220518112183
+   ],
+   "bounds": [
+    -0.12844650447368622,
+    -0.009303741157054901,
+    -0.10635887086391449,
+    0.1303575038909912,
+    0.2564849853515625,
+    0.09940482676029205
+   ],
+   "laterality": "none",
+   "fmaId": "FMA:7201",
+   "latinName": "Intestinum crassum",
+   "region": "abdomen",
+   "aliases": [
+    "colon"
+   ],
+   "provenance": "hra",
+   "lods": [
+    {
+     "url": "/assets/hra-v1/female/large-intestine.lod0.glb",
+     "bytes": 79868,
+     "triangles": 20421,
+     "hash": "82a1e91a903ee1f7"
+    },
+    {
+     "url": "/assets/hra-v1/female/large-intestine.lod1.glb",
+     "bytes": 37128,
+     "triangles": 7984,
+     "hash": "42966819dc3e8eeb"
+    },
+    {
+     "url": "/assets/hra-v1/female/large-intestine.lod2.glb",
+     "bytes": 14304,
+     "triangles": 2398,
+     "hash": "545e2eec8b9fa08c"
+    }
+   ]
+  },
+  {
+   "id": "pancreas",
+   "name": "Pancreas",
+   "systems": [
+    "digestive",
+    "endocrine"
+   ],
+   "centroid": [
+    0.03206581063568592,
+    0.2715078666806221,
+    -0.06986804772168398
+   ],
+   "bounds": [
+    -0.05398125573992729,
+    0.24758486449718475,
+    -0.11208522319793701,
+    0.11811287701129913,
+    0.29543086886405945,
+    -0.027650872245430946
+   ],
+   "laterality": "none",
+   "fmaId": "FMA:7198",
+   "latinName": "Pancreas",
+   "region": "abdomen",
+   "provenance": "hra",
+   "lods": [
+    {
+     "url": "/assets/hra-v1/female/pancreas.lod0.glb",
+     "bytes": 42100,
+     "triangles": 10602,
+     "hash": "3d1d915477d90206"
+    },
+    {
+     "url": "/assets/hra-v1/female/pancreas.lod1.glb",
+     "bytes": 33308,
+     "triangles": 8000,
+     "hash": "bdbeb7f09cd54c07"
+    },
+    {
+     "url": "/assets/hra-v1/female/pancreas.lod2.glb",
+     "bytes": 12884,
+     "triangles": 2399,
+     "hash": "ccc517a8a3d23300"
+    }
+   ]
+  },
+  {
+   "id": "kidney-r",
+   "name": "Right kidney",
+   "systems": [
+    "urinary"
+   ],
+   "centroid": [
+    -0.07202617637813091,
+    0.24752311408519745,
+    -0.0996679738163948
+   ],
+   "bounds": [
+    -0.1087215319275856,
+    0.19859576225280762,
+    -0.13443805277347565,
+    -0.035330820828676224,
+    0.2964504659175873,
+    -0.06489789485931396
+   ],
+   "laterality": "right",
+   "fmaId": "FMA:7203",
+   "latinName": "Ren",
+   "region": "abdomen",
+   "aliases": [
+    "ren",
+    "Kidney"
+   ],
+   "provenance": "hra",
+   "lods": [
+    {
+     "url": "/assets/hra-v1/female/kidney-r.lod0.glb",
+     "bytes": 124120,
+     "triangles": 26000,
+     "hash": "b4d6fcb5d0e61120"
+    },
+    {
+     "url": "/assets/hra-v1/female/kidney-r.lod1.glb",
+     "bytes": 44272,
+     "triangles": 8000,
+     "hash": "48d903ab127d2f77"
+    },
+    {
+     "url": "/assets/hra-v1/female/kidney-r.lod2.glb",
+     "bytes": 14628,
+     "triangles": 2397,
+     "hash": "8a8969cc8bbdd2ed"
+    }
+   ]
+  },
+  {
+   "id": "kidney-l",
+   "name": "Left kidney",
+   "systems": [
+    "urinary"
+   ],
+   "centroid": [
+    0.07660692743957043,
+    0.23820432275533676,
+    -0.10059661231935024
+   ],
+   "bounds": [
+    0.04005156829953194,
+    0.1757761389017105,
+    -0.139386385679245,
+    0.11316228657960892,
+    0.300632506608963,
+    -0.06180683895945549
+   ],
+   "laterality": "left",
+   "fmaId": "FMA:7203",
+   "latinName": "Ren",
+   "region": "abdomen",
+   "aliases": [
+    "ren",
+    "Kidney"
+   ],
+   "provenance": "hra",
+   "lods": [
+    {
+     "url": "/assets/hra-v1/female/kidney-l.lod0.glb",
+     "bytes": 121644,
+     "triangles": 25993,
+     "hash": "43673c6b88017af8"
+    },
+    {
+     "url": "/assets/hra-v1/female/kidney-l.lod1.glb",
+     "bytes": 43076,
+     "triangles": 8000,
+     "hash": "97317a2e3d7e5f09"
+    },
+    {
+     "url": "/assets/hra-v1/female/kidney-l.lod2.glb",
+     "bytes": 14516,
+     "triangles": 2389,
+     "hash": "ba949acd3c100efd"
+    }
+   ]
+  },
+  {
+   "id": "urinary-bladder",
+   "name": "Urinary bladder",
+   "systems": [
+    "urinary"
+   ],
+   "centroid": [
+    -0.014551946427673101,
+    0.004116624593734741,
+    -0.028434470063075423
+   ],
+   "bounds": [
+    -0.04054019972681999,
+    -0.01799396425485611,
+    -0.0592840313911438,
+    0.01143630687147379,
+    0.026227213442325592,
+    0.0024150912649929523
+   ],
+   "laterality": "none",
+   "fmaId": "FMA:15900",
+   "latinName": "Vesica urinaria",
+   "region": "pelvis",
+   "aliases": [
+    "bladder"
+   ],
+   "provenance": "hra",
+   "lods": [
+    {
+     "url": "/assets/hra-v1/female/urinary-bladder.lod0.glb",
+     "bytes": 104652,
+     "triangles": 25999,
+     "hash": "938387cfb204e299"
+    },
+    {
+     "url": "/assets/hra-v1/female/urinary-bladder.lod1.glb",
+     "bytes": 40316,
+     "triangles": 8000,
+     "hash": "f7205feff3ad7bbd"
+    },
+    {
+     "url": "/assets/hra-v1/female/urinary-bladder.lod2.glb",
+     "bytes": 15820,
+     "triangles": 2399,
+     "hash": "b8fffa1bb01ceee8"
+    }
+   ]
+  },
+  {
+   "id": "thyroid-gland",
+   "name": "Thyroid gland",
+   "systems": [
+    "endocrine"
+   ],
+   "centroid": [
+    0,
+    0.58,
+    0.04
+   ],
+   "bounds": [
+    -0.0352,
+    0.5624,
+    0.026800000000000004,
+    0.0352,
+    0.5975999999999999,
+    0.0532
+   ],
+   "laterality": "none",
+   "fmaId": "FMA:9603",
+   "latinName": "Glandula thyroidea",
+   "region": "neck",
+   "aliases": [
+    "thyroid"
+   ],
+   "provenance": "procedural",
+   "lods": [
+    {
+     "url": "/assets/hra-v1/female/thyroid-gland.lod0.glb",
+     "bytes": 8144,
+     "triangles": 816,
+     "hash": "17c497f34ec3dd47"
+    },
+    {
+     "url": "/assets/hra-v1/female/thyroid-gland.lod1.glb",
+     "bytes": 4392,
+     "triangles": 284,
+     "hash": "126ab73aa2802c2c"
+    },
+    {
+     "url": "/assets/hra-v1/female/thyroid-gland.lod2.glb",
+     "bytes": 2932,
+     "triangles": 96,
+     "hash": "63ca4975c1662fdd"
+    }
+   ]
+  },
+  {
+   "id": "adrenal-gland-r",
+   "name": "Right adrenal gland",
+   "systems": [
+    "endocrine"
+   ],
+   "centroid": [
+    -0.07,
+    0.21,
+    -0.07
+   ],
+   "bounds": [
+    -0.08800000000000001,
+    0.1974,
+    -0.0826,
+    -0.052000000000000005,
+    0.2226,
+    -0.05740000000000001
+   ],
+   "laterality": "right",
+   "fmaId": "FMA:9604",
+   "latinName": "Glandula suprarenalis",
+   "region": "abdomen",
+   "aliases": [
+    "suprarenal gland",
+    "Adrenal gland"
+   ],
+   "provenance": "procedural",
+   "lods": [
+    {
+     "url": "/assets/hra-v1/female/adrenal-gland-r.lod0.glb",
+     "bytes": 8140,
+     "triangles": 816,
+     "hash": "6dcd5a386e54c6cf"
+    },
+    {
+     "url": "/assets/hra-v1/female/adrenal-gland-r.lod1.glb",
+     "bytes": 4460,
+     "triangles": 285,
+     "hash": "9c731fac85e16d84"
+    },
+    {
+     "url": "/assets/hra-v1/female/adrenal-gland-r.lod2.glb",
+     "bytes": 2960,
+     "triangles": 96,
+     "hash": "ff49227fcec6751b"
+    }
+   ]
+  },
+  {
+   "id": "adrenal-gland-l",
+   "name": "Left adrenal gland",
+   "systems": [
+    "endocrine"
+   ],
+   "centroid": [
+    0.07,
+    0.21,
+    -0.07
+   ],
+   "bounds": [
+    0.052000000000000005,
+    0.1974,
+    -0.0826,
+    0.08800000000000001,
+    0.2226,
+    -0.05740000000000001
+   ],
+   "laterality": "left",
+   "fmaId": "FMA:9604",
+   "latinName": "Glandula suprarenalis",
+   "region": "abdomen",
+   "aliases": [
+    "suprarenal gland",
+    "Adrenal gland"
+   ],
+   "provenance": "procedural",
+   "lods": [
+    {
+     "url": "/assets/hra-v1/female/adrenal-gland-l.lod0.glb",
+     "bytes": 8140,
+     "triangles": 816,
+     "hash": "638c7f883211e3fe"
+    },
+    {
+     "url": "/assets/hra-v1/female/adrenal-gland-l.lod1.glb",
+     "bytes": 4460,
+     "triangles": 285,
+     "hash": "b53c3eca6ca8e7d9"
+    },
+    {
+     "url": "/assets/hra-v1/female/adrenal-gland-l.lod2.glb",
+     "bytes": 2960,
+     "triangles": 96,
+     "hash": "0c33bdad1b6d9b71"
+    }
+   ]
+  },
+  {
+   "id": "spleen",
+   "name": "Spleen",
+   "systems": [
+    "lymphatic"
+   ],
+   "centroid": [
+    0.09385457448661327,
+    0.3073487728834152,
+    -0.07513801194727421
+   ],
+   "bounds": [
+    0.046215932816267014,
+    0.26071470975875854,
+    -0.11287268996238708,
+    0.14149321615695953,
+    0.3539828360080719,
+    -0.03740333393216133
+   ],
+   "laterality": "none",
+   "fmaId": "FMA:7196",
+   "latinName": "Splen",
+   "region": "abdomen",
+   "aliases": [
+    "lien"
+   ],
+   "provenance": "hra",
+   "lods": [
+    {
+     "url": "/assets/hra-v1/female/spleen.lod0.glb",
+     "bytes": 34708,
+     "triangles": 8544,
+     "hash": "6ac7126ac6821ecc"
+    },
+    {
+     "url": "/assets/hra-v1/female/spleen.lod1.glb",
+     "bytes": 32896,
+     "triangles": 8000,
+     "hash": "20fbf312b44c0134"
+    },
+    {
+     "url": "/assets/hra-v1/female/spleen.lod2.glb",
+     "bytes": 12484,
+     "triangles": 2400,
+     "hash": "82e3c06f6f239d64"
+    }
+   ]
+  },
+  {
+   "id": "thymus",
+   "name": "Thymus",
+   "systems": [
+    "lymphatic",
+    "endocrine"
+   ],
+   "centroid": [
+    0.026337365619838238,
+    0.4738970845937729,
+    0.03192743193358183
+   ],
+   "bounds": [
+    -0.0197924617677927,
+    0.4184277355670929,
+    0.0031155776232481003,
+    0.07246719300746918,
+    0.5293664336204529,
+    0.06073928624391556
+   ],
+   "laterality": "none",
+   "fmaId": "FMA:9607",
+   "latinName": "Thymus",
+   "region": "thorax",
+   "provenance": "hra",
+   "lods": [
+    {
+     "url": "/assets/hra-v1/female/thymus.lod0.glb",
+     "bytes": 16316,
+     "triangles": 3864,
+     "hash": "2ee4d5b50a2bd36f"
+    },
+    {
+     "url": "/assets/hra-v1/female/thymus.lod1.glb",
+     "bytes": 16316,
+     "triangles": 3864,
+     "hash": "2ee4d5b50a2bd36f"
+    },
+    {
+     "url": "/assets/hra-v1/female/thymus.lod2.glb",
+     "bytes": 11468,
+     "triangles": 2392,
+     "hash": "b73616b6e0267eba"
+    }
+   ]
+  },
+  {
+   "id": "skin",
+   "name": "Skin",
+   "systems": [
+    "integumentary"
+   ],
+   "centroid": [
+    0,
+    0.00020074844360351562,
+    0.000013820827007293701
+   ],
+   "bounds": [
+    -0.5211959481239319,
+    -0.8615407943725586,
+    -0.16586218774318695,
+    0.5211959481239319,
+    0.8619422912597656,
+    0.16588982939720154
+   ],
+   "laterality": "none",
+   "fmaId": "FMA:7163",
+   "latinName": "Cutis",
+   "region": "whole-body",
+   "aliases": [
+    "integument"
+   ],
+   "provenance": "hra",
+   "lods": [
+    {
+     "url": "/assets/hra-v1/female/skin.lod0.glb",
+     "bytes": 119928,
+     "triangles": 26000,
+     "hash": "3f30de3072dd8c05"
+    },
+    {
+     "url": "/assets/hra-v1/female/skin.lod1.glb",
+     "bytes": 45308,
+     "triangles": 8000,
+     "hash": "693791b8f5d4a3b4"
+    },
+    {
+     "url": "/assets/hra-v1/female/skin.lod2.glb",
+     "bytes": 16496,
+     "triangles": 2400,
+     "hash": "9fded986348f042b"
+    }
+   ]
+  },
+  {
+   "id": "thoracolumbar-fascia",
+   "name": "Thoracolumbar fascia",
+   "systems": [
+    "fascial",
+    "connective"
+   ],
+   "centroid": [
+    0,
+    0.18,
+    -0.13
+   ],
+   "bounds": [
+    -0.12,
+    0.03,
+    -0.134,
+    0.12,
+    0.32999999999999996,
+    -0.126
+   ],
+   "laterality": "none",
+   "fmaId": "FMA:76832",
+   "latinName": "Fascia thoracolumbalis",
+   "region": "back",
+   "provenance": "procedural",
+   "lods": [
+    {
+     "url": "/assets/hra-v1/female/thoracolumbar-fascia.lod0.glb",
+     "bytes": 1992,
+     "triangles": 12,
+     "hash": "732bf1f04f86f81a"
+    },
+    {
+     "url": "/assets/hra-v1/female/thoracolumbar-fascia.lod1.glb",
+     "bytes": 1992,
+     "triangles": 12,
+     "hash": "732bf1f04f86f81a"
+    },
+    {
+     "url": "/assets/hra-v1/female/thoracolumbar-fascia.lod2.glb",
+     "bytes": 1992,
+     "triangles": 12,
+     "hash": "732bf1f04f86f81a"
+    }
+   ]
+  },
+  {
+   "id": "patellar-ligament-r",
+   "name": "Right patellar ligament",
+   "systems": [
+    "connective"
+   ],
+   "centroid": [
+    -0.1,
+    -0.5,
+    0.06
+   ],
+   "bounds": [
+    -0.11,
+    -0.53,
+    0.055999999999999994,
+    -0.09000000000000001,
+    -0.47,
+    0.064
+   ],
+   "laterality": "right",
+   "fmaId": "FMA:44581",
+   "latinName": "Ligamentum patellae",
+   "region": "lower-limb",
+   "aliases": [
+    "patellar tendon",
+    "Patellar ligament"
+   ],
+   "provenance": "procedural",
+   "lods": [
+    {
+     "url": "/assets/hra-v1/female/patellar-ligament-r.lod0.glb",
+     "bytes": 2000,
+     "triangles": 12,
+     "hash": "14ec47e68d3d3cce"
+    },
+    {
+     "url": "/assets/hra-v1/female/patellar-ligament-r.lod1.glb",
+     "bytes": 2000,
+     "triangles": 12,
+     "hash": "14ec47e68d3d3cce"
+    },
+    {
+     "url": "/assets/hra-v1/female/patellar-ligament-r.lod2.glb",
+     "bytes": 2000,
+     "triangles": 12,
+     "hash": "14ec47e68d3d3cce"
+    }
+   ]
+  },
+  {
+   "id": "patellar-ligament-l",
+   "name": "Left patellar ligament",
+   "systems": [
+    "connective"
+   ],
+   "centroid": [
+    0.1,
+    -0.5,
+    0.06
+   ],
+   "bounds": [
+    0.09000000000000001,
+    -0.53,
+    0.055999999999999994,
+    0.11,
+    -0.47,
+    0.064
+   ],
+   "laterality": "left",
+   "fmaId": "FMA:44581",
+   "latinName": "Ligamentum patellae",
+   "region": "lower-limb",
+   "aliases": [
+    "patellar tendon",
+    "Patellar ligament"
+   ],
+   "provenance": "procedural",
+   "lods": [
+    {
+     "url": "/assets/hra-v1/female/patellar-ligament-l.lod0.glb",
+     "bytes": 2000,
+     "triangles": 12,
+     "hash": "ad43aa0dc03beb0c"
+    },
+    {
+     "url": "/assets/hra-v1/female/patellar-ligament-l.lod1.glb",
+     "bytes": 2000,
+     "triangles": 12,
+     "hash": "ad43aa0dc03beb0c"
+    },
+    {
+     "url": "/assets/hra-v1/female/patellar-ligament-l.lod2.glb",
+     "bytes": 2000,
+     "triangles": 12,
+     "hash": "ad43aa0dc03beb0c"
+    }
+   ]
+  },
+  {
+   "id": "jugular-notch",
+   "name": "Jugular notch",
+   "systems": [
+    "surface",
+    "skeletal"
+   ],
+   "centroid": [
+    0,
+    0.55,
+    0.12
+   ],
+   "bounds": [
+    -0.012,
+    0.538,
+    0.108,
+    0.012,
+    0.562,
+    0.132
+   ],
+   "laterality": "none",
+   "fmaId": "FMA:7487",
+   "latinName": "Incisura jugularis",
+   "region": "thorax",
+   "aliases": [
+    "suprasternal notch"
+   ],
+   "provenance": "procedural",
+   "lods": [
+    {
+     "url": "/assets/hra-v1/female/jugular-notch.lod0.glb",
+     "bytes": 7872,
+     "triangles": 816,
+     "hash": "5274bc0d5ea9c08c"
+    },
+    {
+     "url": "/assets/hra-v1/female/jugular-notch.lod1.glb",
+     "bytes": 4180,
+     "triangles": 285,
+     "hash": "8bc0a85d13f58a5a"
+    },
+    {
+     "url": "/assets/hra-v1/female/jugular-notch.lod2.glb",
+     "bytes": 2848,
+     "triangles": 97,
+     "hash": "4479163f0253a1f9"
+    }
+   ]
+  },
+  {
+   "id": "umbilicus",
+   "name": "Umbilicus",
+   "systems": [
+    "surface"
+   ],
+   "centroid": [
+    0,
+    0.12,
+    0.15
+   ],
+   "bounds": [
+    -0.012,
+    0.108,
+    0.13799999999999998,
+    0.012,
+    0.132,
+    0.162
+   ],
+   "laterality": "none",
+   "fmaId": "FMA:61584",
+   "latinName": "Umbilicus",
+   "region": "abdomen",
+   "aliases": [
+    "navel"
+   ],
+   "provenance": "procedural",
+   "lods": [
+    {
+     "url": "/assets/hra-v1/female/umbilicus.lod0.glb",
+     "bytes": 7860,
+     "triangles": 816,
+     "hash": "b5d8eddcbf62d5dc"
+    },
+    {
+     "url": "/assets/hra-v1/female/umbilicus.lod1.glb",
+     "bytes": 4168,
+     "triangles": 285,
+     "hash": "19946567de6579ac"
+    },
+    {
+     "url": "/assets/hra-v1/female/umbilicus.lod2.glb",
+     "bytes": 2836,
+     "triangles": 97,
+     "hash": "a69b7a8636bfe70f"
+    }
+   ]
+  },
+  {
+   "id": "uterus",
+   "name": "Uterus",
+   "systems": [
+    "reproductive"
+   ],
+   "centroid": [
+    -0.01350123854354024,
+    0.029715408803895116,
+    -0.05684439558535814
+   ],
+   "bounds": [
+    -0.03974504396319389,
+    0.0062188454903662205,
+    -0.08619216829538345,
+    0.012742566876113415,
+    0.05321197211742401,
+    -0.027496622875332832
+   ],
+   "laterality": "none",
+   "fmaId": "FMA:17558",
+   "latinName": "Uterus",
+   "region": "pelvis",
+   "aliases": [
+    "womb"
+   ],
+   "provenance": "hra",
+   "lods": [
+    {
+     "url": "/assets/hra-v1/female/uterus.lod0.glb",
+     "bytes": 103708,
+     "triangles": 26000,
+     "hash": "0f91bd01394d106b"
+    },
+    {
+     "url": "/assets/hra-v1/female/uterus.lod1.glb",
+     "bytes": 38964,
+     "triangles": 7967,
+     "hash": "e6df5dbb19fc79e3"
+    },
+    {
+     "url": "/assets/hra-v1/female/uterus.lod2.glb",
+     "bytes": 14456,
+     "triangles": 2391,
+     "hash": "5a30540b75ca5462"
+    }
+   ]
+  },
+  {
+   "id": "ovary-r",
+   "name": "Right ovary",
+   "systems": [
+    "reproductive",
+    "endocrine"
+   ],
+   "centroid": [
+    -0.07056222856044769,
+    0.06090236455202103,
+    -0.045502813532948494
+   ],
+   "bounds": [
+    -0.0767170712351799,
+    0.04890891909599304,
+    -0.050816573202610016,
+    -0.06440738588571548,
+    0.07289581000804901,
+    -0.04018905386328697
+   ],
+   "laterality": "right",
+   "fmaId": "FMA:7209",
+   "latinName": "Ovarium",
+   "region": "pelvis",
+   "aliases": [
+    "Ovary"
+   ],
+   "provenance": "hra",
+   "lods": [
+    {
+     "url": "/assets/hra-v1/female/ovary-r.lod0.glb",
+     "bytes": 3296,
+     "triangles": 410,
+     "hash": "3709c22e5fef8a9c"
+    },
+    {
+     "url": "/assets/hra-v1/female/ovary-r.lod1.glb",
+     "bytes": 3296,
+     "triangles": 410,
+     "hash": "3709c22e5fef8a9c"
+    },
+    {
+     "url": "/assets/hra-v1/female/ovary-r.lod2.glb",
+     "bytes": 3296,
+     "triangles": 410,
+     "hash": "3709c22e5fef8a9c"
+    }
+   ]
+  },
+  {
+   "id": "ovary-l",
+   "name": "Left ovary",
+   "systems": [
+    "reproductive",
+    "endocrine"
+   ],
+   "centroid": [
+    0.04435500130057335,
+    0.060950277373194695,
+    -0.04546983726322651
+   ],
+   "bounds": [
+    0.038216304033994675,
+    0.04897678270936012,
+    -0.0507369227707386,
+    0.05049369856715202,
+    0.07292377203702927,
+    -0.040202751755714417
+   ],
+   "laterality": "left",
+   "fmaId": "FMA:7209",
+   "latinName": "Ovarium",
+   "region": "pelvis",
+   "aliases": [
+    "Ovary"
+   ],
+   "provenance": "hra",
+   "lods": [
+    {
+     "url": "/assets/hra-v1/female/ovary-l.lod0.glb",
+     "bytes": 3384,
+     "triangles": 424,
+     "hash": "1c1c7b8b17aeff2d"
+    },
+    {
+     "url": "/assets/hra-v1/female/ovary-l.lod1.glb",
+     "bytes": 3384,
+     "triangles": 424,
+     "hash": "1c1c7b8b17aeff2d"
+    },
+    {
+     "url": "/assets/hra-v1/female/ovary-l.lod2.glb",
+     "bytes": 3384,
+     "triangles": 424,
+     "hash": "1c1c7b8b17aeff2d"
+    }
+   ]
+  },
+  {
+   "id": "mammary-gland-r",
+   "name": "Right mammary gland",
+   "systems": [
+    "integumentary",
+    "reproductive"
+   ],
+   "centroid": [
+    -0.1,
+    0.44,
+    0.16
+   ],
+   "bounds": [
+    -0.15000000000000002,
+    0.39,
+    0.13,
+    -0.05,
+    0.49,
+    0.19
+   ],
+   "laterality": "right",
+   "fmaId": "FMA:57987",
+   "latinName": "Glandula mammaria",
+   "region": "thorax",
+   "aliases": [
+    "breast",
+    "Mammary gland"
+   ],
+   "provenance": "procedural",
+   "lods": [
+    {
+     "url": "/assets/hra-v1/female/mammary-gland-r.lod0.glb",
+     "bytes": 8212,
+     "triangles": 816,
+     "hash": "e62cdad68e73b79e"
+    },
+    {
+     "url": "/assets/hra-v1/female/mammary-gland-r.lod1.glb",
+     "bytes": 4556,
+     "triangles": 285,
+     "hash": "fa81bef58c9847cf"
+    },
+    {
+     "url": "/assets/hra-v1/female/mammary-gland-r.lod2.glb",
+     "bytes": 2904,
+     "triangles": 96,
+     "hash": "f1a42eea8805bea3"
+    }
+   ]
+  },
+  {
+   "id": "mammary-gland-l",
+   "name": "Left mammary gland",
+   "systems": [
+    "integumentary",
+    "reproductive"
+   ],
+   "centroid": [
+    0.1,
+    0.44,
+    0.16
+   ],
+   "bounds": [
+    0.05,
+    0.39,
+    0.13,
+    0.15000000000000002,
+    0.49,
+    0.19
+   ],
+   "laterality": "left",
+   "fmaId": "FMA:57987",
+   "latinName": "Glandula mammaria",
+   "region": "thorax",
+   "aliases": [
+    "breast",
+    "Mammary gland"
+   ],
+   "provenance": "procedural",
+   "lods": [
+    {
+     "url": "/assets/hra-v1/female/mammary-gland-l.lod0.glb",
+     "bytes": 8212,
+     "triangles": 816,
+     "hash": "8400b12149bdd8f2"
+    },
+    {
+     "url": "/assets/hra-v1/female/mammary-gland-l.lod1.glb",
+     "bytes": 4556,
+     "triangles": 285,
+     "hash": "32c990bbb2a9db17"
+    },
+    {
+     "url": "/assets/hra-v1/female/mammary-gland-l.lod2.glb",
+     "bytes": 2904,
+     "triangles": 96,
+     "hash": "a20b14b67bc8875e"
+    }
+   ]
+  }
+ ]
+}

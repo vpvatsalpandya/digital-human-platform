@@ -41,6 +41,12 @@ export interface ManifestStructure {
   lods?: { url: string; bytes: number; triangles: number }[];
   /** Procedural stand-in used when no mesh asset is available (development / tests). */
   procedural?: ProceduralShape;
+  /**
+   * Where the geometry came from. `hra` is a real anatomical mesh; `procedural` is a
+   * generated stand-in shown because no openly licensed mesh of this structure exists yet.
+   * The interface tells the student which they are looking at.
+   */
+  provenance?: 'hra' | 'procedural';
 }
 
 export type ProceduralShape =

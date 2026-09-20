@@ -1,8 +1,36 @@
 {
   "packs": [
-    { "pack": "procedural-demo", "title": "Procedural development stand-ins", "licence": "MIT", "attribution": "No anatomical mesh data; geometric placeholders generated in code.", "url": null, "retrievedAt": "2026-09-12" },
-    { "pack": "z-anatomy-male", "title": "Z-Anatomy male body (planned Sprint 1)", "licence": "CC-BY-SA-4.0", "attribution": "Z-Anatomy — The libre 3D atlas of anatomy (CC BY-SA 4.0), derived from BodyParts3D, © The Database Center for Life Science (CC BY-SA 2.1 Japan).", "url": "https://github.com/Z-Anatomy/Models-of-human-anatomy", "retrievedAt": null },
-    { "pack": "hra-female-organs", "title": "Human Reference Atlas 3D Reference Objects (planned Sprint 9)", "licence": "CC-BY-4.0", "attribution": "Human Reference Atlas 3D Reference Object Library, HuBMAP Consortium, CC BY 4.0.", "url": "https://humanatlas.io/3d-reference-library", "retrievedAt": null },
-    { "pack": "totalsegmentator-ct", "title": "TotalSegmentator CT dataset (planned Sprint 5)", "licence": "CC-BY-4.0", "attribution": "Wasserthal J et al. TotalSegmentator dataset, CC BY 4.0.", "url": "https://github.com/wasserth/TotalSegmentator", "retrievedAt": null }
+    {
+      "pack": "procedural-demo",
+      "title": "Procedural stand-ins for structures with no open mesh",
+      "licence": "MIT",
+      "attribution": "No anatomical mesh data; geometric placeholders generated in code, hidden by default and labelled in the interface.",
+      "url": null,
+      "retrievedAt": "2026-09-12"
+    },
+    {
+      "pack": "z-anatomy-male",
+      "title": "Z-Anatomy male body (planned Sprint 1)",
+      "licence": "CC-BY-SA-4.0",
+      "attribution": "Z-Anatomy \u2014 The libre 3D atlas of anatomy (CC BY-SA 4.0), derived from BodyParts3D, \u00a9 The Database Center for Life Science (CC BY-SA 2.1 Japan).",
+      "url": "https://github.com/Z-Anatomy/Models-of-human-anatomy",
+      "retrievedAt": null
+    },
+    {
+      "pack": "hra-v1",
+      "title": "Human Reference Atlas organs, both bodies",
+      "licence": "CC-BY-4.0",
+      "attribution": "Human Reference Atlas 3D Reference Object Library, HuBMAP Consortium, CC BY 4.0. Brain regions from the Allen Human Reference Atlas.",
+      "url": "https://humanatlas.io/3d-reference-library",
+      "retrievedAt": "2026-09-20"
+    },
+    {
+      "pack": "totalsegmentator-ct",
+      "title": "TotalSegmentator CT dataset (planned Sprint 5)",
+      "licence": "CC-BY-4.0",
+      "attribution": "Wasserthal J et al. TotalSegmentator dataset, CC BY 4.0.",
+      "url": "https://github.com/wasserth/TotalSegmentator",
+      "retrievedAt": null
+    }
   ]
 }

@@ -15,7 +15,7 @@ platform sold to institutions is unambiguously commercial.
 |---|---|---|---|---|---|---|
 | 1 | BodyParts3D / Anatomography (DBCLS, Japan) | 3D meshes, male, ~2,000 structures, FMA-labelled | CC BY-SA 2.1 JP | Yes | Yes, ShareAlike | **Use** (v1 male body) |
 | 2 | Z-Anatomy (Kervyn, Zielinski et al.) | Retopologised BodyParts3D + additions, Blender, 5,000+ objects | CC BY-SA 4.0 | Yes | Yes, ShareAlike | **Use** (preferred male source; cleaner topology) |
-| 3 | HuBMAP Human Reference Atlas 3D Reference Object Library | GLB organs, male and female, expert-approved | CC BY 4.0 | Yes | Yes | **Use** (female organs; male cross-check) |
+| 3 | HuBMAP Human Reference Atlas 3D Reference Object Library | GLB organs, male and female, expert-approved | CC BY 4.0 | Yes | Yes | **In use** — ships as the `hra-v1` pack for both bodies |
 | 4 | Open Anatomy Project (SPL brain, abdomen, knee, head & neck, inner ear atlases) | Labelled meshes + source MRI/CT | 3D Slicer licence (BSD-style) | Yes | Yes | **Use** (regional atlases, radiology alignment) |
 | 5 | Visible Human Project (NLM) | Cryosection images, CT, MRI, male and female | NLM terms & conditions (no licence since 2019) | Yes | Yes | **Use** (cross-section and radiology base) |
 | 6 | TotalSegmentator CT dataset | 1,228 CTs, 117 labelled structures | CC BY 4.0 (data), Apache 2.0 (tool) | Yes | Yes | **Use** (radiology module; segmentation tool for new cases) |

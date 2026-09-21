@@ -1,0 +1,17 @@
+# Netlify build configuration.
+#
+# The Next.js runtime is installed automatically for `.next` publishes; it turns
+# the App Router's dynamic routes and the tenant middleware into Netlify
+# functions and edge functions. Response headers (security headers and the
+# immutable cache on /assets/*) are declared in next.config.mjs so they apply
+# identically on every host we deploy to.
+
+[build]
+  command = "npm run build"
+  publish = ".next"
+
+[build.environment]
+  NODE_VERSION = "22"
+  # The build must not need a database: Prisma Client is generated from the
+  # schema by the postinstall hook, and no route queries at build time.
+  PRISMA_SKIP_POSTINSTALL_GENERATE = "false"

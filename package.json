@@ -16,7 +16,8 @@
     "db:deploy": "prisma migrate deploy",
     "licenses": "tsx scripts/licenses.ts",
     "manifest:validate": "tsx scripts/validate-manifests.ts",
-    "assets:build": "tsx scripts/assets/build.ts --source procedural --pack demo-baked"
+    "assets:build": "tsx scripts/assets/build.ts --source hra --in ../sources/hra --bp3d ../sources/bp3d --pack hra-v1 --licence CC-BY-SA-4.0",
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.125.0",

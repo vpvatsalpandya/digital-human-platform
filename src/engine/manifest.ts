@@ -29,7 +29,7 @@ export const manifestStructure = z.object({
   bounds: z.tuple([z.number(), z.number(), z.number(), z.number(), z.number(), z.number()]),
   lods: z.array(manifestLod).min(1).optional(),
   procedural: z.unknown().optional(),
-  provenance: z.enum(['hra', 'procedural']).optional(),
+  provenance: z.enum(['hra', 'bp3d', 'procedural']).optional(),
 });
 
 /** Licences the platform may ship. NonCommercial and NoDerivatives packs are rejected here

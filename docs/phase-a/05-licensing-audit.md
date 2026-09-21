@@ -13,7 +13,7 @@ platform sold to institutions is unambiguously commercial.
 
 | # | Candidate | Type | Licence | Commercial | Derivatives | Verdict |
 |---|---|---|---|---|---|---|
-| 1 | BodyParts3D / Anatomography (DBCLS, Japan) | 3D meshes, male, ~2,000 structures, FMA-labelled | CC BY-SA 2.1 JP | Yes | Yes, ShareAlike | **Use** (v1 male body) |
+| 1 | BodyParts3D / Anatomography (DBCLS, Japan) | 3D meshes, male, ~2,000 structures, FMA-labelled | CC BY-SA 2.1 JP | Yes | Yes, ShareAlike | **In use** — skeleton, muscles, stomach, adrenals in `hra-v1` |
 | 2 | Z-Anatomy (Kervyn, Zielinski et al.) | Retopologised BodyParts3D + additions, Blender, 5,000+ objects | CC BY-SA 4.0 | Yes | Yes, ShareAlike | **Use** (preferred male source; cleaner topology) |
 | 3 | HuBMAP Human Reference Atlas 3D Reference Object Library | GLB organs, male and female, expert-approved | CC BY 4.0 | Yes | Yes | **In use** — ships as the `hra-v1` pack for both bodies |
 | 4 | Open Anatomy Project (SPL brain, abdomen, knee, head & neck, inner ear atlases) | Labelled meshes + source MRI/CT | 3D Slicer licence (BSD-style) | Yes | Yes | **Use** (regional atlases, radiology alignment) |

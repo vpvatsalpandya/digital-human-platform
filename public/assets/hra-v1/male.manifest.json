@@ -1,14 +1,14 @@
 {
  "body": "male",
- "version": "2026-09-20",
+ "version": "2026-09-21",
  "pack": "hra-v1",
- "licence": "CC-BY-4.0",
- "attribution": "Human Reference Atlas 3D Reference Object Library, HuBMAP Consortium, CC BY 4.0. Brain regions from the Allen Human Reference Atlas. Structures marked as stand-ins are generated placeholders, not anatomical data.",
+ "licence": "CC-BY-SA-4.0",
+ "attribution": "Organs, brain, skin, pelvis and great vessels: Human Reference Atlas 3D Reference Object Library, HuBMAP Consortium, CC BY 4.0, with brain regions from the Allen Human Reference Atlas. Skeleton, muscles, stomach and adrenal glands: BodyParts3D, © The Database Center for Life Science, CC BY-SA 2.1 Japan. Derivatives of the BodyParts3D meshes are released under CC BY-SA 4.0.",
  "packs": [
   {
    "system": "skeletal",
    "url": "/assets/hra-v1/male/system-skeletal.lod2.bin",
-   "bytes": 80304,
+   "bytes": 138656,
    "structureIds": [
     "skull",
     "vertebral-column",
@@ -27,7 +27,7 @@
   {
    "system": "muscular",
    "url": "/assets/hra-v1/male/system-muscular.lod2.bin",
-   "bytes": 25152,
+   "bytes": 148668,
    "structureIds": [
     "deltoid-r",
     "deltoid-l",
@@ -45,7 +45,7 @@
   {
    "system": "nervous",
    "url": "/assets/hra-v1/male/system-nervous.lod2.bin",
-   "bytes": 27024,
+   "bytes": 27012,
    "structureIds": [
     "brain",
     "spinal-cord",
@@ -58,7 +58,7 @@
   {
    "system": "endocrine",
    "url": "/assets/hra-v1/male/system-endocrine.lod2.bin",
-   "bytes": 8864,
+   "bytes": 25004,
    "structureIds": [
     "thyroid-gland",
     "adrenal-gland-r",
@@ -78,7 +78,7 @@
   {
    "system": "respiratory",
    "url": "/assets/hra-v1/male/system-respiratory.lod2.bin",
-   "bytes": 19276,
+   "bytes": 19244,
    "structureIds": [
     "trachea",
     "lung-r",
@@ -88,7 +88,7 @@
   {
    "system": "digestive",
    "url": "/assets/hra-v1/male/system-digestive.lod2.bin",
-   "bytes": 58876,
+   "bytes": 65096,
    "structureIds": [
     "liver",
     "stomach",
@@ -110,7 +110,7 @@
   {
    "system": "reproductive",
    "url": "/assets/hra-v1/male/system-reproductive.lod2.bin",
-   "bytes": 20760,
+   "bytes": 19880,
    "structureIds": [
     "prostate",
     "testis-r",
@@ -169,17 +169,17 @@
     "skeletal"
    ],
    "centroid": [
-    0,
-    0.72,
-    0
+    -0.00001991167664527893,
+    0.7909816801548004,
+    -0.01508471742272377
    ],
    "bounds": [
-    -0.1,
-    0.605,
-    -0.11000000000000001,
-    0.1,
-    0.835,
-    0.11000000000000001
+    -0.07939974963665009,
+    0.6781802773475647,
+    -0.12483485043048859,
+    0.07935992628335953,
+    0.9037830829620361,
+    0.09466541558504105
    ],
    "laterality": "none",
    "fmaId": "FMA:46565",
@@ -188,25 +188,25 @@
    "aliases": [
     "cranium"
    ],
-   "provenance": "procedural",
+   "provenance": "bp3d",
    "lods": [
     {
      "url": "/assets/hra-v1/male/skull.lod0.glb",
-     "bytes": 8108,
-     "triangles": 816,
-     "hash": "8b7974b2083ca93f"
+     "bytes": 132860,
+     "triangles": 25952,
+     "hash": "13a4ed679aa50eaa"
     },
     {
      "url": "/assets/hra-v1/male/skull.lod1.glb",
-     "bytes": 4452,
-     "triangles": 284,
-     "hash": "794bd1a943e8e55c"
+     "bytes": 44164,
+     "triangles": 7988,
+     "hash": "7e395cd1e8f244ee"
     },
     {
      "url": "/assets/hra-v1/male/skull.lod2.glb",
-     "bytes": 2876,
-     "triangles": 97,
-     "hash": "14d14e2d400209d6"
+     "bytes": 13952,
+     "triangles": 2362,
+     "hash": "8c6deb4934903ce1"
     }
    ]
   },
@@ -217,17 +217,17 @@
     "skeletal"
    ],
    "centroid": [
-    0,
-    0.28,
-    -0.05
+    -0.00006988830864429474,
+    0.43275211378932,
+    -0.04496655333787203
    ],
    "bounds": [
-    -0.03,
-    -0.05999999999999994,
-    -0.08,
-    0.03,
-    0.62,
-    -0.020000000000000004
+    -0.0529254712164402,
+    0.12446960061788559,
+    -0.10593394190073013,
+    0.05278569459915161,
+    0.7410346269607544,
+    0.016000835224986076
    ],
    "laterality": "none",
    "fmaId": "FMA:13478",
@@ -237,25 +237,25 @@
     "spine",
     "backbone"
    ],
-   "provenance": "procedural",
+   "provenance": "bp3d",
    "lods": [
     {
      "url": "/assets/hra-v1/male/vertebral-column.lod0.glb",
-     "bytes": 3276,
-     "triangles": 216,
-     "hash": "ab86fa18ac1eba80"
+     "bytes": 121192,
+     "triangles": 25978,
+     "hash": "4571c4a1658c4a05"
     },
     {
      "url": "/assets/hra-v1/male/vertebral-column.lod1.glb",
-     "bytes": 2368,
-     "triangles": 74,
-     "hash": "7d8ff42d0fa14830"
+     "bytes": 38924,
+     "triangles": 7998,
+     "hash": "849e37b6889047ff"
     },
     {
      "url": "/assets/hra-v1/male/vertebral-column.lod2.glb",
-     "bytes": 2124,
-     "triangles": 32,
-     "hash": "ff5761cd3abbae64"
+     "bytes": 11660,
+     "triangles": 2382,
+     "hash": "304ee1bb10723582"
     }
    ]
   },
@@ -266,17 +266,17 @@
     "skeletal"
    ],
    "centroid": [
-    0,
-    0.42,
-    0
+    -0.00000677257776260376,
+    0.4339524209499359,
+    0.008376024663448334
    ],
    "bounds": [
-    -0.17,
-    0.21599999999999997,
-    -0.1275,
-    0.17,
-    0.624,
-    0.1275
+    -0.14340655505657196,
+    0.24348706007003784,
+    -0.10208705067634583,
+    0.14339300990104675,
+    0.624417781829834,
+    0.11883910000324249
    ],
    "laterality": "none",
    "fmaId": "FMA:7480",
@@ -285,25 +285,25 @@
    "aliases": [
     "thoracic cage"
    ],
-   "provenance": "procedural",
+   "provenance": "bp3d",
    "lods": [
     {
      "url": "/assets/hra-v1/male/rib-cage.lod0.glb",
-     "bytes": 8180,
-     "triangles": 816,
-     "hash": "14913f4061093ef9"
+     "bytes": 135604,
+     "triangles": 26000,
+     "hash": "c457c6852179d09d"
     },
     {
      "url": "/assets/hra-v1/male/rib-cage.lod1.glb",
-     "bytes": 4504,
-     "triangles": 285,
-     "hash": "a6208f90cab0d46b"
+     "bytes": 43548,
+     "triangles": 8000,
+     "hash": "2f528e9b18fa272d"
     },
     {
      "url": "/assets/hra-v1/male/rib-cage.lod2.glb",
-     "bytes": 2884,
-     "triangles": 97,
-     "hash": "2ce9fee55e077f22"
+     "bytes": 12660,
+     "triangles": 2400,
+     "hash": "fba5b33e56d40a37"
     }
    ]
   },
@@ -362,17 +362,17 @@
     "skeletal"
    ],
    "centroid": [
-    -0.24,
-    0.35,
-    0
+    -0.1995134875178337,
+    0.4272255450487137,
+    -0.02642261507571675
    ],
    "bounds": [
-    -0.26,
-    0.18,
-    -0.02,
-    -0.22,
-    0.52,
-    0.02
+    -0.2524619400501251,
+    0.2657068073749542,
+    -0.05226850509643555,
+    -0.1465650349855423,
+    0.5887442827224731,
+    -0.0005767250549979508
    ],
    "laterality": "right",
    "fmaId": "FMA:9611",
@@ -381,25 +381,25 @@
    "aliases": [
     "Humerus"
    ],
-   "provenance": "procedural",
+   "provenance": "bp3d",
    "lods": [
     {
      "url": "/assets/hra-v1/male/humerus-r.lod0.glb",
-     "bytes": 3276,
-     "triangles": 216,
-     "hash": "8bf17f53f70884e9"
+     "bytes": 25744,
+     "triangles": 7568,
+     "hash": "1b418f02b10951a7"
     },
     {
      "url": "/assets/hra-v1/male/humerus-r.lod1.glb",
-     "bytes": 2384,
-     "triangles": 75,
-     "hash": "2fd9cc1270fdbbf4"
+     "bytes": 25744,
+     "triangles": 7568,
+     "hash": "1b418f02b10951a7"
     },
     {
      "url": "/assets/hra-v1/male/humerus-r.lod2.glb",
-     "bytes": 2060,
-     "triangles": 30,
-     "hash": "9d532356d7a8db6b"
+     "bytes": 9240,
+     "triangles": 2240,
+     "hash": "d3830f375279a8d0"
     }
    ]
   },
@@ -410,17 +410,17 @@
     "skeletal"
    ],
    "centroid": [
-    0.24,
-    0.35,
-    0
+    0.20082218945026398,
+    0.42722027003765106,
+    -0.0264085307426285
    ],
    "bounds": [
-    0.22,
-    0.18,
-    -0.02,
-    0.26,
-    0.52,
-    0.02
+    0.14790737628936768,
+    0.2657172977924347,
+    -0.05225084722042084,
+    0.2537370026111603,
+    0.5887232422828674,
+    -0.0005662142648361623
    ],
    "laterality": "left",
    "fmaId": "FMA:9611",
@@ -429,25 +429,25 @@
    "aliases": [
     "Humerus"
    ],
-   "provenance": "procedural",
+   "provenance": "bp3d",
    "lods": [
     {
      "url": "/assets/hra-v1/male/humerus-l.lod0.glb",
-     "bytes": 3276,
-     "triangles": 216,
-     "hash": "823bdcc89cd35af1"
+     "bytes": 26540,
+     "triangles": 7688,
+     "hash": "53ce1bcae949a6fa"
     },
     {
      "url": "/assets/hra-v1/male/humerus-l.lod1.glb",
-     "bytes": 2384,
-     "triangles": 75,
-     "hash": "d1ba24a16601c79a"
+     "bytes": 26540,
+     "triangles": 7688,
+     "hash": "53ce1bcae949a6fa"
     },
     {
      "url": "/assets/hra-v1/male/humerus-l.lod2.glb",
-     "bytes": 2060,
-     "triangles": 30,
-     "hash": "f8102c4d24dd3244"
+     "bytes": 9200,
+     "triangles": 2196,
+     "hash": "9fa725bd7bcc59df"
     }
    ]
   },
@@ -458,17 +458,17 @@
     "skeletal"
    ],
    "centroid": [
-    -0.26,
-    0.05,
-    0.02
+    -0.24969445168972015,
+    0.16019091848284006,
+    -0.015675842761993408
    ],
    "bounds": [
-    -0.278,
-    -0.103,
-    0.0020000000000000018,
-    -0.24200000000000002,
-    0.203,
-    0.038
+    -0.2931322455406189,
+    0.03023754246532917,
+    -0.05882710963487625,
+    -0.2062566578388214,
+    0.29014429450035095,
+    0.027475424110889435
    ],
    "laterality": "right",
    "region": "upper-limb",
@@ -476,25 +476,25 @@
     "forearm bones",
     "Radius and ulna"
    ],
-   "provenance": "procedural",
+   "provenance": "bp3d",
    "lods": [
     {
      "url": "/assets/hra-v1/male/radius-ulna-r.lod0.glb",
-     "bytes": 3288,
-     "triangles": 216,
-     "hash": "a9ddf77157505128"
+     "bytes": 11440,
+     "triangles": 3012,
+     "hash": "e84f30f9aff7da7c"
     },
     {
      "url": "/assets/hra-v1/male/radius-ulna-r.lod1.glb",
-     "bytes": 2396,
-     "triangles": 74,
-     "hash": "eb66d4de916d9031"
+     "bytes": 11440,
+     "triangles": 3012,
+     "hash": "e84f30f9aff7da7c"
     },
     {
      "url": "/assets/hra-v1/male/radius-ulna-r.lod2.glb",
-     "bytes": 2160,
-     "triangles": 43,
-     "hash": "59080c201198bc2d"
+     "bytes": 9096,
+     "triangles": 2272,
+     "hash": "5a4fa3508d9dbf82"
     }
    ]
   },
@@ -505,17 +505,17 @@
     "skeletal"
    ],
    "centroid": [
-    0.26,
-    0.05,
-    0.02
+    0.2508544325828552,
+    0.16011892911046743,
+    -0.015624812804162502
    ],
    "bounds": [
-    0.24200000000000002,
-    -0.103,
-    0.0020000000000000018,
-    0.278,
-    0.203,
-    0.038
+    0.20762842893600464,
+    0.030072523280978203,
+    -0.059086620807647705,
+    0.2940804362297058,
+    0.29016533493995667,
+    0.0278369951993227
    ],
    "laterality": "left",
    "region": "upper-limb",
@@ -523,25 +523,25 @@
     "forearm bones",
     "Radius and ulna"
    ],
-   "provenance": "procedural",
+   "provenance": "bp3d",
    "lods": [
     {
      "url": "/assets/hra-v1/male/radius-ulna-l.lod0.glb",
-     "bytes": 3288,
-     "triangles": 216,
-     "hash": "b6741db66f57b7fe"
+     "bytes": 10604,
+     "triangles": 2912,
+     "hash": "6937c21c049c3897"
     },
     {
      "url": "/assets/hra-v1/male/radius-ulna-l.lod1.glb",
-     "bytes": 2396,
-     "triangles": 74,
-     "hash": "1fbb74cd4f117d65"
+     "bytes": 10604,
+     "triangles": 2912,
+     "hash": "6937c21c049c3897"
     },
     {
      "url": "/assets/hra-v1/male/radius-ulna-l.lod2.glb",
-     "bytes": 2160,
-     "triangles": 43,
-     "hash": "57c2fd5c7608aeea"
+     "bytes": 8868,
+     "triangles": 2300,
+     "hash": "0d983c867b32e91f"
     }
    ]
   },
@@ -746,17 +746,17 @@
     "muscular"
    ],
    "centroid": [
-    -0.2,
-    0.5,
-    0
+    -0.1622692048549652,
+    0.5204559117555618,
+    -0.04071827884763479
    ],
    "bounds": [
-    -0.265,
-    0.422,
-    -0.065,
-    -0.135,
-    0.578,
-    0.065
+    -0.2381536364555359,
+    0.43235477805137634,
+    -0.10305013507604599,
+    -0.08638477325439453,
+    0.6085570454597473,
+    0.021613577380776405
    ],
    "laterality": "right",
    "fmaId": "FMA:32521",
@@ -765,25 +765,25 @@
    "aliases": [
     "Deltoid"
    ],
-   "provenance": "procedural",
+   "provenance": "bp3d",
    "lods": [
     {
      "url": "/assets/hra-v1/male/deltoid-r.lod0.glb",
-     "bytes": 7828,
-     "triangles": 816,
-     "hash": "d0795c5ca9f87937"
+     "bytes": 28252,
+     "triangles": 5406,
+     "hash": "5a67e8d72b2e1cc8"
     },
     {
      "url": "/assets/hra-v1/male/deltoid-r.lod1.glb",
-     "bytes": 4236,
-     "triangles": 284,
-     "hash": "3156f7f753fe6148"
+     "bytes": 28252,
+     "triangles": 5406,
+     "hash": "5a67e8d72b2e1cc8"
     },
     {
      "url": "/assets/hra-v1/male/deltoid-r.lod2.glb",
-     "bytes": 2860,
-     "triangles": 96,
-     "hash": "593bc193cbb2e1f2"
+     "bytes": 14660,
+     "triangles": 2396,
+     "hash": "07380ded07713d84"
     }
    ]
   },
@@ -794,17 +794,17 @@
     "muscular"
    ],
    "centroid": [
-    0.2,
-    0.5,
-    0
+    0.1636294238269329,
+    0.5204559117555618,
+    -0.04071827884763479
    ],
    "bounds": [
-    0.135,
-    0.422,
-    -0.065,
-    0.265,
-    0.578,
-    0.065
+    0.08774498850107193,
+    0.43235477805137634,
+    -0.10305013507604599,
+    0.23951385915279388,
+    0.6085570454597473,
+    0.021613577380776405
    ],
    "laterality": "left",
    "fmaId": "FMA:32521",
@@ -813,25 +813,25 @@
    "aliases": [
     "Deltoid"
    ],
-   "provenance": "procedural",
+   "provenance": "bp3d",
    "lods": [
     {
      "url": "/assets/hra-v1/male/deltoid-l.lod0.glb",
-     "bytes": 7828,
-     "triangles": 816,
-     "hash": "f4e4b9aaf57977ac"
+     "bytes": 28232,
+     "triangles": 5406,
+     "hash": "e3686a33549d3b8f"
     },
     {
      "url": "/assets/hra-v1/male/deltoid-l.lod1.glb",
-     "bytes": 4236,
-     "triangles": 284,
-     "hash": "a025a4d00076e41d"
+     "bytes": 28232,
+     "triangles": 5406,
+     "hash": "e3686a33549d3b8f"
     },
     {
      "url": "/assets/hra-v1/male/deltoid-l.lod2.glb",
-     "bytes": 2860,
-     "triangles": 96,
-     "hash": "ccd9c27a77418fe4"
+     "bytes": 14676,
+     "triangles": 2398,
+     "hash": "3d0407822ecd9ce0"
     }
    ]
   },
@@ -842,17 +842,17 @@
     "muscular"
    ],
    "centroid": [
-    -0.24,
-    0.35,
-    0.04
+    -0.1911921203136444,
+    0.41027799248695374,
+    -0.012841250281780958
    ],
    "bounds": [
-    -0.27,
-    0.20999999999999996,
-    0.010000000000000002,
-    -0.21,
-    0.49,
-    0.07
+    -0.2409200668334961,
+    0.22878462076187134,
+    -0.03464218229055405,
+    -0.14146417379379272,
+    0.5917713642120361,
+    0.00895968172699213
    ],
    "laterality": "right",
    "fmaId": "FMA:37670",
@@ -862,25 +862,25 @@
     "biceps",
     "Biceps brachii"
    ],
-   "provenance": "procedural",
+   "provenance": "bp3d",
    "lods": [
     {
      "url": "/assets/hra-v1/male/biceps-brachii-r.lod0.glb",
-     "bytes": 3388,
-     "triangles": 216,
-     "hash": "fb32b36197f6d398"
+     "bytes": 18796,
+     "triangles": 3282,
+     "hash": "baa9886761a1cf1b"
     },
     {
      "url": "/assets/hra-v1/male/biceps-brachii-r.lod1.glb",
-     "bytes": 2424,
-     "triangles": 75,
-     "hash": "8acbe6c0c2628424"
+     "bytes": 18796,
+     "triangles": 3282,
+     "hash": "baa9886761a1cf1b"
     },
     {
      "url": "/assets/hra-v1/male/biceps-brachii-r.lod2.glb",
-     "bytes": 2236,
-     "triangles": 40,
-     "hash": "30527f11580c3b9b"
+     "bytes": 14456,
+     "triangles": 2398,
+     "hash": "4ec976e5d729bd34"
     }
    ]
   },
@@ -891,17 +891,17 @@
     "muscular"
    ],
    "centroid": [
-    0.24,
-    0.35,
-    0.04
+    0.1925523355603218,
+    0.41027799248695374,
+    -0.012840725015848875
    ],
    "bounds": [
-    0.21,
-    0.20999999999999996,
-    0.010000000000000002,
-    0.27,
-    0.49,
-    0.07
+    0.14282438158988953,
+    0.22878462076187134,
+    -0.03464218229055405,
+    0.2422802895307541,
+    0.5917713642120361,
+    0.008960732258856297
    ],
    "laterality": "left",
    "fmaId": "FMA:37670",
@@ -911,25 +911,25 @@
     "biceps",
     "Biceps brachii"
    ],
-   "provenance": "procedural",
+   "provenance": "bp3d",
    "lods": [
     {
      "url": "/assets/hra-v1/male/biceps-brachii-l.lod0.glb",
-     "bytes": 3388,
-     "triangles": 216,
-     "hash": "5d129c260a840086"
+     "bytes": 18812,
+     "triangles": 3282,
+     "hash": "40c7d318686c8e0e"
     },
     {
      "url": "/assets/hra-v1/male/biceps-brachii-l.lod1.glb",
-     "bytes": 2424,
-     "triangles": 75,
-     "hash": "c99fab8cd73dd2a5"
+     "bytes": 18812,
+     "triangles": 3282,
+     "hash": "40c7d318686c8e0e"
     },
     {
      "url": "/assets/hra-v1/male/biceps-brachii-l.lod2.glb",
-     "bytes": 2236,
-     "triangles": 40,
-     "hash": "9a01fcbd2317acbf"
+     "bytes": 14424,
+     "triangles": 2396,
+     "hash": "086963ef3eb19985"
     }
    ]
   },
@@ -940,17 +940,17 @@
     "muscular"
    ],
    "centroid": [
-    -0.09,
-    0.45,
-    0.14
+    -0.1039426566567272,
+    0.46660932898521423,
+    0.051932369358837605
    ],
    "bounds": [
-    -0.16999999999999998,
-    0.38,
-    0.125,
-    -0.009999999999999995,
-    0.52,
-    0.15500000000000003
+    -0.20350389182567596,
+    0.3451470732688904,
+    -0.020777342841029167,
+    -0.004381421487778425,
+    0.5880715847015381,
+    0.12464208155870438
    ],
    "laterality": "right",
    "fmaId": "FMA:9627",
@@ -960,25 +960,25 @@
     "pecs",
     "Pectoralis major"
    ],
-   "provenance": "procedural",
+   "provenance": "bp3d",
    "lods": [
     {
      "url": "/assets/hra-v1/male/pectoralis-major-r.lod0.glb",
-     "bytes": 1984,
-     "triangles": 12,
-     "hash": "8a38d37140944e34"
+     "bytes": 82940,
+     "triangles": 19146,
+     "hash": "a88e60bf89749109"
     },
     {
      "url": "/assets/hra-v1/male/pectoralis-major-r.lod1.glb",
-     "bytes": 1984,
-     "triangles": 12,
-     "hash": "8a38d37140944e34"
+     "bytes": 36488,
+     "triangles": 7528,
+     "hash": "af416732c2332ab9"
     },
     {
      "url": "/assets/hra-v1/male/pectoralis-major-r.lod2.glb",
-     "bytes": 1984,
-     "triangles": 12,
-     "hash": "8a38d37140944e34"
+     "bytes": 13108,
+     "triangles": 2376,
+     "hash": "e46d4a41c22a2836"
     }
    ]
   },
@@ -989,17 +989,17 @@
     "muscular"
    ],
    "centroid": [
-    0.09,
-    0.45,
-    0.14
+    0.10530286584980786,
+    0.46660932898521423,
+    0.051932369358837605
    ],
    "bounds": [
-    0.009999999999999995,
-    0.38,
-    0.125,
-    0.16999999999999998,
-    0.52,
-    0.15500000000000003
+    0.005741632077842951,
+    0.3451470732688904,
+    -0.020777342841029167,
+    0.20486409962177277,
+    0.5880715847015381,
+    0.12464208155870438
    ],
    "laterality": "left",
    "fmaId": "FMA:9627",
@@ -1009,25 +1009,25 @@
     "pecs",
     "Pectoralis major"
    ],
-   "provenance": "procedural",
+   "provenance": "bp3d",
    "lods": [
     {
      "url": "/assets/hra-v1/male/pectoralis-major-l.lod0.glb",
-     "bytes": 1984,
-     "triangles": 12,
-     "hash": "9f485de9b86b9f48"
+     "bytes": 83004,
+     "triangles": 19146,
+     "hash": "8024e8be3003c4ab"
     },
     {
      "url": "/assets/hra-v1/male/pectoralis-major-l.lod1.glb",
-     "bytes": 1984,
-     "triangles": 12,
-     "hash": "9f485de9b86b9f48"
+     "bytes": 36112,
+     "triangles": 7468,
+     "hash": "6ea218df2b472023"
     },
     {
      "url": "/assets/hra-v1/male/pectoralis-major-l.lod2.glb",
-     "bytes": 1984,
-     "triangles": 12,
-     "hash": "9f485de9b86b9f48"
+     "bytes": 13168,
+     "triangles": 2388,
+     "hash": "e8258b251d09854f"
     }
    ]
   },
@@ -1086,17 +1086,17 @@
     "muscular"
    ],
    "centroid": [
-    -0.1,
-    -0.28,
-    0.05
+    -0.10157438926398754,
+    -0.1928710676729679,
+    0.004432279616594315
    ],
    "bounds": [
-    -0.15000000000000002,
-    -0.5,
-    0,
-    -0.05,
-    -0.06,
-    0.1
+    -0.16710515320301056,
+    -0.4852781295776367,
+    -0.04547424986958504,
+    -0.03604362532496452,
+    0.0995359942317009,
+    0.054338809102773666
    ],
    "laterality": "right",
    "fmaId": "FMA:22428",
@@ -1106,25 +1106,25 @@
     "quads",
     "Quadriceps femoris"
    ],
-   "provenance": "procedural",
+   "provenance": "bp3d",
    "lods": [
     {
      "url": "/assets/hra-v1/male/quadriceps-femoris-r.lod0.glb",
-     "bytes": 3408,
-     "triangles": 216,
-     "hash": "c7a16870e8d474af"
+     "bytes": 102044,
+     "triangles": 21188,
+     "hash": "e21a0a99b6e99902"
     },
     {
      "url": "/assets/hra-v1/male/quadriceps-femoris-r.lod1.glb",
-     "bytes": 2456,
-     "triangles": 81,
-     "hash": "cdcd94cbfd902840"
+     "bytes": 42656,
+     "triangles": 7998,
+     "hash": "90330f1a2a5d3be3"
     },
     {
      "url": "/assets/hra-v1/male/quadriceps-femoris-r.lod2.glb",
-     "bytes": 2244,
-     "triangles": 43,
-     "hash": "fa723d16f506ed40"
+     "bytes": 14888,
+     "triangles": 2400,
+     "hash": "216818863f976f5e"
     }
    ]
   },
@@ -1135,17 +1135,17 @@
     "muscular"
    ],
    "centroid": [
-    0.1,
-    -0.28,
-    0.05
+    0.10293518006801605,
+    -0.1928710676729679,
+    0.004432279616594315
    ],
    "bounds": [
-    0.05,
-    -0.5,
-    0,
-    0.15000000000000002,
-    -0.06,
-    0.1
+    0.03740394115447998,
+    -0.4852781295776367,
+    -0.04547424986958504,
+    0.16846641898155212,
+    0.0995359942317009,
+    0.054338809102773666
    ],
    "laterality": "left",
    "fmaId": "FMA:22428",
@@ -1155,25 +1155,25 @@
     "quads",
     "Quadriceps femoris"
    ],
-   "provenance": "procedural",
+   "provenance": "bp3d",
    "lods": [
     {
      "url": "/assets/hra-v1/male/quadriceps-femoris-l.lod0.glb",
-     "bytes": 3408,
-     "triangles": 216,
-     "hash": "4bf2f78781c09dfa"
+     "bytes": 102180,
+     "triangles": 21188,
+     "hash": "7fd4f6c1e5ab14a5"
     },
     {
      "url": "/assets/hra-v1/male/quadriceps-femoris-l.lod1.glb",
-     "bytes": 2456,
-     "triangles": 81,
-     "hash": "7a8ee623ae07c410"
+     "bytes": 42656,
+     "triangles": 8000,
+     "hash": "5061c7d1c3844852"
     },
     {
      "url": "/assets/hra-v1/male/quadriceps-femoris-l.lod2.glb",
-     "bytes": 2244,
-     "triangles": 43,
-     "hash": "aa47942eb5dcad38"
+     "bytes": 14844,
+     "triangles": 2400,
+     "hash": "f620d2ca1b9b8ad3"
     }
    ]
   },
@@ -1184,17 +1184,17 @@
     "muscular"
    ],
    "centroid": [
-    -0.1,
-    -0.68,
-    -0.05
+    -0.07223914097994566,
+    -0.5244206786155701,
+    -0.05414766538888216
    ],
    "bounds": [
-    -0.14,
-    -0.8600000000000001,
-    -0.09,
-    -0.060000000000000005,
-    -0.5,
-    -0.010000000000000002
+    -0.12228730320930481,
+    -0.6869531869888306,
+    -0.09980863332748413,
+    -0.02219097875058651,
+    -0.36188817024230957,
+    -0.00848669745028019
    ],
    "laterality": "right",
    "fmaId": "FMA:22541",
@@ -1204,25 +1204,25 @@
     "calf muscle",
     "Gastrocnemius"
    ],
-   "provenance": "procedural",
+   "provenance": "bp3d",
    "lods": [
     {
      "url": "/assets/hra-v1/male/gastrocnemius-r.lod0.glb",
-     "bytes": 3392,
-     "triangles": 216,
-     "hash": "d8f1a684c58df7a0"
+     "bytes": 39300,
+     "triangles": 6894,
+     "hash": "05c79b135f4ff63e"
     },
     {
      "url": "/assets/hra-v1/male/gastrocnemius-r.lod1.glb",
-     "bytes": 2444,
-     "triangles": 81,
-     "hash": "e12770224dbed2cf"
+     "bytes": 39300,
+     "triangles": 6894,
+     "hash": "05c79b135f4ff63e"
     },
     {
      "url": "/assets/hra-v1/male/gastrocnemius-r.lod2.glb",
-     "bytes": 2236,
-     "triangles": 43,
-     "hash": "10e3292f4965ca7e"
+     "bytes": 16224,
+     "triangles": 2400,
+     "hash": "b9a4e23e83c541dc"
     }
    ]
   },
@@ -1233,17 +1233,17 @@
     "muscular"
    ],
    "centroid": [
-    0.1,
-    -0.68,
-    -0.05
+    0.07359935063868761,
+    -0.5244206786155701,
+    -0.05414766538888216
    ],
    "bounds": [
-    0.060000000000000005,
-    -0.8600000000000001,
-    -0.09,
-    0.14,
-    -0.5,
-    -0.010000000000000002
+    0.02355119027197361,
+    -0.6869531869888306,
+    -0.09980863332748413,
+    0.12364751100540161,
+    -0.36188817024230957,
+    -0.00848669745028019
    ],
    "laterality": "left",
    "fmaId": "FMA:22541",
@@ -1253,25 +1253,25 @@
     "calf muscle",
     "Gastrocnemius"
    ],
-   "provenance": "procedural",
+   "provenance": "bp3d",
    "lods": [
     {
      "url": "/assets/hra-v1/male/gastrocnemius-l.lod0.glb",
-     "bytes": 3392,
-     "triangles": 216,
-     "hash": "c11a031355a3911a"
+     "bytes": 39336,
+     "triangles": 6894,
+     "hash": "73bee0ea8d465ab2"
     },
     {
      "url": "/assets/hra-v1/male/gastrocnemius-l.lod1.glb",
-     "bytes": 2444,
-     "triangles": 81,
-     "hash": "5b5fe064f5b0bc6b"
+     "bytes": 39336,
+     "triangles": 6894,
+     "hash": "73bee0ea8d465ab2"
     },
     {
      "url": "/assets/hra-v1/male/gastrocnemius-l.lod2.glb",
-     "bytes": 2236,
-     "triangles": 43,
-     "hash": "dd5ce5994db53afa"
+     "bytes": 16188,
+     "triangles": 2400,
+     "hash": "54ac7092548855bc"
     }
    ]
   },
@@ -1331,16 +1331,16 @@
    ],
    "centroid": [
     0,
-    0.3,
-    -0.05
+    0.42,
+    -0.04
    ],
    "bounds": [
     -0.008,
-    0.01699999999999996,
-    -0.058,
+    0.19699999999999998,
+    -0.048,
     0.008,
-    0.583,
-    -0.042
+    0.643,
+    -0.032
    ],
    "laterality": "none",
    "fmaId": "FMA:7647",
@@ -1350,21 +1350,21 @@
    "lods": [
     {
      "url": "/assets/hra-v1/male/spinal-cord.lod0.glb",
-     "bytes": 3232,
+     "bytes": 3236,
      "triangles": 216,
-     "hash": "65e4989ccbb2a1e3"
+     "hash": "69701690ff3ca137"
     },
     {
      "url": "/assets/hra-v1/male/spinal-cord.lod1.glb",
-     "bytes": 2324,
+     "bytes": 2364,
      "triangles": 74,
-     "hash": "a1a7f6be0c4e2b2c"
+     "hash": "fd6dcc5310acf9d9"
     },
     {
      "url": "/assets/hra-v1/male/spinal-cord.lod2.glb",
-     "bytes": 2180,
-     "triangles": 38,
-     "hash": "9ee1e41de941f386"
+     "bytes": 2168,
+     "triangles": 40,
+     "hash": "925544909b658836"
     }
    ]
   },
@@ -1756,17 +1756,17 @@
     "respiratory"
    ],
    "centroid": [
-    -0.11,
-    0.42,
-    0
+    -0.075,
+    0.47,
+    -0.01
    ],
    "bounds": [
-    -0.178,
-    0.301,
-    -0.07650000000000001,
-    -0.041999999999999996,
-    0.5389999999999999,
-    0.07650000000000001
+    -0.13874999999999998,
+    0.34249999999999997,
+    -0.08875,
+    -0.011249999999999996,
+    0.5974999999999999,
+    0.06875
    ],
    "laterality": "right",
    "fmaId": "FMA:7195",
@@ -1779,21 +1779,21 @@
    "lods": [
     {
      "url": "/assets/hra-v1/male/lung-r.lod0.glb",
-     "bytes": 8124,
+     "bytes": 8152,
      "triangles": 816,
-     "hash": "3c75a136da2ea7c5"
+     "hash": "baddc14c15f67b26"
     },
     {
      "url": "/assets/hra-v1/male/lung-r.lod1.glb",
-     "bytes": 4460,
+     "bytes": 4392,
      "triangles": 285,
-     "hash": "f3c83f25865ae62a"
+     "hash": "6b92b5256727ab5c"
     },
     {
      "url": "/assets/hra-v1/male/lung-r.lod2.glb",
-     "bytes": 2896,
-     "triangles": 97,
-     "hash": "e219b82b4af58843"
+     "bytes": 2880,
+     "triangles": 96,
+     "hash": "ae18671b05a01aec"
     }
    ]
   },
@@ -1804,17 +1804,17 @@
     "respiratory"
    ],
    "centroid": [
-    0.11,
-    0.42,
-    0
+    0.075,
+    0.47,
+    -0.01
    ],
    "bounds": [
-    0.041999999999999996,
-    0.301,
-    -0.07650000000000001,
-    0.178,
-    0.5389999999999999,
-    0.07650000000000001
+    0.011249999999999996,
+    0.34249999999999997,
+    -0.08875,
+    0.13874999999999998,
+    0.5974999999999999,
+    0.06875
    ],
    "laterality": "left",
    "fmaId": "FMA:7195",
@@ -1827,21 +1827,21 @@
    "lods": [
     {
      "url": "/assets/hra-v1/male/lung-l.lod0.glb",
-     "bytes": 8124,
+     "bytes": 8152,
      "triangles": 816,
-     "hash": "ef23af814149b44d"
+     "hash": "2136e85a13ebd32a"
     },
     {
      "url": "/assets/hra-v1/male/lung-l.lod1.glb",
-     "bytes": 4460,
+     "bytes": 4392,
      "triangles": 285,
-     "hash": "e4b62b6ba6662e05"
+     "hash": "457e67376170c525"
     },
     {
      "url": "/assets/hra-v1/male/lung-l.lod2.glb",
-     "bytes": 2896,
-     "triangles": 97,
-     "hash": "a8e371b126c1f08c"
+     "bytes": 2880,
+     "triangles": 96,
+     "hash": "37f77a89402caab0"
     }
    ]
   },
@@ -1900,17 +1900,17 @@
     "digestive"
    ],
    "centroid": [
-    0.07,
-    0.24,
-    0.05
+    0.04092178773134947,
+    0.3384254425764084,
+    0.03905506897717714
    ],
    "bounds": [
-    0,
-    0.15599999999999997,
-    -0.006000000000000005,
-    0.14,
-    0.324,
-    0.10600000000000001
+    -0.02975020743906498,
+    0.2769322693347931,
+    -0.020272931084036827,
+    0.11159378290176392,
+    0.3999186158180237,
+    0.09838306903839111
    ],
    "laterality": "none",
    "fmaId": "FMA:7148",
@@ -1919,25 +1919,25 @@
    "aliases": [
     "gaster"
    ],
-   "provenance": "procedural",
+   "provenance": "bp3d",
    "lods": [
     {
      "url": "/assets/hra-v1/male/stomach.lod0.glb",
-     "bytes": 8164,
-     "triangles": 816,
-     "hash": "acb0c342c6b70cff"
+     "bytes": 13648,
+     "triangles": 3620,
+     "hash": "60504f886042c245"
     },
     {
      "url": "/assets/hra-v1/male/stomach.lod1.glb",
-     "bytes": 4424,
-     "triangles": 285,
-     "hash": "974fd3b7b2446e11"
+     "bytes": 13648,
+     "triangles": 3620,
+     "hash": "60504f886042c245"
     },
     {
      "url": "/assets/hra-v1/male/stomach.lod2.glb",
-     "bytes": 2952,
-     "triangles": 97,
-     "hash": "6ab5b464c6eb0f48"
+     "bytes": 9172,
+     "triangles": 2140,
+     "hash": "c32398a4f0b84cc0"
     }
    ]
   },
@@ -2234,16 +2234,16 @@
    ],
    "centroid": [
     0,
-    0.58,
-    0.04
+    0.63,
+    0.045
    ],
    "bounds": [
     -0.0352,
-    0.5624,
-    0.026800000000000004,
+    0.6124,
+    0.0318,
     0.0352,
-    0.5975999999999999,
-    0.0532
+    0.6476,
+    0.058199999999999995
    ],
    "laterality": "none",
    "fmaId": "FMA:9603",
@@ -2281,17 +2281,17 @@
     "endocrine"
    ],
    "centroid": [
-    -0.07,
-    0.21,
-    -0.07
+    -0.04828140325844288,
+    0.3050800710916519,
+    -0.012659098429139704
    ],
    "bounds": [
-    -0.08800000000000001,
-    0.1974,
-    -0.0826,
-    -0.052000000000000005,
-    0.2226,
-    -0.05740000000000001
+    -0.06504826247692108,
+    0.28286033868789673,
+    -0.026972904801368713,
+    -0.031514544039964676,
+    0.3272998034954071,
+    0.0016547079430893064
    ],
    "laterality": "right",
    "fmaId": "FMA:9604",
@@ -2301,25 +2301,25 @@
     "suprarenal gland",
     "Adrenal gland"
    ],
-   "provenance": "procedural",
+   "provenance": "bp3d",
    "lods": [
     {
      "url": "/assets/hra-v1/male/adrenal-gland-r.lod0.glb",
-     "bytes": 8140,
-     "triangles": 816,
-     "hash": "6dcd5a386e54c6cf"
+     "bytes": 18000,
+     "triangles": 4588,
+     "hash": "eed4783d178cb8e0"
     },
     {
      "url": "/assets/hra-v1/male/adrenal-gland-r.lod1.glb",
-     "bytes": 4460,
-     "triangles": 285,
-     "hash": "9c731fac85e16d84"
+     "bytes": 18000,
+     "triangles": 4588,
+     "hash": "eed4783d178cb8e0"
     },
     {
      "url": "/assets/hra-v1/male/adrenal-gland-r.lod2.glb",
-     "bytes": 2960,
-     "triangles": 96,
-     "hash": "ff49227fcec6751b"
+     "bytes": 10868,
+     "triangles": 2384,
+     "hash": "afbcc12ddd72e0cb"
     }
    ]
   },
@@ -2330,17 +2330,17 @@
     "endocrine"
    ],
    "centroid": [
-    0.07,
-    0.21,
-    -0.07
+    0.05470884498208761,
+    0.3251766413450241,
+    -0.02896495722234249
    ],
    "bounds": [
-    0.052000000000000005,
-    0.1974,
-    -0.0826,
-    0.08800000000000001,
-    0.2226,
-    -0.05740000000000001
+    0.029390228912234306,
+    0.3015905022621155,
+    -0.03955480456352234,
+    0.08002746105194092,
+    0.34876278042793274,
+    -0.018375109881162643
    ],
    "laterality": "left",
    "fmaId": "FMA:9604",
@@ -2350,25 +2350,25 @@
     "suprarenal gland",
     "Adrenal gland"
    ],
-   "provenance": "procedural",
+   "provenance": "bp3d",
    "lods": [
     {
      "url": "/assets/hra-v1/male/adrenal-gland-l.lod0.glb",
-     "bytes": 8140,
-     "triangles": 816,
-     "hash": "638c7f883211e3fe"
+     "bytes": 29704,
+     "triangles": 7992,
+     "hash": "0c50f763111b8ed3"
     },
     {
      "url": "/assets/hra-v1/male/adrenal-gland-l.lod1.glb",
-     "bytes": 4460,
-     "triangles": 285,
-     "hash": "b53c3eca6ca8e7d9"
+     "bytes": 29704,
+     "triangles": 7992,
+     "hash": "0c50f763111b8ed3"
     },
     {
      "url": "/assets/hra-v1/male/adrenal-gland-l.lod2.glb",
-     "bytes": 2960,
-     "triangles": 96,
-     "hash": "0c33bdad1b6d9b71"
+     "bytes": 11192,
+     "triangles": 2376,
+     "hash": "baf6da3f54004902"
     }
    ]
   },
@@ -2808,17 +2808,17 @@
     "endocrine"
    ],
    "centroid": [
-    -0.045,
-    -0.2,
-    0.08
+    -0.021027596667408943,
+    -0.07528937049210072,
+    0.05413542687892914
    ],
    "bounds": [
-    -0.061,
-    -0.224,
-    0.064,
-    -0.028999999999999998,
-    -0.17600000000000002,
-    0.096
+    -0.031741365790367126,
+    -0.09022935479879379,
+    0.04248688369989395,
+    -0.01031382754445076,
+    -0.06034938618540764,
+    0.06578397005796432
    ],
    "laterality": "right",
    "fmaId": "FMA:7210",
@@ -2828,25 +2828,25 @@
     "testicle",
     "Testis"
    ],
-   "provenance": "procedural",
+   "provenance": "bp3d",
    "lods": [
     {
      "url": "/assets/hra-v1/male/testis-r.lod0.glb",
-     "bytes": 7852,
-     "triangles": 816,
-     "hash": "fb31188d28eaa73f"
+     "bytes": 2504,
+     "triangles": 212,
+     "hash": "846f95b8c60550d8"
     },
     {
      "url": "/assets/hra-v1/male/testis-r.lod1.glb",
-     "bytes": 4256,
-     "triangles": 285,
-     "hash": "9ea0fd67f1c0bb6e"
+     "bytes": 2504,
+     "triangles": 212,
+     "hash": "846f95b8c60550d8"
     },
     {
      "url": "/assets/hra-v1/male/testis-r.lod2.glb",
-     "bytes": 2932,
-     "triangles": 97,
-     "hash": "e398bab50723a93c"
+     "bytes": 2504,
+     "triangles": 212,
+     "hash": "846f95b8c60550d8"
     }
    ]
   },
@@ -2858,17 +2858,17 @@
     "endocrine"
    ],
    "centroid": [
-    0.045,
-    -0.2,
-    0.08
+    0.01910316478461027,
+    -0.07587376795709133,
+    0.05430569872260094
    ],
    "bounds": [
-    0.028999999999999998,
-    -0.224,
-    0.064,
-    0.061,
-    -0.17600000000000002,
-    0.096
+    0.008560584858059883,
+    -0.09107757359743118,
+    0.04266031086444855,
+    0.02964574471116066,
+    -0.06066996231675148,
+    0.06595108658075333
    ],
    "laterality": "left",
    "fmaId": "FMA:7210",
@@ -2878,25 +2878,25 @@
     "testicle",
     "Testis"
    ],
-   "provenance": "procedural",
+   "provenance": "bp3d",
    "lods": [
     {
      "url": "/assets/hra-v1/male/testis-l.lod0.glb",
-     "bytes": 7852,
-     "triangles": 816,
-     "hash": "a5a8a5a58d7ef331"
+     "bytes": 2480,
+     "triangles": 210,
+     "hash": "5431e1e315f3c4e3"
     },
     {
      "url": "/assets/hra-v1/male/testis-l.lod1.glb",
-     "bytes": 4256,
-     "triangles": 285,
-     "hash": "2be701a14370d830"
+     "bytes": 2480,
+     "triangles": 210,
+     "hash": "5431e1e315f3c4e3"
     },
     {
      "url": "/assets/hra-v1/male/testis-l.lod2.glb",
-     "bytes": 2932,
-     "triangles": 97,
-     "hash": "9162bfb109f5bf4c"
+     "bytes": 2480,
+     "triangles": 210,
+     "hash": "5431e1e315f3c4e3"
     }
    ]
   }

@@ -22,14 +22,29 @@ describe.runIf(built)('anatomy asset pack', () => {
   });
 
   it('carries real anatomical meshes for the major viscera, not stand-ins', () => {
-    const real = new Set(male.structures.filter((s: { provenance?: string }) => s.provenance === 'hra').map((s: { id: string }) => s.id));
-    for (const id of ['heart', 'liver', 'spleen', 'pancreas', 'kidney-l', 'kidney-r', 'small-intestine', 'large-intestine', 'brain', 'skin', 'pelvis'])
-      expect(real.has(id), `${id} should come from the reference atlas`).toBe(true);
-    expect(real.size).toBeGreaterThanOrEqual(20);
+    const real = new Set(male.structures
+      .filter((s: { provenance?: string }) => s.provenance === 'hra' || s.provenance === 'bp3d')
+      .map((s: { id: string }) => s.id));
+    for (const id of ['heart', 'liver', 'spleen', 'pancreas', 'kidney-l', 'kidney-r', 'small-intestine',
+                      'large-intestine', 'brain', 'skin', 'pelvis', 'stomach',
+                      'skull', 'rib-cage', 'vertebral-column', 'humerus-l', 'humerus-r'])
+      expect(real.has(id), `${id} should come from a real anatomical source`).toBe(true);
+    expect(real.size).toBeGreaterThanOrEqual(43);
+  });
+
+  it('only leaves a stand-in where neither open source models the structure', () => {
+    const standIns = male.structures.filter((s: { provenance?: string }) => s.provenance === 'procedural').map((s: { id: string }) => s.id);
+    // Thyroid, the named peripheral nerves, rectus abdominis, fascia, ligaments and the two
+    // surface landmarks. Everything else must come from real data.
+    expect(standIns.sort()).toEqual([
+      'jugular-notch', 'lung-l', 'lung-r', 'median-nerve-l', 'median-nerve-r',
+      'patellar-ligament-l', 'patellar-ligament-r', 'rectus-abdominis', 'sciatic-nerve-l',
+      'sciatic-nerve-r', 'spinal-cord', 'thoracolumbar-fascia', 'thyroid-gland', 'umbilicus',
+    ]);
   });
 
   it('labels every structure with where its geometry came from', () => {
-    for (const s of male.structures) expect(['hra', 'procedural'], s.id).toContain(s.provenance);
+    for (const s of male.structures) expect(['hra', 'bp3d', 'procedural'], s.id).toContain(s.provenance);
   });
 
   it('real organs are anatomically plausible in size', () => {

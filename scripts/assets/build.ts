@@ -17,7 +17,7 @@
  */
 import { createHash } from 'node:crypto';
 import { mkdir, readFile, readdir, rm, writeFile } from 'node:fs/promises';
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { Document, Logger, NodeIO, type Primitive } from '@gltf-transform/core';
 import { EXTMeshoptCompression, KHRMeshQuantization } from '@gltf-transform/extensions';
@@ -28,13 +28,15 @@ import { demoManifest } from '../../src/engine/demo-manifest';
 import { proceduralGeometry } from '../../src/engine/procedural';
 import { bodyManifest } from '../../src/engine/manifest';
 import { HRA_SOURCES, matchesNode, sourceFileFor } from './hra-sources';
+import { BP3D_SOURCES } from './bp3d-sources';
+import BP3D_ALIGN from './bp3d-align.json';
 import { SYSTEM_IDS, type BodyId, type ManifestStructure, type SystemId } from '../../src/engine/types';
 
 /** Ratios from Phase G §2: full, 35%, 12%. */
 const LOD_RATIOS = [1, 0.35, 0.12];
 const LOD_ERROR = [0, 0.02, 0.06];
 
-interface Args { source: 'procedural' | 'gltf-dir' | 'hra'; pack: string; in?: string; licence: string; attribution: string; out: string }
+interface Args { source: 'procedural' | 'gltf-dir' | 'hra'; pack: string; in?: string; bp3d?: string; licence: string; attribution: string; out: string }
 
 /**
  * Triangle budgets per level of detail for real anatomy. The library ships organs at up to
@@ -62,6 +64,7 @@ function parseArgs(argv: string[]): Args {
     source,
     pack: get('pack', source === 'procedural' ? 'demo-baked' : 'unnamed'),
     in: argv.includes('--in') ? get('in') : undefined,
+    bp3d: argv.includes('--bp3d') ? get('bp3d') : undefined,
     licence: get('licence', 'MIT'),
     attribution: get('attribution', 'Procedural development stand-ins generated from code; no anatomical mesh data.'),
     out: get('out', 'public/assets'),
@@ -159,6 +162,96 @@ async function hraSource(io: NodeIO, file: string, structureId: string, sex: Bod
   return { positions: new Float32Array(positions), normals: null, indices: new Uint32Array(indices) };
 }
 
+/**
+ * Read the BodyParts3D element tables once: concept name → the mesh files that compose it.
+ * A structure such as the rib cage is 24 separate files, and a lung is over a hundred.
+ */
+let bp3dIndex: Map<string, { dir: string; files: string[] }> | null = null;
+function loadBp3dIndex(root: string) {
+  if (bp3dIndex) return bp3dIndex;
+  bp3dIndex = new Map();
+  for (const [table, dir] of [['isa_element_parts.txt', 'isa_BP3D_4.0_obj_99'], ['partof_element_parts.txt', 'partof_BP3D_4.0_obj_99']] as const) {
+    const file = path.join(root, table);
+    if (!existsSync(file)) continue;
+    for (const line of readFileSync(file, 'utf8').split('\n')) {
+      const cols = line.split('\t').map((c) => c.trim().replace(/^"|"$/g, ''));
+      if (cols.length < 3 || cols[0] === 'concept id') continue;
+      const key = cols[1]!.toLowerCase();
+      const entry = bp3dIndex.get(key) ?? { dir, files: [] };
+      entry.files.push(cols[2]!);
+      bp3dIndex.set(key, entry);
+    }
+  }
+  return bp3dIndex;
+}
+
+/**
+ * Carry BodyParts3D into the atlas body space.
+ *
+ * The axis mapping is fixed and was established by least-squares over nine organs present in
+ * both sources. Scale and offset are derived per body from that body's own skin envelope:
+ * uniform scale from stature, and centring laterally and front-to-back. Matching the envelope
+ * axis by axis was tried and rejected, because the two figures hold their arms differently and
+ * matching width stretched the skull half as wide again. Fitting once against the male body
+ * was also rejected: the female body is shorter, and the male skeleton then stood proud of
+ * the scalp.
+ */
+function makeBodySpace(skinBounds: ManifestStructure['bounds']) {
+  const { perm, signs, bp3dSkin } = BP3D_ALIGN as { perm: number[]; signs: number[]; bp3dSkin: { min: number[]; max: number[] } };
+  const scale = (skinBounds[4] - skinBounds[1]) / (bp3dSkin.max[1]! - bp3dSkin.min[1]!);
+  const centre = (i: number) => (skinBounds[i] + skinBounds[i + 3]) / 2;
+  const bpCentre = (i: number) => (bp3dSkin.min[i]! + bp3dSkin.max[i]!) / 2;
+  const translate = [
+    centre(0) - scale * bpCentre(0),
+    skinBounds[1] - scale * bp3dSkin.min[1]!,
+    centre(2) - scale * bpCentre(2),
+  ];
+  return (x: number, y: number, z: number): [number, number, number] => {
+    const v = [x, y, z];
+    const out: [number, number, number] = [0, 0, 0];
+    for (let i = 0; i < 3; i++) out[i] = scale * signs[i]! * v[perm[i]!]! + translate[i]!;
+    return out;
+  };
+}
+
+/** Merge every mesh file of a BodyParts3D concept set into one mesh in atlas body space. */
+function bp3dSource(root: string, structureId: string, sex: BodyId, toBodySpace: ReturnType<typeof makeBodySpace>): SourceMesh | null {
+  const spec = BP3D_SOURCES[structureId];
+  if (!spec || (spec.only && spec.only !== sex)) return null;
+  const index = loadBp3dIndex(root);
+  const banned = new Set<string>();
+  for (const concept of spec.excludeIn ?? [])
+    for (const fj of index.get(concept.toLowerCase())?.files ?? []) banned.add(fj);
+  const positions: number[] = [], indices: number[] = [];
+  let found = 0;
+  for (const concept of spec.concepts) {
+    const entry = index.get(concept.toLowerCase());
+    if (!entry) continue;
+    for (const fj of entry.files) {
+      if (banned.has(fj)) continue;
+      const file = path.join(root, entry.dir, `${fj}.obj`);
+      if (!existsSync(file)) continue;
+      found++;
+      const base = positions.length / 3;
+      let local = 0;
+      for (const line of readFileSync(file, 'utf8').split('\n')) {
+        if (line.startsWith('v ')) {
+          const p = line.split(/\s+/);
+          const [x, y, z] = toBodySpace(Number(p[1]), Number(p[2]), Number(p[3]));
+          positions.push(x, y, z); local++;
+        } else if (line.startsWith('f ')) {
+          // OBJ faces are 1-based and may be polygons; fan-triangulate them.
+          const idx = line.trim().split(/\s+/).slice(1).map((tok) => base + Number(tok.split('/')[0]) - 1);
+          for (let k = 1; k + 1 < idx.length; k++) indices.push(idx[0]!, idx[k]!, idx[k + 1]!);
+        }
+      }
+      if (!local) found--;
+    }
+  }
+  if (!found || !indices.length) { console.warn(`  ! ${structureId}: no BodyParts3D geometry`); return null; }
+  return { positions: new Float32Array(positions), normals: null, indices: new Uint32Array(indices) };
+}
+
 /** Recentre a mesh on its own bounding-box centre, returning the world placement. */
 function recentre(src: SourceMesh): { centroid: [number, number, number]; bounds: [number, number, number, number, number, number] } {
   const min = [Infinity, Infinity, Infinity], max = [-Infinity, -Infinity, -Infinity];
@@ -223,15 +316,34 @@ async function main() {
     const out: ManifestStructure[] = [];
     const lod2ByStructure = new Map<string, Uint8Array>();
 
+    // Placement of BodyParts3D geometry depends on this body's own skin envelope, so the
+    // skin is measured from the reference atlas before anything else is placed.
+    let toBodySpace = makeBodySpace([-0.5, -0.9, -0.2, 0.5, 0.9, 0.2]);
+    if (args.source === 'hra' && args.in) {
+      const skinSrc = await hraSource(io, path.join(args.in, sourceFileFor(HRA_SOURCES.skin!, body)), 'skin', body);
+      if (skinSrc) {
+        const min = [Infinity, Infinity, Infinity], max = [-Infinity, -Infinity, -Infinity];
+        for (let i = 0; i < skinSrc.positions.length; i += 3)
+          for (let k = 0; k < 3; k++) { const v = skinSrc.positions[i + k]!; if (v < min[k]!) min[k] = v; if (v > max[k]!) max[k] = v; }
+        toBodySpace = makeBodySpace([min[0]!, min[1]!, min[2]!, max[0]!, max[1]!, max[2]!]);
+      }
+    }
+
     for (const s of structures) {
       let src: SourceMesh | null = null;
-      let provenance: 'hra' | 'procedural' = 'procedural';
+      let provenance: ManifestStructure['provenance'] = 'procedural';
       let placement: { centroid: [number, number, number]; bounds: ManifestStructure['bounds'] } | null = null;
 
+      // The reference atlas first, because its organs are expert-modelled and permissively
+      // licensed; BodyParts3D for everything the atlas does not model; a stand-in last.
       if (args.source === 'hra' && HRA_SOURCES[s.id]) {
         const file = path.join(args.in!, sourceFileFor(HRA_SOURCES[s.id]!, body));
         src = await hraSource(io, file, s.id, body);
         if (src) { provenance = 'hra'; placement = recentre(src); }
+      }
+      if (!src && args.bp3d && BP3D_SOURCES[s.id]) {
+        src = bp3dSource(args.bp3d, s.id, body, toBodySpace);
+        if (src) { provenance = 'bp3d'; placement = recentre(src); }
       }
       if (!src) {
         if (args.source === 'gltf-dir') src = await gltfDirSource(io, path.join(args.in!, `${s.id}.glb`));
@@ -246,11 +358,11 @@ async function main() {
         await doc.transform(weld(), dedup(), prune());
         // Real anatomy is decimated to an absolute triangle budget; stand-ins, which start
         // tiny, keep the proportional ratios so they are not reduced to nothing.
-        const ratio = provenance === 'hra'
-          ? Math.min(1, HRA_TRIANGLE_TARGETS[level]! / sourceTriangles)
-          : LOD_RATIOS[level]!;
+        const ratio = provenance === 'procedural'
+          ? LOD_RATIOS[level]!
+          : Math.min(1, HRA_TRIANGLE_TARGETS[level]! / sourceTriangles);
         if (ratio < 0.999) {
-          const error = provenance === 'hra' ? HRA_ERROR[level]! : Math.max(LOD_ERROR[level]!, 0.001);
+          const error = provenance === 'procedural' ? Math.max(LOD_ERROR[level]!, 0.001) : HRA_ERROR[level]!;
           await doc.transform(simplify({ simplifier: MeshoptSimplifier, ratio, error }));
         }
         // Quantisation shrinks attributes; meshopt then compresses, and decodes fast on the
@@ -283,8 +395,9 @@ async function main() {
     await writeFile(path.join(outRoot, `${body}.manifest.json`), JSON.stringify(manifest, null, 1));
     const tris = out.reduce((a, s) => a + (s.lods?.[0]?.triangles ?? 0), 0);
     const lod2 = out.reduce((a, s) => a + (s.lods?.[2]?.bytes ?? 0), 0);
-    const real = out.filter((s) => s.provenance === 'hra').length;
-    console.log(`${body}: ${out.length} structures (${real} real anatomy, ${out.length - real} stand-ins), ${tris.toLocaleString()} triangles at LOD0, ${(lod2 / 1024).toFixed(0)} kB at LOD2`);
+    const hra = out.filter((s) => s.provenance === 'hra').length;
+    const bp = out.filter((s) => s.provenance === 'bp3d').length;
+    console.log(`${body}: ${out.length} structures (${hra} reference atlas, ${bp} BodyParts3D, ${out.length - hra - bp} stand-ins), ${tris.toLocaleString()} triangles at LOD0, ${(lod2 / 1024).toFixed(0)} kB at LOD2`);
   }
   console.log(`pack "${args.pack}" written to ${outRoot} (${(totalBytes / 1024 / 1024).toFixed(2)} MB total)`);
 }

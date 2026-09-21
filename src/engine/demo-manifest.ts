@@ -27,7 +27,7 @@ const common: ManifestStructure[] = [
   ...pair('gastrocnemius', 'Gastrocnemius', ['muscular'], [0.1, -0.68, -0.05], { kind: 'capsule', radius: 0.04, length: 0.28 }, { fmaId: 'FMA:22541', latinName: 'Musculus gastrocnemius', region: 'lower-limb', aliases: ['calf muscle'] }),
 
   s('brain', 'Brain', ['nervous'], [0, 0.74, 0], { kind: 'sphere', radius: 0.085, scale: [1, 0.9, 1.1] }, { fmaId: 'FMA:50801', latinName: 'Encephalon', region: 'head', aliases: ['encephalon'] }),
-  s('spinal-cord', 'Spinal cord', ['nervous'], [0, 0.3, -0.05], { kind: 'capsule', radius: 0.008, length: 0.55 }, { fmaId: 'FMA:7647', latinName: 'Medulla spinalis', region: 'back' }),
+  s('spinal-cord', 'Spinal cord', ['nervous'], [0, 0.42, -0.04], { kind: 'capsule', radius: 0.008, length: 0.43 }, { fmaId: 'FMA:7647', latinName: 'Medulla spinalis', region: 'back' }),
   ...pair('median-nerve', 'Median nerve', ['nervous'], [0.25, 0.2, 0.03], { kind: 'capsule', radius: 0.004, length: 0.55 }, { fmaId: 'FMA:14385', latinName: 'Nervus medianus', region: 'upper-limb' }),
   ...pair('sciatic-nerve', 'Sciatic nerve', ['nervous'], [0.1, -0.3, -0.04], { kind: 'capsule', radius: 0.006, length: 0.5 }, { fmaId: 'FMA:19034', latinName: 'Nervus ischiadicus', region: 'lower-limb' }),
 
@@ -36,7 +36,7 @@ const common: ManifestStructure[] = [
   s('inferior-vena-cava', 'Inferior vena cava', ['cardiovascular'], [0.03, 0.15, -0.02], { kind: 'capsule', radius: 0.012, length: 0.3 }, { fmaId: 'FMA:10951', latinName: 'Vena cava inferior', region: 'abdomen', aliases: ['IVC'] }),
 
   s('trachea', 'Trachea', ['respiratory'], [0, 0.58, 0.02], { kind: 'capsule', radius: 0.012, length: 0.12 }, { fmaId: 'FMA:7394', latinName: 'Trachea', region: 'neck', aliases: ['windpipe'] }),
-  ...pair('lung', 'Lung', ['respiratory'], [0.11, 0.42, 0], { kind: 'sphere', radius: 0.085, scale: [0.8, 1.4, 0.9] }, { fmaId: 'FMA:7195', latinName: 'Pulmo', region: 'thorax' }),
+  ...pair('lung', 'Lung', ['respiratory'], [0.075, 0.47, -0.01], { kind: 'sphere', radius: 0.075, scale: [0.85, 1.7, 1.05] }, { fmaId: 'FMA:7195', latinName: 'Pulmo', region: 'thorax' }),
 
   s('liver', 'Liver', ['digestive'], [-0.07, 0.24, 0.04], { kind: 'sphere', radius: 0.1, scale: [1.3, 0.7, 0.9] }, { fmaId: 'FMA:7197', latinName: 'Hepar', region: 'abdomen', aliases: ['hepar'] }),
   s('stomach', 'Stomach', ['digestive'], [0.07, 0.24, 0.05], { kind: 'sphere', radius: 0.07, scale: [1, 1.2, 0.8] }, { fmaId: 'FMA:7148', latinName: 'Gaster', region: 'abdomen', aliases: ['gaster'] }),
@@ -47,7 +47,7 @@ const common: ManifestStructure[] = [
   ...pair('kidney', 'Kidney', ['urinary'], [0.07, 0.14, -0.08], { kind: 'sphere', radius: 0.045, scale: [0.7, 1.3, 0.6] }, { fmaId: 'FMA:7203', latinName: 'Ren', region: 'abdomen', aliases: ['ren'] }),
   s('urinary-bladder', 'Urinary bladder', ['urinary'], [0, -0.03, 0.07], { kind: 'sphere', radius: 0.045 }, { fmaId: 'FMA:15900', latinName: 'Vesica urinaria', region: 'pelvis', aliases: ['bladder'] }),
 
-  s('thyroid-gland', 'Thyroid gland', ['endocrine'], [0, 0.58, 0.04], { kind: 'sphere', radius: 0.022, scale: [1.6, 0.8, 0.6] }, { fmaId: 'FMA:9603', latinName: 'Glandula thyroidea', region: 'neck', aliases: ['thyroid'] }),
+  s('thyroid-gland', 'Thyroid gland', ['endocrine'], [0, 0.63, 0.045], { kind: 'sphere', radius: 0.022, scale: [1.6, 0.8, 0.6] }, { fmaId: 'FMA:9603', latinName: 'Glandula thyroidea', region: 'neck', aliases: ['thyroid'] }),
   ...pair('adrenal-gland', 'Adrenal gland', ['endocrine'], [0.07, 0.21, -0.07], { kind: 'sphere', radius: 0.018, scale: [1, 0.7, 0.7] }, { fmaId: 'FMA:9604', latinName: 'Glandula suprarenalis', region: 'abdomen', aliases: ['suprarenal gland'] }),
 
   s('spleen', 'Spleen', ['lymphatic'], [0.14, 0.24, -0.05], { kind: 'sphere', radius: 0.045, scale: [0.6, 1.2, 1] }, { fmaId: 'FMA:7196', latinName: 'Splen', region: 'abdomen', aliases: ['lien'] }),

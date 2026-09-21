@@ -39,7 +39,7 @@ npx prisma validate           # DATABASE_URL must be set (any value)
 
 | Area | Real now | Scaffolded / next sprint |
 |---|---|---|
-| Digital Human Engine (`src/engine`, `src/store/engine.ts`) | R3F viewer; male/female bodies; 14 system toggles; search (name/alias/Latin/FMA, fuzzy); select, multi-select, isolate, isolate-with-region, hide, fade, explode, global transparency, axial/coronal/sagittal clipping, saved views, bookmarks, deep links, accessible list view; BVH picking; adaptive DPR and demand-driven frameloop; **streams real anatomical meshes** from the Human Reference Atlas with level of detail chosen by camera distance | 21 of 57 male structures (23 of 59 female) are real anatomy; the rest are generated stand-ins, hidden by default and labelled in the interface. Compare mode UI is not wired yet. |
+| Digital Human Engine (`src/engine`, `src/store/engine.ts`) | R3F viewer; male/female bodies; 14 system toggles; search (name/alias/Latin/FMA, fuzzy); select, multi-select, isolate, isolate-with-region, hide, fade, explode, global transparency, axial/coronal/sagittal clipping, saved views, bookmarks, deep links, accessible list view; BVH picking; adaptive DPR and demand-driven frameloop; **streams real anatomical meshes** with level of detail chosen by camera distance | 43 of 57 male structures (43 of 59 female) are real anatomy; the rest are generated stand-ins, hidden by default and labelled. Compare mode UI is not wired yet. |
 | Knowledge Engine (`src/knowledge`) | Zod schema for the 20 fields with per-field citations and audience-mode overrides; publishability rule (non-empty ⇒ cited) enforced in Zod and in a DB trigger; review state machine; 6 seed records (10 structure ids) citing OpenStax A&P 2e and standard textbooks | Seed records are `in_review`, not published. Authoring UI with source picker (Sprint 2). |
 | Physiology (`src/simulations`) | Time-varying elastance LV + Windkessel cardiac model (RK4), Hodgkin–Huxley action potential, alveolar gas equation; unit tests assert textbook ranges | Nephron, synaptic transmission, endocrine axes (Sprint 6). |
 | Histology (`src/modules/histology`) | Deep-zoom tile viewer with pyramid levels, pinch/wheel zoom, pan, minimap, scale bar, annotation layers, guided/self/assessment modes; DZI tile source | Slides are procedural schematics; partner whole-slide images (Sprint 5). |
@@ -55,9 +55,9 @@ npx prisma validate           # DATABASE_URL must be set (any value)
 
 ## Verified
 
-`npm run typecheck`, `npm run lint`, `npm test` (68 tests) and `npm run build` pass. The built
+`npm run typecheck`, `npm run lint`, `npm test` (85 tests) and `npm run build` pass. The built
 app was driven in headless Chromium at a 390x844 mobile viewport: the 3D canvas renders, the
-atlas streams 57 mesh files from the anatomy pack with every request returning 200, search
+the atlas streams its mesh files with every request returning 200, search
 selects and frames a structure and opens its cited record, and every route returns 200 with
 no console or hydration errors. Tenant resolution was checked by requesting the same build with a
 second `Host` header and getting the second tenant's brand back.
@@ -79,22 +79,46 @@ per route type with the reasoning recorded in the PRD, and non-3D routes sit at 
 
 ## Where the anatomy comes from
 
-The viscera, brain, skin, pelvis, femur, tibia and great vessels are real meshes from the
-**HuBMAP Human Reference Atlas 3D Reference Object Library** (CC BY 4.0), with brain regions
-from the Allen Human Reference Atlas. The library models these in one body coordinate space
-in metres, which is why organs from separate files line up without any per-organ fitting, and
-the shipped meshes check out against adult reference dimensions: a 19 cm liver, a 12 cm
-heart, a 10.7 cm kidney, a 48.5 cm femur, a 1.8 m body.
+Two openly licensed sources, both cleared for commercial use by the licensing audit, carried
+into one body space.
 
-It does not model lung parenchyma, stomach, thyroid, adrenals, skull, ribs, or limb bones
-above the femur, and models no muscle or peripheral nerve. Those structures keep generated
-stand-in shapes. Stand-ins are **hidden by default** — a sphere standing in for the rib cage
-does not merely look wrong, it encloses the heart and hides it — and a chip in the atlas
-turns them on. Every structure carries its provenance in the manifest, the card says so when
-a shape is a stand-in, and searching for one still shows it.
+**HuBMAP Human Reference Atlas** (CC BY 4.0), with brain regions from the Allen Human
+Reference Atlas: the viscera, brain, skin, pelvis, femur, tibia and great vessels — 21
+structures. The library models these in one coordinate space in metres, so organs from
+separate files line up without per-organ fitting.
 
-Replacing a stand-in with real anatomy is a data change: add an entry to
-`scripts/assets/hra-sources.ts`, or point the pipeline at a Z-Anatomy export, and rebuild.
+**BodyParts3D** (© The Database Center for Life Science, CC BY-SA 2.1 Japan): everything the
+reference atlas does not model — skull, rib cage, vertebral column, arm bones, the skeletal
+muscles, stomach and adrenal glands — 22 structures. Its meshes come from a different subject
+in millimetres and Z-up, so they are carried across by a transform whose axis mapping was
+fitted by least squares over nine organs present in both sources, with scale and offset
+derived per body from that body's own skin envelope. Organ centroids agree to about 39 mm
+root-mean-square, which is the genuine difference between two human beings rather than an
+error in the fit.
+
+That is 43 of 57 structures in the male body, 43 of 59 in the female, drawn from real
+anatomical data. The remaining 14 keep generated stand-ins, hidden by default and labelled in
+the interface:
+
+| Stand-in | Why |
+|---|---|
+| Both lungs | Neither source models lung parenchyma. BodyParts3D files a lung as its airway and vessel trees — a "bronchopulmonary segment" there is that segment's bronchus and vessels, not a wedge of tissue — and the reference atlas models only the airway. A branching tree labelled "right lung" would teach the wrong thing. |
+| Spinal cord | BodyParts3D's spinal cord concept is a single four-centimetre fragment at neck level. |
+| Thyroid gland, median and sciatic nerves, rectus abdominis, thoracolumbar fascia, patellar ligaments | Not modelled by either source. |
+| Jugular notch, umbilicus | Surface landmarks, which are markers rather than meshes. |
+
+### Checked, not assumed
+
+`tests/anatomy.test.ts` asserts what a demonstrator would check, on every build:
+
+- Body height is between 1.5 and 2.0 m, and **no structure escapes the skin envelope** — the
+  check that caught the BodyParts3D skull standing 4.7 cm proud of the scalp.
+- Every organ measures inside adult reference ranges: liver 15–30 cm, heart 9–17 cm, kidney
+  9–14 cm, femur 38–52 cm, skull 17–26 cm.
+- Every organ sits at the right level, as a fraction of body height: heart 68–80%, liver
+  60–73%, bladder 44–54%.
+- The liver is right of the midline and the spleen left of it.
+- Paired structures are mirrored and level with each other.
 
 ## Asset pipeline
 
@@ -107,7 +131,7 @@ source geometry -> weld/dedupe/prune -> 3 levels of detail (100% / 35% / 12%)
     byte counts, triangle counts and content hashes
 ```
 
-The committed `hra-v1` pack is 4.2 MB for both bodies: 420,696 triangles at full detail
+The committed `hra-v1` pack is 9.4 MB for both bodies: 638,516 triangles at full detail
 falling to about 8,000 per organ and then 2,400, with the largest per-system first-paint
 bundle well inside the 8 MB budget. The engine picks a level from the camera distance, so a
 phone downloads coarse meshes first and refines only what is looked at.

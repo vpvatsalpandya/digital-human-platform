@@ -46,7 +46,7 @@ export interface ManifestStructure {
    * generated stand-in shown because no openly licensed mesh of this structure exists yet.
    * The interface tells the student which they are looking at.
    */
-  provenance?: 'hra' | 'procedural';
+  provenance?: 'hra' | 'bp3d' | 'procedural';
 }
 
 export type ProceduralShape =

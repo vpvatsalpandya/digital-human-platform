@@ -158,7 +158,7 @@ export function structureVisibility(
   st: Pick<EngineState, 'hidden' | 'faded' | 'isolated' | 'visibleSystems' | 'transparency' | 'showStandIns'>,
   id: string,
   systems: SystemId[],
-  provenance?: 'hra' | 'procedural',
+  provenance?: 'hra' | 'bp3d' | 'procedural',
 ): { visible: boolean; opacity: number } {
   // An explicit selection always wins: a student who searched for a structure should see it
   // even if it is a stand-in.

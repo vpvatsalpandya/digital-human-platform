@@ -61,7 +61,7 @@ export function AtlasScreen({ mode = 'mbbs' }: { mode?: string }) {
         </div>
         <div className="pointer-events-none absolute inset-x-0 top-14 z-10 px-3 text-[11px] text-accent">
           {baked
-            ? `${manifest.structures.filter((x) => x.provenance === 'hra').length} structures from real anatomy · ${manifest.licence}`
+            ? `${manifest.structures.filter((x) => x.provenance === 'hra' || x.provenance === 'bp3d').length} of ${manifest.structures.length} structures from real anatomy · ${manifest.licence}`
             : 'Procedural stand-ins — no anatomical mesh data'}
         </div>
 

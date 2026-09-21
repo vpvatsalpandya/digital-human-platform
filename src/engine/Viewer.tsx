@@ -5,7 +5,7 @@ import { Canvas, useThree, type ThreeEvent } from '@react-three/fiber';
 import { OrbitControls, AdaptiveDpr, PerformanceMonitor } from '@react-three/drei';
 import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
 import { computeBoundsTree, disposeBoundsTree, acceleratedRaycast } from 'three-mesh-bvh';
-import { useEngineStore, structureVisibility, type EngineState } from '@/store/engine';
+import { useEngineStore, structureVisibility, isDefaultCamera, DEFAULT_CAMERA, type EngineState } from '@/store/engine';
 import { type BodyManifest, type ManifestStructure, type SystemId } from './types';
 import { tissueFor } from './tissue';
 import { chooseLod, loadStructureGeometry, proceduralGeometry } from './loader';
@@ -55,18 +55,47 @@ export function Viewer({ manifest, className, onSelect }: ViewerProps) {
         <Suspense fallback={null}>
           <Body manifest={manifest} onSelect={onSelect} />
         </Suspense>
-        <CameraRig />
+        <CameraRig manifest={manifest} />
       </Canvas>
     </div>
   );
 }
 
-function CameraRig() {
+/**
+ * Distance and height that put the whole figure on screen with a margin, for this body and
+ * this canvas. A fixed default cannot do it: the male body is 1.807 m and the female 1.723 m,
+ * and a phone held upright is a different shape from a laptop window. Getting this wrong is
+ * not subtle — at the previous fixed 2.6 m the skull and the feet were both cut off.
+ */
+export function fitToBody(manifest: BodyManifest, fovDeg: number, aspect: number) {
+  const box = new THREE.Box3();
+  const v = new THREE.Vector3();
+  for (const s of manifest.structures) {
+    box.expandByPoint(v.set(s.bounds[0], s.bounds[1], s.bounds[2]));
+    box.expandByPoint(v.set(s.bounds[3], s.bounds[4], s.bounds[5]));
+  }
+  if (box.isEmpty()) return DEFAULT_CAMERA;
+  const size = box.getSize(new THREE.Vector3());
+  const centre = box.getCenter(new THREE.Vector3());
+  const tanV = Math.tan((fovDeg * Math.PI) / 360);
+  // Horizontal half-angle widens with the aspect ratio, so a narrow canvas is the binding
+  // constraint on a figure with its arms out, and a wide one on a standing figure.
+  const tanH = tanV * Math.max(aspect, 0.0001);
+  // The 1.12 is breathing room; half the depth keeps the near face of the body off the lens.
+  const distance = Math.max(size.y / 2 / tanV, size.x / 2 / tanH) * 1.12 + size.z / 2;
+  return {
+    position: [centre.x, centre.y, centre.z + distance] as [number, number, number],
+    target: [centre.x, centre.y, centre.z] as [number, number, number],
+  };
+}
+
+function CameraRig({ manifest }: { manifest: BodyManifest }) {
   const controls = useRef<OrbitControlsImpl>(null);
-  const { camera, invalidate } = useThree();
+  const { camera, invalidate, size } = useThree();
   const cameraEpoch = useEngineStore((s) => s.cameraEpoch);
   const target = useEngineStore((s) => s.camera);
   const setCamera = useEngineStore((s) => s.setCamera);
+  const fittedTo = useRef<string | null>(null);
 
   useEffect(() => {
     camera.position.set(...target.position);
@@ -76,6 +105,20 @@ function CameraRig() {
     // only when a view is applied, not on every drag
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cameraEpoch]);
+
+  // Fit once per body, and only while the camera is still the untouched default: a deep link
+  // or a saved view has already said where to look, and so has a student who dragged.
+  useEffect(() => {
+    if (fittedTo.current === manifest.body || size.width === 0 || size.height === 0) return;
+    if (!isDefaultCamera(useEngineStore.getState().camera)) { fittedTo.current = manifest.body; return; }
+    const view = fitToBody(manifest, (camera as THREE.PerspectiveCamera).fov, size.width / size.height);
+    fittedTo.current = manifest.body;
+    camera.position.set(...view.position);
+    controls.current?.target.set(...view.target);
+    controls.current?.update();
+    setCamera(view.position, view.target);
+    invalidate();
+  }, [manifest, size.width, size.height, camera, invalidate, setCamera]);
 
   return (
     <OrbitControls

@@ -107,6 +107,52 @@ describe.runIf(built)('anatomical plausibility', () => {
         const real = m.structures.filter((s) => s.provenance === 'hra' || s.provenance === 'bp3d');
         expect(real.length / m.structures.length).toBeGreaterThan(0.7);
       });
+
+      /**
+       * The opening shot has to show the whole person. A fixed camera distance shipped once
+       * that cut the skull off the top of the frame and the feet off the bottom, on a phone
+       * and on a laptop alike, so the framing is asserted rather than eyeballed.
+       */
+      it('frames the entire body on every screen shape', () => {
+        const FOV = 40;
+        const min = [0, 1, 2].map((i) => Math.min(...m.structures.map((s) => s.bounds[i]!)));
+        const max = [0, 1, 2].map((i) => Math.max(...m.structures.map((s) => s.bounds[i + 3]!)));
+        for (const [w, h, screen] of [[390, 464, 'phone'], [900, 804, 'laptop'], [1600, 600, 'wide']] as const) {
+          const view = fitToBody(m.structures, FOV, w / h);
+          const tanV = Math.tan((FOV * Math.PI) / 360);
+          const tanH = tanV * (w / h);
+          for (const corner of cornersOf(min, max)) {
+            const depth = view.position[2]! - corner[2]!;
+            expect(depth, `${screen}: body must stay in front of the camera`).toBeGreaterThan(0);
+            const dy = Math.abs(corner[1]! - view.target[1]!) / (depth * tanV);
+            const dx = Math.abs(corner[0]! - view.target[0]!) / (depth * tanH);
+            expect(dy, `${screen}: top/bottom of the body is cut off`).toBeLessThanOrEqual(1);
+            expect(dx, `${screen}: side of the body is cut off`).toBeLessThanOrEqual(1);
+          }
+        }
+      });
     });
   }
 });
+
+/** Corners of an axis-aligned box, as [x, y, z] triples. */
+function cornersOf(min: number[], max: number[]): number[][] {
+  const out: number[][] = [];
+  for (const x of [min[0]!, max[0]!]) for (const y of [min[1]!, max[1]!]) for (const z of [min[2]!, max[2]!]) out.push([x, y, z]);
+  return out;
+}
+
+/**
+ * The framing the viewer applies, reimplemented over plain numbers so the assertion does not
+ * need a WebGL context. It has to stay in step with fitToBody in src/engine/Viewer.tsx.
+ */
+function fitToBody(structures: S[], fovDeg: number, aspect: number) {
+  const min = [0, 1, 2].map((i) => Math.min(...structures.map((s) => s.bounds[i]!)));
+  const max = [0, 1, 2].map((i) => Math.max(...structures.map((s) => s.bounds[i + 3]!)));
+  const size = [0, 1, 2].map((i) => max[i]! - min[i]!);
+  const centre = [0, 1, 2].map((i) => (max[i]! + min[i]!) / 2);
+  const tanV = Math.tan((fovDeg * Math.PI) / 360);
+  const tanH = tanV * aspect;
+  const distance = Math.max(size[1]! / 2 / tanV, size[0]! / 2 / tanH) * 1.12 + size[2]! / 2;
+  return { position: [centre[0]!, centre[1]!, centre[2]! + distance], target: centre };
+}

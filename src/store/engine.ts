@@ -50,7 +50,18 @@ export interface EngineState extends ViewState {
   snapshot: () => ViewState;
 }
 
-export const DEFAULT_CAMERA: ViewState['camera'] = { position: [0, 0.02, 2.6], target: [0, 0.02, 0] };
+/**
+ * Head-height framing for a roughly 1.8 m figure. This is only the value the first frame
+ * renders with: the viewer measures the body it actually loaded and refits (see fitToBody),
+ * because a static distance cannot know this body's stature or the shape of this screen.
+ */
+export const DEFAULT_CAMERA: ViewState['camera'] = { position: [0, 0.9, 2.9], target: [0, 0.9, 0] };
+
+/** True while no saved view, deep link or drag has moved the camera off the default. */
+export function isDefaultCamera(c: ViewState['camera']): boolean {
+  return c.position.every((v, i) => v === DEFAULT_CAMERA.position[i])
+    && c.target.every((v, i) => v === DEFAULT_CAMERA.target[i]);
+}
 
 const initialView: ViewState = {
   body: 'male',

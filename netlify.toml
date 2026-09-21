@@ -16,3 +16,17 @@
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"
+
+# The geometry packs are served straight off the CDN, so next.config.mjs's
+# headers() never sees them: the immutable cache has to be declared here too,
+# or 9.8 MB of meshes is revalidated on every visit.
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/assets/*.glb"
+  [headers.values]
+    Content-Type = "model/gltf-binary"
+    Cache-Control = "public, max-age=31536000, immutable"

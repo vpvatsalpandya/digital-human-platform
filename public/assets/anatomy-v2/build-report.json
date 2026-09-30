@@ -1,17 +1,17 @@
 {
  "male": {
-  "structures": 3090,
-  "triangles": 1635072,
-  "bytes": 8960377,
+  "structures": 3078,
+  "triangles": 1631563,
+  "bytes": 8943657,
   "byGroup": {
    "core-upgrades": 12,
-   "muscles": 509,
+   "muscles": 507,
    "organ-parts": 312,
-   "lymphatic": 162,
+   "lymphatic": 160,
    "nerves": 283,
-   "arteries": 425,
+   "arteries": 421,
    "fascia-bursae": 166,
-   "veins": 231,
+   "veins": 227,
    "joints": 413,
    "skeleton": 277,
    "skin-layers": 18,
@@ -25,8 +25,8 @@
    },
    {
     "id": "muscles",
-    "bytes": 2288327,
-    "count": 509
+    "bytes": 2287749,
+    "count": 507
    },
    {
     "id": "organ-parts",
@@ -35,8 +35,8 @@
    },
    {
     "id": "lymphatic",
-    "bytes": 113198,
-    "count": 162
+    "bytes": 112346,
+    "count": 160
    },
    {
     "id": "nerves",
@@ -45,8 +45,8 @@
    },
    {
     "id": "arteries",
-    "bytes": 969239,
-    "count": 425
+    "bytes": 962526,
+    "count": 421
    },
    {
     "id": "fascia-bursae",
@@ -55,8 +55,8 @@
    },
    {
     "id": "veins",
-    "bytes": 548060,
-    "count": 231
+    "bytes": 539483,
+    "count": 227
    },
    {
     "id": "joints",
@@ -81,17 +81,18 @@
   ],
   "skipped": {
    "Z: brain / spinal-cord internals: provenance unverified (UW Brainder); Allen atlas used for brain": 239,
-   "Z: muscle attachment marker, not a structure": 705,
+   "Z: muscle attachment marker, not a structure": 703,
    "Z: unnamed placeholder": 3,
    "Z: reference line, plane or movement": 47,
    "Z: duplicated by an HRA mesh": 27,
-   "Z: surface-region patch on the skin": 242,
+   "Z: surface-region patch on the skin": 236,
    "Z: brain / spinal-cord internal": 38,
    "Z: cardiac chambers and valves: HRA heart used so they register with the core heart": 17,
    "Z: inner ear: CC BY-NC-SA third-party model inside Z-Anatomy": 4,
    "Z: collection label mesh": 11,
    "Z: scalp hair volume from another subject does not fit either skull": 1,
    "Z: not a structure": 2,
+   "Z: female-only structure": 20,
    "Z: kidney: CC BY-NC third-party model inside Z-Anatomy; HRA kidney used": 4,
    "Z: spleen: HRA spleen in core pack": 1,
    "Z: eye: HRA eye used": 2,
@@ -111,18 +112,18 @@
   }
  },
  "female": {
-  "structures": 3100,
-  "triangles": 1641031,
-  "bytes": 9000569,
+  "structures": 3090,
+  "triangles": 1634404,
+  "bytes": 8972842,
   "byGroup": {
    "core-upgrades": 14,
    "muscles": 509,
    "organ-parts": 320,
    "lymphatic": 162,
    "nerves": 283,
-   "arteries": 425,
+   "arteries": 419,
    "fascia-bursae": 166,
-   "veins": 231,
+   "veins": 227,
    "joints": 413,
    "skeleton": 277,
    "skin-layers": 18,
@@ -156,8 +157,8 @@
    },
    {
     "id": "arteries",
-    "bytes": 969836,
-    "count": 425
+    "bytes": 952611,
+    "count": 419
    },
    {
     "id": "fascia-bursae",
@@ -166,8 +167,8 @@
    },
    {
     "id": "veins",
-    "bytes": 548564,
-    "count": 231
+    "bytes": 538062,
+    "count": 227
    },
    {
     "id": "joints",
@@ -195,12 +196,12 @@
    "Z: muscle attachment marker, not a structure": 705,
    "Z: unnamed placeholder": 3,
    "Z: reference line, plane or movement": 47,
-   "Z: duplicated by an HRA mesh": 27,
+   "Z: duplicated by an HRA mesh": 24,
    "Z: surface-region patch on the skin": 242,
    "Z: brain / spinal-cord internal": 38,
    "Z: cardiac chambers and valves: HRA heart used so they register with the core heart": 17,
    "Z: inner ear: CC BY-NC-SA third-party model inside Z-Anatomy": 4,
-   "Z: male-only structure": 11,
+   "Z: male-only structure": 24,
    "Z: collection label mesh": 11,
    "Z: scalp hair volume from another subject does not fit either skull": 1,
    "Z: not a structure": 2,

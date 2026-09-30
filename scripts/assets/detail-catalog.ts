@@ -81,6 +81,8 @@ export function classifyZ(o: ZIndexEntry, body: 'male' | 'female'): Classified {
   if (o.nt === 0) return none('label only');
   if (raw.includes('?')) return none('unnamed placeholder');
   if (/\.g$/.test(raw)) return none('collection label mesh');
+  if (body === 'female' && /penis|prostat|scrot|testicular|testis|spermatic|seminal|deferens|epididym/i.test(base)) return none('male-only structure');
+  if (body === 'male' && /uter|ovar|vagina|fallopian|clitor|vulva|labi(um|a)/i.test(base)) return none('female-only structure');
   if (/^hairs of head$/i.test(raw)) return none('scalp hair volume from another subject does not fit either skull');
   if (INNER_EAR.test(base)) return none('inner ear: CC BY-NC-SA third-party model inside Z-Anatomy');
   if (KIDNEY.test(base)) return none('kidney: CC BY-NC third-party model inside Z-Anatomy; HRA kidney used');

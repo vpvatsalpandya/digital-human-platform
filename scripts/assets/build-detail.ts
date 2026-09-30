@@ -150,6 +150,21 @@ interface Entry {
 }
 
 /** Stand-ins in the core pack that this pack replaces with real geometry, by structure id. */
+/**
+ * Some source meshes carry a side label that contradicts where the mesh actually sits (the
+ * Allen brain atlas labels hemispheres from the viewer's side, and a few Z-Anatomy objects are
+ * swapped). The body's left is +x, so a label that disagrees with clear geometry is corrected.
+ */
+function sideByGeometry(side: 'left' | 'right' | 'none', piece: RawMesh, byCentroid = false): 'left' | 'right' | 'none' {
+  if (side === 'none') return side;
+  const { min, max } = boundsOf(piece.positions);
+  if (byCentroid) { const cx = (min[0] + max[0]) / 2; if (Math.abs(cx) > 0.003) return cx > 0 ? 'left' : 'right'; return side; }
+  // Only correct a mesh lying wholly on the other side; midline-crossing ones keep their label.
+  if (side === 'left' && max[0] < -0.004) return 'right';
+  if (side === 'right' && min[0] > 0.004) return 'left';
+  return side;
+}
+
 interface Upgrade { id: string; name: string; latin: string; fma: string; systems: SystemId[]; region: string; category: string; layer?: number; z?: string[]; hra?: RegExp; sex?: 'female'; provenance: Provenance; laterality: 'left' | 'right' | 'none' }
 const UPGRADES: Upgrade[] = [
   { id: 'lung-r', name: 'Right lung', latin: 'Pulmo dexter', fma: 'FMA:7310', systems: ['respiratory'], region: 'thorax', category: 'lung lobe', z: ['Superior lobe of right lung', 'Middle lobe of right lung', 'Inferior lobe of right lung'], provenance: 'zanatomy', laterality: 'right' },
@@ -231,8 +246,9 @@ async function main() {
       if (o.nt === 0 || usedZ.has(o.i)) continue;
       const cls = classifyZ(o, body);
       if (cls.skip) { skip(`Z: ${cls.skip}`); continue; }
-      const { base, side } = baseName(o.name);
+      const { base, side: labelled } = baseName(o.name);
       const piece = readBin(zDir, o.i);
+      const side = sideByGeometry(labelled, piece);
       const sideWord = side === 'none' ? '' : `${side} `;
       const name = titleCase(`${sideWord}${base.charAt(0).toLowerCase()}${base.slice(1)}`.trim());
       const id = uniqueId(`${slug(base)}${side === 'left' ? '-l' : side === 'right' ? '-r' : ''}`, cls.category);
@@ -244,7 +260,8 @@ async function main() {
       if (usedH.has(o.i) || o.nt === 0) continue;
       const cls = classifyHra(o.name, body);
       if (o.name.startsWith('Allen_')) {
-        const { base, side } = humanizeHra(o.name);
+        const { base, side: labelled } = humanizeHra(o.name);
+        const side = sideByGeometry(labelled, readBin(hraDir, o.i), true);
         const id = uniqueId(`${slug(base)}${side === 'left' ? '-l' : side === 'right' ? '-r' : ''}`, 'brain');
         // The Allen atlas is a brain subject; one file in the united body per hemisphere side.
         entries.push({ id, name: titleCase(`${side === 'none' ? '' : side + ' '}${base.toLowerCase()}`.trim()), base, side, provenance: 'hra', sourceName: 'Human Reference Atlas (Allen Human Reference Atlas brain regions)', sourceLicence: HLIC,
@@ -258,7 +275,8 @@ async function main() {
         continue;
       }
       if (cls.skip) { skip(`HRA: ${cls.skip}`); continue; }
-      const { base, side } = humanizeHra(o.name);
+      const { base, side: labelled } = humanizeHra(o.name);
+      const side = sideByGeometry(labelled, readBin(hraDir, o.i), true);
       const id = uniqueId(`${slug(base)}${side === 'left' ? '-l' : side === 'right' ? '-r' : ''}`, cls.category);
       entries.push({ id, name: titleCase(`${side === 'none' ? '' : side + ' '}${base.toLowerCase()}`.trim()), base, side, cls, provenance: 'hra', sourceName: 'Human Reference Atlas 3D Reference Object Library', sourceLicence: HLIC, pieces: [readBin(hraDir, o.i)] });
     }

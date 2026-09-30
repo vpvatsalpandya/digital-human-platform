@@ -24,6 +24,7 @@ export function AtlasScreen({ mode = 'mbbs' }: { mode?: string }) {
   const byId = useMemo(() => new Map(manifest.structures.map((s) => [s.id, s])), [manifest]);
   const [q, setQ] = useState('');
   const hits = useMemo(() => (q ? search.query(q) : []), [q, search]);
+  const schematicCount = useMemo(() => manifest.structures.filter((x) => x.provenance === 'generated' && x.category?.startsWith('schematic')).length, [manifest]);
   const [tool, setTool] = useState<Tool>('view');
   const [listView, setListView] = useState(false);
 
@@ -51,7 +52,7 @@ export function AtlasScreen({ mode = 'mbbs' }: { mode?: string }) {
                 {hits.map((h) => (
                   <li key={h.structure.id}>
                     <button className="flex w-full items-center justify-between px-3 py-2 text-left text-sm hover:bg-surface-2 min-h-[44px]" onClick={() => { if (h.structure.group) s.enableGroups([h.structure.group]); s.select(h.structure.id); s.setVisibleSystems([...new Set([...s.visibleSystems, ...h.structure.systems])]); setQ(''); setListView(false); focusOn(h.structure, true); }}>
-                      <span>{h.structure.name}</span><span className="text-[11px] text-muted">{h.structure.systems.map((x) => SYSTEM_META[x].name).join(', ')}</span>
+                      <span>{h.structure.name}</span><span className="text-[11px] text-muted">{h.structure.provenance === 'generated' && h.structure.category?.startsWith('schematic') ? 'Schematic · ' : ''}{h.structure.systems.map((x) => SYSTEM_META[x].name).join(', ')}</span>
                     </button>
                   </li>
                 ))}
@@ -62,7 +63,7 @@ export function AtlasScreen({ mode = 'mbbs' }: { mode?: string }) {
         </div>
         <div className="pointer-events-none absolute inset-x-0 top-14 z-10 px-3 text-[11px] text-accent">
           {baked
-            ? `${manifest.structures.filter((x) => isRealAnatomy(x.provenance)).length} of ${manifest.structures.length} structures from real anatomy${detailLoading ? ' · loading detail catalogue…' : ''} · ${manifest.licence}`
+            ? `${manifest.structures.filter((x) => isRealAnatomy(x.provenance)).length} of ${manifest.structures.length} structures from real anatomy${schematicCount ? ` · ${schematicCount} schematic stand-ins (violet, generated)` : ''}${detailLoading ? ' · loading detail catalogue…' : ''} · ${manifest.licence}`
             : 'Procedural stand-ins — no anatomical mesh data'}
         </div>
 
@@ -136,7 +137,7 @@ function LayerControls({ manifest }: { manifest: BodyManifest }) {
     toggleSystem([...new Set([...systems, ...need])]);
     enableGroups(['skin-layers', 'fascia-bursae', 'muscles', 'skeleton', 'joints'].filter((g) => manifest.groups?.some((x) => x.id === g)));
   };
-  const generated = manifest.structures.some((x) => x.provenance === 'generated');
+  const generated = manifest.structures.some((x) => x.provenance === 'generated' && x.category === 'skin layer');
   return (
     <div className="mb-3 flex flex-col gap-2">
       <Slider label="Peel away" value={peel} min={0} max={6} step={1} onChange={go} format={(v) => PEEL_STEPS[v]!} />
@@ -165,12 +166,12 @@ function DetailControls({ manifest, body }: { manifest: BodyManifest; body: stri
   const total = shown.reduce((a, g) => a + g.bytes, 0);
   return (
     <div className="mb-3 flex flex-col gap-1">
-      <p className="text-[11px] text-muted">Each pack downloads once and is cached. {shown.reduce((a, g) => a + g.count, 0).toLocaleString()} named structures in {shown.length} packs, {mb(total)} MB in all ({body}).</p>
+      <p className="text-[11px] text-muted">Each pack downloads once and is cached. {shown.filter((g) => g.id !== 'schematic').reduce((a, g) => a + g.count, 0).toLocaleString()} named structures from real anatomy in {shown.filter((g) => g.id !== 'schematic').length} packs, plus {(shown.find((g) => g.id === 'schematic')?.count ?? 0).toLocaleString()} generated schematic stand-ins in their own pack; {mb(total)} MB in all ({body}).</p>
       <button className="btn-ghost text-xs" onClick={() => enable(shown.map((g) => g.id))}>Load everything</button>
       {shown.map((g) => (
         <label key={g.id} className="flex items-start gap-2 rounded bg-surface-2 px-2 py-1 text-xs">
           <input type="checkbox" className="mt-1 h-4 w-4" checked={enabled.includes(g.id) || !!g.auto} disabled={!!g.auto} onChange={() => toggle(g.id)} />
-          <span><b>{g.title}</b> <span className="text-muted">· {g.count.toLocaleString()} · {mb(g.bytes)} MB</span><br /><span className="text-muted">{g.description}</span></span>
+          <span><b className={g.id === 'schematic' ? 'text-[#d2b3ff]' : ''}>{g.title}</b> <span className="text-muted">· {g.count.toLocaleString()} · {mb(g.bytes)} MB</span><br /><span className="text-muted">{g.description}</span></span>
         </label>
       ))}
     </div>

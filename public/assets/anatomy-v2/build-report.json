@@ -1,8 +1,8 @@
 {
  "male": {
-  "structures": 3058,
+  "structures": 3226,
   "triangles": 1620572,
-  "bytes": 8884646,
+  "bytes": 9182631,
   "byGroup": {
    "core-upgrades": 12,
    "muscles": 507,
@@ -15,7 +15,8 @@
    "joints": 413,
    "skeleton": 277,
    "skin-layers": 18,
-   "brain-regions": 282
+   "brain-regions": 282,
+   "schematic": 168
   },
   "groups": [
    {
@@ -77,6 +78,11 @@
     "id": "brain-regions",
     "bytes": 727708,
     "count": 282
+   },
+   {
+    "id": "schematic",
+    "bytes": 297985,
+    "count": 168
    }
   ],
   "skipped": {
@@ -112,9 +118,9 @@
   }
  },
  "female": {
-  "structures": 3070,
+  "structures": 3244,
   "triangles": 1623416,
-  "bytes": 8913618,
+  "bytes": 9244522,
   "byGroup": {
    "core-upgrades": 14,
    "muscles": 509,
@@ -127,7 +133,8 @@
    "joints": 413,
    "skeleton": 277,
    "skin-layers": 18,
-   "brain-regions": 282
+   "brain-regions": 282,
+   "schematic": 174
   },
   "groups": [
    {
@@ -189,6 +196,11 @@
     "id": "brain-regions",
     "bytes": 727753,
     "count": 282
+   },
+   {
+    "id": "schematic",
+    "bytes": 330904,
+    "count": 174
    }
   ],
   "skipped": {

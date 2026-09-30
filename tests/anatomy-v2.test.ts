@@ -130,8 +130,11 @@ describe.runIf(built)('anatomy-v2 detail pack', () => {
 
       it('does not pass generated anatomy off as real', () => {
         const gen = m.structures.filter((s) => s.provenance === 'generated');
-        expect(gen.map((s) => s.id).sort()).toEqual(['dermis-shell', 'hypodermis-shell']);
-        for (const s of gen) expect([1, 2]).toContain(s.layer);
+        const shells = gen.filter((s) => s.category === 'skin layer');
+        expect(shells.map((s) => s.id).sort()).toEqual(['dermis-shell', 'hypodermis-shell']);
+        for (const s of shells) expect([1, 2]).toContain(s.layer);
+        // every other generated structure is a labelled schematic stand-in in its own group
+        for (const s of gen.filter((s) => s.category !== 'skin layer')) { expect(s.group, s.id).toBe('schematic'); expect(s.category, s.id).toMatch(/^schematic /); expect(s.name, s.id).toMatch(/\(schematic\)$/); }
         expect(m.structures.filter((s) => s.provenance === 'procedural')).toHaveLength(0);
         for (const s of m.structures.filter((s) => s.provenance !== 'generated')) expect(isRealAnatomy(s.provenance)).toBe(true);
       });

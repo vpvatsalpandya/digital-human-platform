@@ -14,6 +14,8 @@ export const CATEGORY_COLOR: Record<string, string> = {
   'liver part': '#8a4437', duct: '#7fa06a', 'digestive part': '#c48a66', 'urinary part': '#9c5a4c', 'reproductive part': '#bd7a72',
   adipose: '#f0d98a', 'skin layer': '#d9b49a', hair: '#4a3626', nail: '#e9c9c2', 'eye structure': '#e9e3d6', larynx: '#cdd2c6',
   'head-neck': '#c98d8d', other: '#c9b8a8',
+  // Generated stand-ins are drawn in one violet family so they cannot be mistaken for scanned anatomy.
+  'schematic nerve': '#b58cff', 'schematic plexus': '#a06bff', 'schematic ganglion': '#d2b3ff', 'schematic vessel': '#c79bff', 'schematic tooth': '#e2ccff',
 };
 
 export function categoryColor(category: string | undefined): string {

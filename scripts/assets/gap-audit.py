@@ -56,13 +56,14 @@ for body in ('male', 'female'):
     real_before = sum(1 for s in core if s.get('provenance') in ('hra', 'bp3d'))
     merged = [s for s in core if s['id'] not in up] + det
     real_after = sum(1 for s in merged if s.get('provenance') in ('hra', 'bp3d', 'zanatomy'))
-    rows[body] = dict(before=len(core), before_real=real_before, after=len(merged), after_real=real_after, generated=sum(1 for s in merged if s.get('provenance') == 'generated'), procedural=sum(1 for s in merged if s.get('provenance') == 'procedural'))
+    rows[body] = dict(before=len(core), before_real=real_before, after=len(merged), after_real=real_after, generated=sum(1 for s in merged if s.get('provenance') == 'generated'), schematic=sum(1 for s in merged if str(s.get('category','')).startswith('schematic')), procedural=sum(1 for s in merged if s.get('provenance') == 'procedural'))
 r = rows
 w(f"| Structures in the atlas | {r['male']['before']} | {r['male']['after']} | {r['female']['before']} | {r['female']['after']} |")
 w(f"| … of which real anatomy | {r['male']['before_real']} | {r['male']['after_real']} | {r['female']['before_real']} | {r['female']['after_real']} |")
 w(f"| … generated, labelled schematic | 0 | {r['male']['generated']} | 0 | {r['female']['generated']} |")
+w(f"| … of which schematic stand-ins (nerves, plexuses, ganglia, vessels, third molars) | 0 | {r['male']['schematic']} | 0 | {r['female']['schematic']} |")
 w(f"| … procedural stand-ins | {r['male']['before']-r['male']['before_real']} | {r['male']['procedural']} | {r['female']['before']-r['female']['before_real']} | {r['female']['procedural']} |")
-w('\nThe remaining procedural stand-ins are the `jugular-notch` and `umbilicus` landmarks (surface points, not meshes).\n')
+w('\nThe remaining procedural stand-ins are the `jugular-notch` and `umbilicus` landmarks (surface points, not meshes). The generated rows are the two skin shells plus the **schematic stand-ins** (group `schematic`, section 3.7): they are drawn by this project from the positions of real neighbouring structures, are flagged `generated` in the manifest and violet with a badge in the UI, and are never counted as real anatomy.\n')
 
 w('## 2. Detail pack by category (after)\n')
 for body in ('male', 'female'):
@@ -72,7 +73,7 @@ for body in ('male', 'female'):
 w('Core (`hra-v1`) is unchanged: 57 male / 59 female structures. Detail structures that share an id with a core stand-in replace it.\n')
 
 w('## 3. By system\n')
-w('Present = real mesh in the shipped packs. Stand-in = generated, labelled. Missing = not shipped, with the reason.\n')
+w('Present = real mesh in the shipped packs (the system table also includes the generated schematic stand-ins listed in 3.7). Stand-in = generated, labelled. Missing = not shipped, with the reason.\n')
 def sysline(body):
     core, det, up = counts(body)
     merged = [s for s in core if s['id'] not in up] + det
@@ -96,7 +97,7 @@ w(f'- Present in the male pack: **{n - len(missing)} of {n}** expected bones ({h
 if missing or missingf: w(f'- Missing: {sorted(set(missing+missingf))}')
 else: w('- Missing: none of the 206.')
 w('- Not modelled as separate bones: the patellar/hand sesamoids other than the foot groups; the fused sacral and coccygeal segments (sacrum and coccyx are single bones, as in the count); accessory ossicles and sutural bones (variants, not part of the 206).')
-w(f"- Teeth: {len(cat('male','tooth'))} of the 32 permanent teeth (the four third molars are not in the source).")
+w(f"- Teeth: {len(cat('male','tooth'))} real teeth of the 32 permanent teeth. The four third molars are not in any source scan; they are added as **generated schematic** copies of the second molars (section 3.7) and are not counted as real.")
 w('- Cartilages: ' + str(len(cat('male','cartilage'))) + ' (costal, laryngeal, nasal, articular and others present in Z-Anatomy).')
 w(f"- Joints, capsules and discs: ligaments {len(cat('male','ligament'))}, capsules {len(cat('male','capsule'))}, intervertebral and other discs {len(cat('male','disc'))}.\n")
 
@@ -114,7 +115,7 @@ w('- Capillaries, microvasculature and lymphatic capillaries are out of scope fo
 w('### 3.4 Nervous system\n')
 w(f"- Nerves {len(cat('male','nerve'))}, plexuses {len(cat('male','plexus'))}, ganglia {len(cat('male','ganglion'))}, meninges {len(cat('male','meninges'))}; brain regions {len(cat('male','brain region'))} (Allen Human Reference Atlas, via HRA).")
 w('- **All 12 cranial nerve pairs are present** (I–XII, left and right), checked by the test suite.')
-w('- Reference: 31 pairs of spinal nerves. The pack does **not** contain 31 individually named spinal nerve pairs. It has the anterior and posterior roots, the cauda equina, the intercostal nerves, the sympathetic trunk, the brachial plexus (roots, trunks, divisions, cords) and the named peripheral nerves of the limbs (median, ulnar, radial, axillary, musculocutaneous, femoral, obturator, sciatic branches, tibial, fibular, sural, saphenous, pudendal and their digital branches). Missing: lumbar and sacral plexus as named plexus objects, cervical plexus, individual dermatomal spinal nerves C1–S5 and their rami, autonomic plexuses (cardiac, coeliac, hypogastric), most cutaneous branches of the trunk and head.')
+w('- Reference: 31 pairs of spinal nerves. The scans provide the anterior and posterior roots, the cauda equina, the intercostal nerves, the sympathetic trunk, the brachial plexus (roots, trunks, divisions, cords) and the named peripheral nerves of the limbs. **No scan provides the 31 individually named pairs**, so C1–C8, T1–T12, L1–L5, S1–S5 and Co1 (both sides) are supplied as generated schematic tubes (section 3.7), together with the cervical, lumbar and sacral plexuses and the autonomic plexuses. Still missing: most cutaneous branches of the trunk and head, dermatomal rami as separate objects, and the fine autonomic plexuses on individual organs.')
 w('- Brain and spinal-cord internal structures from Z-Anatomy (239 male objects) are **excluded**: their provenance inside Z-Anatomy is UW Brainder, which could not be verified. The brain is shown from the HRA/Allen regions instead.')
 w('- The spinal cord is the HRA spinal cord (real), replacing the earlier stand-in.\n')
 
@@ -129,6 +130,15 @@ w('### 3.6 Skin and layers\n')
 w('| Layer (peel-away) | Source | Status |\n|---|---|---|\n| 0 Skin (epidermis surface) | HRA skin (core) | real |\n| 1 Dermis | HRA skin surface offset inward 4 mm | **generated, schematic** |\n| 2 Hypodermis / subcutaneous fat | HRA skin offset inward 14 mm, plus real HRA subcutaneous abdominal fat patches (male and female) | shell **generated, schematic**; fat patches real |\n| 3 Deep fascia | Z-Anatomy fasciae | real (51), fitted |\n| 4 Superficial muscles | Z-Anatomy / BodyParts3D | real, fitted |\n| 5 Deep muscles, tendon sheaths, bursae | Z-Anatomy | real, fitted |\n| 6 Skeleton, cartilage, joints | Z-Anatomy | real, fitted |\n')
 w('- No open, commercially usable whole-body mesh of epidermis, dermis or hypodermis was found. The two shells are labelled "schematic" in the UI and carry provenance `generated`; they are excluded from every "real anatomy" count.')
 w('- The skin has no epidermal sub-layers (stratum corneum … basale) and the model contains no cutaneous nerves or vessels inside the dermis. Nails (8), hair objects (5: eyebrows, eyelashes, pubic hair; scalp hair excluded because it does not fit either skull) are present.\n')
+
+sch = {b: [x for x in counts(b)[1] if str(x.get('category','')).startswith('schematic')] for b in ('male','female')}
+w('### 3.7 Schematic stand-ins (generated, not real anatomy)\n')
+for b in ('male','female'):
+    c = collections.Counter(x['category'] for x in sch[b])
+    w(f"- {b.capitalize()}: **{len(sch[b])}** generated structures — " + ', '.join(f"{k.replace('schematic ','')}: {v}" for k, v in sorted(c.items())) + '.')
+w('- What they are: 62 spinal nerves (31 pairs), cervical / lumbar / sacral plexuses (both sides), sympathetic ganglia and the lumbar–sacral part of the sympathetic trunk, greater / lesser / least splanchnic, hypogastric and pelvic splanchnic nerves, coeliac, cardiac, superior and inferior hypogastric and oesophageal plexuses, recurrent laryngeal, phrenic and anterior / posterior vagal trunks, the four third molars, and small vessel branches (superior thyroid, lingual, bronchial, suprarenal, middle rectal, vesical, hepatic, cystic, gastric, jejunal, ileal, oesophageal arteries; suprarenal veins; uterine and ovarian vessels or vaginal artery for the female body).')
+w('- How they are made: `scripts/assets/build-schematic.ts` builds tubes (6-sided, 1–4 mm radius) and small blobs, positioned from the registered vertebrae, discs, spinal cord, sacrum, rib cage, existing nerves, vessels and organs of the same body. The spinal nerves leave the cord at approximate root levels, pass through the intervertebral level, and end at the plexus or nearest real nerve. Courses are indicative and have not been checked by an anatomist.')
+w('- How they are flagged: provenance `generated`, category `schematic …`, name ends "(schematic)", violet colour, a badge on the structure card, the "Schematic" tag in search hits, their own lazy group, and they are excluded from every real-anatomy count.\n')
 
 w('## 4. What Z-Anatomy contains that is not shipped\n')
 w('From `build-report.json` (male; female is similar). These are counts of source objects, by reason:\n')

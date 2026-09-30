@@ -16,7 +16,9 @@ const norm = (a: V3): V3 => { const l = len(a) || 1; return [a[0] / l, a[1] / l,
 export const v = { sub, add, mul, dot, cross, len, norm };
 
 /** Uniform Catmull-Rom through the control points, resampled every `step` metres. */
-export function resample(ctrl: Pt[], step: number): Pt[] {
+export function resample(ctrlIn: Pt[], step: number): Pt[] {
+  // Drop repeated control points (they make zero-length tangents).
+  const ctrl = ctrlIn.filter((c, i) => i === 0 || len(sub(c.p, ctrlIn[i - 1]!.p)) > 2e-4);
   if (ctrl.length < 2) return ctrl;
   const out: Pt[] = [];
   const at = (i: number) => ctrl[Math.max(0, Math.min(ctrl.length - 1, i))]!;
@@ -67,7 +69,7 @@ export class MeshBuilder {
       const cp = pts[end]!.p; this.positions.push(cp[0], cp[1], cp[2]);
       for (let s = 0; s < sides; s++) {
         const a = base + end * sides + s, b = base + end * sides + ((s + 1) % sides);
-        if (flip) this.indices.push(ci, a, b); else this.indices.push(ci, b, a);
+        if (flip) this.indices.push(ci, b, a); else this.indices.push(ci, a, b);
       }
     }
   }

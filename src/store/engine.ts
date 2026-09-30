@@ -190,10 +190,10 @@ export function structureVisibility(
   // even if it is a stand-in.
   const selected = st.isolated?.includes(id) ?? false;
   if (provenance === 'procedural' && !st.showStandIns && !selected) return { visible: false, opacity: 0 };
-  // The schematic dermis and hypodermis shells only make sense while peeling: drawn with the
+  // The schematic dermis and hypodermis shells (the generated structures that carry a layer) only make sense while peeling: drawn with the
   // whole body intact they would sit invisibly inside the skin and add nothing but clutter.
   const peel = st.peel ?? 0;
-  if (provenance === 'generated' && peel === 0 && !selected) return { visible: false, opacity: 0 };
+  if (provenance === 'generated' && layer !== undefined && peel === 0 && !selected) return { visible: false, opacity: 0 };
   if (isPeeled(layer, peel) && !selected) return { visible: false, opacity: 0 };
   if (!systems.some((s) => st.visibleSystems.includes(s))) return { visible: false, opacity: 0 };
   if (st.hidden.includes(id)) return { visible: false, opacity: 0 };

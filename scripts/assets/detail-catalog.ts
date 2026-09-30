@@ -80,7 +80,8 @@ export function classifyZ(o: ZIndexEntry, body: 'male' | 'female'): Classified {
 
   if (o.nt === 0) return none('label only');
   if (raw.includes('?')) return none('unnamed placeholder');
-  if (/\.(g|j|i)$/.test(raw) && /(systems?|organs?)\.g$/i.test(raw)) return none('collection label');
+  if (/\.g$/.test(raw)) return none('collection label mesh');
+  if (/^hairs of head$/i.test(raw)) return none('scalp hair volume from another subject does not fit either skull');
   if (INNER_EAR.test(base)) return none('inner ear: CC BY-NC-SA third-party model inside Z-Anatomy');
   if (KIDNEY.test(base)) return none('kidney: CC BY-NC third-party model inside Z-Anatomy; HRA kidney used');
   if (top.startsWith('2:')) return none('muscle attachment marker, not a structure');

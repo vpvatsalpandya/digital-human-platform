@@ -123,13 +123,16 @@ def main():
             if o['nt'] == 0: continue
             v, t = load(f'{SRC}/zanat/objs', o['i'])
             p = warp(np.stack([v[:, 0], v[:, 2], -v[:, 1]], 1))
+            # Legs are picked geometrically, not by collection path: the source tags only some
+            # right-foot bones with their region, which left them behind when the leg moved.
+            orig = p.copy()
             for side in ('left', 'right'):
-                if in_region(o, side):
-                    ls, R, lt, hipy = legs[side]
-                    # apply leg transform in warped space, blended by height from the groin down
-                    q = ls * (p @ R.T) + lt
-                    w = np.clip((hipy + 0.02 - p[:, 1]) / 0.14, 0, 1)[:, None]
-                    p = (1 - w) * p + w * q
+                ls, R, lt, hipy = legs[side]
+                q = ls * (orig @ R.T) + lt
+                wy = np.clip((hipy + 0.02 - orig[:, 1]) / 0.14, 0, 1)
+                wx = np.clip((np.abs(orig[:, 0]) - 0.01) / 0.04, 0, 1) * ((orig[:, 0] > 0) if side == 'left' else (orig[:, 0] < 0))
+                w = (wy * wx)[:, None]
+                p = p + w * (q - orig)
             pf = p.astype(np.float32)
             with open(f'{d}/{o["i"]}.bin', 'wb') as f:
                 f.write(struct.pack('<ii', len(pf), len(t))); f.write(pf.tobytes()); f.write(t.astype(np.uint32).tobytes())

@@ -1,8 +1,8 @@
 {
  "male": {
-  "structures": 3092,
-  "triangles": 1636676,
-  "bytes": 8973180,
+  "structures": 3090,
+  "triangles": 1635072,
+  "bytes": 8960377,
   "byGroup": {
    "core-upgrades": 12,
    "muscles": 509,
@@ -12,66 +12,66 @@
    "arteries": 425,
    "fascia-bursae": 166,
    "veins": 231,
-   "joints": 414,
+   "joints": 413,
    "skeleton": 277,
-   "skin-layers": 19,
+   "skin-layers": 18,
    "brain-regions": 282
   },
   "groups": [
    {
     "id": "core-upgrades",
-    "bytes": 102535,
+    "bytes": 102515,
     "count": 12
    },
    {
     "id": "muscles",
-    "bytes": 2289303,
+    "bytes": 2288327,
     "count": 509
    },
    {
     "id": "organ-parts",
-    "bytes": 1292956,
+    "bytes": 1293001,
     "count": 312
    },
    {
     "id": "lymphatic",
-    "bytes": 113230,
+    "bytes": 113198,
     "count": 162
    },
    {
     "id": "nerves",
-    "bytes": 575640,
+    "bytes": 575399,
     "count": 283
    },
    {
     "id": "arteries",
-    "bytes": 969417,
+    "bytes": 969239,
     "count": 425
    },
    {
     "id": "fascia-bursae",
-    "bytes": 416135,
+    "bytes": 415419,
     "count": 166
    },
    {
     "id": "veins",
-    "bytes": 547679,
+    "bytes": 548060,
     "count": 231
    },
    {
     "id": "joints",
-    "bytes": 497579,
-    "count": 414
+    "bytes": 496484,
+    "count": 413
    },
    {
     "id": "skeleton",
-    "bytes": 1392740,
+    "bytes": 1392966,
     "count": 277
    },
    {
     "id": "skin-layers",
-    "bytes": 48258,
-    "count": 19
+    "bytes": 38061,
+    "count": 18
    },
    {
     "id": "brain-regions",
@@ -83,15 +83,16 @@
    "Z: brain / spinal-cord internals: provenance unverified (UW Brainder); Allen atlas used for brain": 239,
    "Z: muscle attachment marker, not a structure": 705,
    "Z: unnamed placeholder": 3,
-   "Z: reference line, plane or movement": 51,
+   "Z: reference line, plane or movement": 47,
    "Z: duplicated by an HRA mesh": 27,
-   "Z: surface-region patch on the skin": 243,
+   "Z: surface-region patch on the skin": 242,
    "Z: brain / spinal-cord internal": 38,
    "Z: cardiac chambers and valves: HRA heart used so they register with the core heart": 17,
    "Z: inner ear: CC BY-NC-SA third-party model inside Z-Anatomy": 4,
+   "Z: collection label mesh": 11,
+   "Z: scalp hair volume from another subject does not fit either skull": 1,
    "Z: not a structure": 2,
    "Z: kidney: CC BY-NC third-party model inside Z-Anatomy; HRA kidney used": 4,
-   "Z: collection label": 5,
    "Z: spleen: HRA spleen in core pack": 1,
    "Z: eye: HRA eye used": 2,
    "HRA: skin is in the core pack": 1,
@@ -110,9 +111,9 @@
   }
  },
  "female": {
-  "structures": 3102,
-  "triangles": 1642602,
-  "bytes": 9011016,
+  "structures": 3100,
+  "triangles": 1641031,
+  "bytes": 9000569,
   "byGroup": {
    "core-upgrades": 14,
    "muscles": 509,
@@ -122,20 +123,20 @@
    "arteries": 425,
    "fascia-bursae": 166,
    "veins": 231,
-   "joints": 414,
+   "joints": 413,
    "skeleton": 277,
-   "skin-layers": 19,
+   "skin-layers": 18,
    "brain-regions": 282
   },
   "groups": [
    {
     "id": "core-upgrades",
-    "bytes": 115875,
+    "bytes": 115828,
     "count": 14
    },
    {
     "id": "muscles",
-    "bytes": 2288225,
+    "bytes": 2288181,
     "count": 509
    },
    {
@@ -145,43 +146,43 @@
    },
    {
     "id": "lymphatic",
-    "bytes": 113224,
+    "bytes": 113151,
     "count": 162
    },
    {
     "id": "nerves",
-    "bytes": 575795,
+    "bytes": 576056,
     "count": 283
    },
    {
     "id": "arteries",
-    "bytes": 969618,
+    "bytes": 969836,
     "count": 425
    },
    {
     "id": "fascia-bursae",
-    "bytes": 416033,
+    "bytes": 416136,
     "count": 166
    },
    {
     "id": "veins",
-    "bytes": 548435,
+    "bytes": 548564,
     "count": 231
    },
    {
     "id": "joints",
-    "bytes": 497563,
-    "count": 414
+    "bytes": 496665,
+    "count": 413
    },
    {
     "id": "skeleton",
-    "bytes": 1393128,
+    "bytes": 1393225,
     "count": 277
    },
    {
     "id": "skin-layers",
-    "bytes": 58180,
-    "count": 19
+    "bytes": 47987,
+    "count": 18
    },
    {
     "id": "brain-regions",
@@ -193,16 +194,17 @@
    "Z: brain / spinal-cord internals: provenance unverified (UW Brainder); Allen atlas used for brain": 239,
    "Z: muscle attachment marker, not a structure": 705,
    "Z: unnamed placeholder": 3,
-   "Z: reference line, plane or movement": 51,
+   "Z: reference line, plane or movement": 47,
    "Z: duplicated by an HRA mesh": 27,
-   "Z: surface-region patch on the skin": 243,
+   "Z: surface-region patch on the skin": 242,
    "Z: brain / spinal-cord internal": 38,
    "Z: cardiac chambers and valves: HRA heart used so they register with the core heart": 17,
    "Z: inner ear: CC BY-NC-SA third-party model inside Z-Anatomy": 4,
    "Z: male-only structure": 11,
+   "Z: collection label mesh": 11,
+   "Z: scalp hair volume from another subject does not fit either skull": 1,
    "Z: not a structure": 2,
    "Z: kidney: CC BY-NC third-party model inside Z-Anatomy; HRA kidney used": 4,
-   "Z: collection label": 5,
    "Z: spleen: HRA spleen in core pack": 1,
    "Z: eye: HRA eye used": 2,
    "HRA: skin is in the core pack": 1,

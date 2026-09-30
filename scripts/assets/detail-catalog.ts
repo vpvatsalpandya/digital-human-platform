@@ -106,6 +106,8 @@ export function classifyZ(o: ZIndexEntry, body: 'male' | 'female'): Classified {
       return { category: 'eye structure', systems: ['nervous'], group: 'organ-parts', region: region ?? 'head' };
     }
     if (CNS_INTERNAL.test(base) && !/nerve|plexus|ganglion|root|cauda|trunk|ramus|branch|cord of brachial/i.test(base)) return none('brain / spinal-cord internal');
+    if (/^(anterior|posterior) (chamber|segment) of eyeball|^(cornea|iris|lens|retina|sclera|vitreous body|zonular fibres)$/i.test(base)) return none('eye: HRA eye used');
+    if (/^auditory tube$/i.test(base)) return { category: 'digestive part', systems: ['respiratory'], group: 'organ-parts', region: 'head' };
     let category = 'nerve';
     if (/ganglion|ganglia/i.test(base)) category = 'ganglion';
     else if (/plexus/i.test(base)) category = 'plexus';

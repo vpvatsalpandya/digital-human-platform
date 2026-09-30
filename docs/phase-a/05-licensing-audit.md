@@ -14,7 +14,7 @@ platform sold to institutions is unambiguously commercial.
 | # | Candidate | Type | Licence | Commercial | Derivatives | Verdict |
 |---|---|---|---|---|---|---|
 | 1 | BodyParts3D / Anatomography (DBCLS, Japan) | 3D meshes, male, ~2,000 structures, FMA-labelled | CC BY-SA 2.1 JP | Yes | Yes, ShareAlike | **In use** — skeleton, muscles, stomach, adrenals in `hra-v1` |
-| 2 | Z-Anatomy (Kervyn, Zielinski et al.) | Retopologised BodyParts3D + additions, Blender, 5,000+ objects | CC BY-SA 4.0 | Yes | Yes, ShareAlike | **Use** (preferred male source; cleaner topology) |
+| 2 | Z-Anatomy (Kervyn, Zielinski et al.) | Retopologised BodyParts3D + additions, Blender, 5,000+ objects | CC BY-SA 4.0 | Yes | Yes, ShareAlike | **In use** in the `anatomy-v2` detail pack, minus excluded NC parts (inner ear, kidney, unverified brain internals); see `docs/anatomy-v2-pipeline.md` |
 | 3 | HuBMAP Human Reference Atlas 3D Reference Object Library | GLB organs, male and female, expert-approved | CC BY 4.0 | Yes | Yes | **In use** — ships as the `hra-v1` pack for both bodies |
 | 4 | Open Anatomy Project (SPL brain, abdomen, knee, head & neck, inner ear atlases) | Labelled meshes + source MRI/CT | 3D Slicer licence (BSD-style) | Yes | Yes | **Use** (regional atlases, radiology alignment) |
 | 5 | Visible Human Project (NLM) | Cryosection images, CT, MRI, male and female | NLM terms & conditions (no licence since 2019) | Yes | Yes | **Use** (cross-section and radiology base) |
@@ -66,6 +66,8 @@ platform sold to institutions is unambiguously commercial.
 - **Maintenance.** Active community, 300+ commits; the founder maintains a web viewer.
 - **Attribution required.** "Z-Anatomy — The libre 3D atlas of anatomy — CC BY-SA 4.0",
   plus the BodyParts3D notice, plus contributing institutions listed in the repository.
+
+**Update 2026-09-30.** Z-Anatomy is now shipped as `anatomy-v2` (about 2,600 structures per body). The repository states that some models inside it are adapted from third parties: the inner ear is CC BY-NC-SA 4.0 (University of Dundee) and the kidney CC BY-NC 4.0; both are excluded, as are brain and spinal-cord internals of unverified provenance. Meshes are not tagged by origin, so any undocumented third-party model would not be caught: legal review should confirm before commercial launch. BodyParts3D's own site now says CC BY 4.0 while its repository and Z-Anatomy say CC BY-SA 2.1 JP; we attribute both and ship at CC BY-SA 4.0.
 
 ### 2.3 HuBMAP Human Reference Atlas (HRA) 3D Reference Objects
 - **Quality.** Professionally modelled organs approved by organ experts; male and female;

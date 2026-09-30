@@ -1,5 +1,0 @@
-{
-  "note": "Uniform scale + translation carrying Z-Anatomy (after rotating Z-up to Y-up: x, z, -y) into the atlas body space of each body. Fitted by least squares over vertebra, sacrum, hip bone, hyoid and laryngeal cartilage bounding boxes present in both Z-Anatomy and the HRA united body (scripts/assets/extract, work/fit2.py in the build log). Residual is about 10 mm vertically and 15-20 mm antero-posteriorly; the female fit reuses the male-derived Z-Anatomy skeleton scaled to the female HRA vertebral column, and is flagged as such in the interface.",
-  "male": { "scale": 1.019, "translate": [-0.0019, -0.8319, -0.0003] },
-  "female": { "scale": 0.927, "translate": [-0.0084, -0.7344, -0.0721] }
-}

@@ -1,14 +1,14 @@
 {
  "male": {
-  "structures": 3078,
-  "triangles": 1631563,
-  "bytes": 8943657,
+  "structures": 3058,
+  "triangles": 1620572,
+  "bytes": 8884646,
   "byGroup": {
    "core-upgrades": 12,
    "muscles": 507,
-   "organ-parts": 312,
+   "organ-parts": 314,
    "lymphatic": 160,
-   "nerves": 283,
+   "nerves": 261,
    "arteries": 421,
    "fascia-bursae": 166,
    "veins": 227,
@@ -30,8 +30,8 @@
    },
    {
     "id": "organ-parts",
-    "bytes": 1293001,
-    "count": 312
+    "bytes": 1298220,
+    "count": 314
    },
    {
     "id": "lymphatic",
@@ -40,8 +40,8 @@
    },
    {
     "id": "nerves",
-    "bytes": 575399,
-    "count": 283
+    "bytes": 511169,
+    "count": 261
    },
    {
     "id": "arteries",
@@ -86,6 +86,7 @@
    "Z: reference line, plane or movement": 47,
    "Z: duplicated by an HRA mesh": 27,
    "Z: surface-region patch on the skin": 236,
+   "Z: eye: HRA eye used": 22,
    "Z: brain / spinal-cord internal": 38,
    "Z: cardiac chambers and valves: HRA heart used so they register with the core heart": 17,
    "Z: inner ear: CC BY-NC-SA third-party model inside Z-Anatomy": 4,
@@ -95,7 +96,6 @@
    "Z: female-only structure": 20,
    "Z: kidney: CC BY-NC third-party model inside Z-Anatomy; HRA kidney used": 4,
    "Z: spleen: HRA spleen in core pack": 1,
-   "Z: eye: HRA eye used": 2,
    "HRA: skin is in the core pack": 1,
    "HRA: Z-Anatomy or vessels": 14,
    "HRA: unclassified HRA mesh": 15,
@@ -112,15 +112,15 @@
   }
  },
  "female": {
-  "structures": 3090,
-  "triangles": 1634404,
-  "bytes": 8972842,
+  "structures": 3070,
+  "triangles": 1623416,
+  "bytes": 8913618,
   "byGroup": {
    "core-upgrades": 14,
    "muscles": 509,
-   "organ-parts": 320,
+   "organ-parts": 322,
    "lymphatic": 162,
-   "nerves": 283,
+   "nerves": 261,
    "arteries": 419,
    "fascia-bursae": 166,
    "veins": 227,
@@ -142,8 +142,8 @@
    },
    {
     "id": "organ-parts",
-    "bytes": 1307187,
-    "count": 320
+    "bytes": 1312402,
+    "count": 322
    },
    {
     "id": "lymphatic",
@@ -152,8 +152,8 @@
    },
    {
     "id": "nerves",
-    "bytes": 576056,
-    "count": 283
+    "bytes": 511617,
+    "count": 261
    },
    {
     "id": "arteries",
@@ -198,6 +198,7 @@
    "Z: reference line, plane or movement": 47,
    "Z: duplicated by an HRA mesh": 24,
    "Z: surface-region patch on the skin": 242,
+   "Z: eye: HRA eye used": 22,
    "Z: brain / spinal-cord internal": 38,
    "Z: cardiac chambers and valves: HRA heart used so they register with the core heart": 17,
    "Z: inner ear: CC BY-NC-SA third-party model inside Z-Anatomy": 4,
@@ -207,7 +208,6 @@
    "Z: not a structure": 2,
    "Z: kidney: CC BY-NC third-party model inside Z-Anatomy; HRA kidney used": 4,
    "Z: spleen: HRA spleen in core pack": 1,
-   "Z: eye: HRA eye used": 2,
    "HRA: skin is in the core pack": 1,
    "HRA: Z-Anatomy or vessels": 14,
    "HRA: unclassified HRA mesh": 23,

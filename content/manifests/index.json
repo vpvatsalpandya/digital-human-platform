@@ -9,12 +9,12 @@
       "retrievedAt": "2026-09-12"
     },
     {
-      "pack": "z-anatomy-male",
-      "title": "Z-Anatomy male body (planned Sprint 1)",
+      "pack": "anatomy-v2",
+      "title": "Detail pack: Z-Anatomy structures and further HRA objects, fitted to both HRA bodies (skeleton, muscles, vessels, nerves, joints, fascia, organ parts, skin layers)",
       "licence": "CC-BY-SA-4.0",
-      "attribution": "Z-Anatomy \u2014 The libre 3D atlas of anatomy (CC BY-SA 4.0), derived from BodyParts3D, \u00a9 The Database Center for Life Science (CC BY-SA 2.1 Japan).",
+      "attribution": "Z-Anatomy, the libre 3D atlas of anatomy (CC BY-SA 4.0), derived from BodyParts3D, © The Database Center for Life Science (CC BY-SA 2.1 Japan; the BodyParts3D site now states CC BY 4.0). Organ parts, spinal cord, patellar ligaments, mammary gland, eye, subcutaneous fat and brain regions: Human Reference Atlas 3D Reference Object Library, HuBMAP Consortium (CC BY 4.0), brain regions from the Allen Human Reference Atlas. Registered, decimated and re-encoded by this project; the derived meshes are released under CC BY-SA 4.0. The dermis and hypodermis shells are generated schematics, not anatomy. Excluded: inner ear (CC BY-NC-SA), Z-Anatomy kidney (CC BY-NC), brain and spinal-cord internals of unverified origin.",
       "url": "https://github.com/Z-Anatomy/Models-of-human-anatomy",
-      "retrievedAt": null
+      "retrievedAt": "2026-09-30"
     },
     {
       "pack": "hra-v1",

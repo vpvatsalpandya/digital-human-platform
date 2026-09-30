@@ -160,8 +160,8 @@ function sideByGeometry(side: 'left' | 'right' | 'none', piece: RawMesh, byCentr
   const { min, max } = boundsOf(piece.positions);
   if (byCentroid) { const cx = (min[0] + max[0]) / 2; if (Math.abs(cx) > 0.003) return cx > 0 ? 'left' : 'right'; return side; }
   // Only correct a mesh lying wholly on the other side; midline-crossing ones keep their label.
-  if (side === 'left' && max[0] < -0.004) return 'right';
-  if (side === 'right' && min[0] > 0.004) return 'left';
+  if (side === 'left' && max[0] < -0.012) return 'right';
+  if (side === 'right' && min[0] > 0.012) return 'left';
   return side;
 }
 
@@ -248,7 +248,7 @@ async function main() {
       if (cls.skip) { skip(`Z: ${cls.skip}`); continue; }
       const { base, side: labelled } = baseName(o.name);
       const piece = readBin(zDir, o.i);
-      const side = sideByGeometry(labelled, piece);
+      const side = sideByGeometry(labelled, piece, /hair|lash|brow/i.test(base) || /ligament/i.test(base));
       const sideWord = side === 'none' ? '' : `${side} `;
       const name = titleCase(`${sideWord}${base.charAt(0).toLowerCase()}${base.slice(1)}`.trim());
       const id = uniqueId(`${slug(base)}${side === 'left' ? '-l' : side === 'right' ? '-r' : ''}`, cls.category);

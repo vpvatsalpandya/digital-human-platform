@@ -9,6 +9,13 @@ import type { BodyId, BodyManifest } from './types';
  */
 const vec3 = z.tuple([z.number(), z.number(), z.number()]);
 
+/** Licences the platform may ship. NonCommercial and NoDerivatives packs are rejected here
+ *  as well as in scripts/validate-manifests.ts (A-05). */
+export const ALLOWED_PACK_LICENCES = [
+  'MIT', 'Apache-2.0', 'BSD-3-Clause', 'CC0-1.0', 'CC-BY-3.0', 'CC-BY-4.0',
+  'CC-BY-SA-2.1-JP', 'CC-BY-SA-4.0', 'Slicer', 'NLM-Terms', 'proprietary-licensed',
+] as const;
+
 export const manifestLod = z.object({
   url: z.string().min(1),
   bytes: z.number().int().positive(),
@@ -29,15 +36,14 @@ export const manifestStructure = z.object({
   bounds: z.tuple([z.number(), z.number(), z.number(), z.number(), z.number(), z.number()]),
   lods: z.array(manifestLod).min(1).optional(),
   procedural: z.unknown().optional(),
-  provenance: z.enum(['hra', 'bp3d', 'procedural']).optional(),
+  provenance: z.enum(['hra', 'bp3d', 'zanatomy', 'generated', 'procedural']).optional(),
+  group: z.string().optional(),
+  packed: z.object({ o: z.number().int().nonnegative(), vb: z.number().int().positive(), ib: z.number().int().positive(), nv: z.number().int().positive(), ni: z.number().int().positive() }).optional(),
+  category: z.string().optional(),
+  layer: z.number().int().min(0).max(6).optional(),
+  source: z.object({ name: z.string().min(1), licence: z.enum(ALLOWED_PACK_LICENCES) }).optional(),
 });
 
-/** Licences the platform may ship. NonCommercial and NoDerivatives packs are rejected here
- *  as well as in scripts/validate-manifests.ts (A-05). */
-export const ALLOWED_PACK_LICENCES = [
-  'MIT', 'Apache-2.0', 'BSD-3-Clause', 'CC0-1.0', 'CC-BY-3.0', 'CC-BY-4.0',
-  'CC-BY-SA-2.1-JP', 'CC-BY-SA-4.0', 'Slicer', 'NLM-Terms', 'proprietary-licensed',
-] as const;
 
 export const bodyManifest = z.object({
   body: z.enum(['male', 'female']),
@@ -47,6 +53,11 @@ export const bodyManifest = z.object({
   attribution: z.string().min(10),
   /** LOD2 bundles, one per system, to keep the first paint under ~20 requests. */
   packs: z.array(z.object({ system: z.enum(SYSTEM_IDS), url: z.string(), bytes: z.number().int().positive(), structureIds: z.array(z.string()) })).optional(),
+  groups: z.array(z.object({
+    id: z.string().min(1), title: z.string().min(1), description: z.string().optional(), url: z.string().min(1),
+    bytes: z.number().int().positive(), count: z.number().int().positive(),
+    replaces: z.array(z.string()).optional(), auto: z.boolean().optional(),
+  })).optional(),
   structures: z.array(manifestStructure).min(1),
 });
 

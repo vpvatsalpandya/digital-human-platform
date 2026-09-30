@@ -1,6 +1,7 @@
 'use client';
 import * as THREE from 'three';
 import type { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { decodePacked, type MeshoptLike, type PackedRef } from './packed';
 
 /**
  * Asset loading (ADR-007, Phase G §3): per-structure GLB with meshopt (primary), Draco
@@ -90,3 +91,69 @@ export function chooseLod(distance: number, radius: number, lodCount: number, lo
 }
 
 export { proceduralGeometry } from './procedural';
+
+/**
+ * One detail group as a single merged geometry.
+ *
+ * Thousands of separate meshes would be thousands of draw calls, so a group is decoded into
+ * one indexed geometry with per-vertex colour and a per-vertex state attribute. `ranges`
+ * records where each structure's vertices and triangles sit, which is how the viewer maps a
+ * picked triangle back to a structure and updates one structure's visibility without
+ * rebuilding anything.
+ */
+export interface GroupGeometry {
+  geometry: THREE.BufferGeometry;
+  ids: string[];
+  /** First vertex of each structure, plus a final sentinel = total vertices. */
+  vertexStart: Uint32Array;
+  /** First triangle of each structure, plus a final sentinel = total triangles. */
+  triStart: Uint32Array;
+}
+
+const groupCache = new Map<string, Promise<GroupGeometry>>();
+
+export function loadGroupGeometry(
+  url: string,
+  structures: { id: string; bounds: [number, number, number, number, number, number]; packed: PackedRef; category?: string }[],
+  colorOf: (s: { id: string; category?: string }) => THREE.Color,
+): Promise<GroupGeometry> {
+  const hit = groupCache.get(url);
+  if (hit) return hit;
+  const p = (async () => {
+    const [buf, { MeshoptDecoder }] = await Promise.all([
+      fetch(url, { cache: 'force-cache' }).then((r) => { if (!r.ok) throw new Error(`${url}: ${r.status}`); return r.arrayBuffer(); }),
+      import('three/examples/jsm/libs/meshopt_decoder.module.js'),
+    ]);
+    await MeshoptDecoder.ready;
+    const totalV = structures.reduce((a, s) => a + s.packed.nv, 0);
+    const totalI = structures.reduce((a, s) => a + s.packed.ni, 0);
+    const positions = new Float32Array(totalV * 3);
+    const colors = new Float32Array(totalV * 3);
+    const state = new Float32Array(totalV);
+    const indices = new Uint32Array(totalI);
+    const vertexStart = new Uint32Array(structures.length + 1);
+    const triStart = new Uint32Array(structures.length + 1);
+    let vo = 0, io = 0;
+    structures.forEach((s, k) => {
+      vertexStart[k] = vo; triStart[k] = io / 3;
+      const m = decodePacked(buf, s.packed, s.bounds, [0, 0, 0], MeshoptDecoder as unknown as MeshoptLike);
+      positions.set(m.positions, vo * 3);
+      for (let i = 0; i < m.indices.length; i++) indices[io + i] = m.indices[i]! + vo;
+      const c = colorOf(s);
+      for (let v = 0; v < s.packed.nv; v++) { colors[(vo + v) * 3] = c.r; colors[(vo + v) * 3 + 1] = c.g; colors[(vo + v) * 3 + 2] = c.b; }
+      vo += s.packed.nv; io += s.packed.ni;
+    });
+    vertexStart[structures.length] = vo; triStart[structures.length] = io / 3;
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+    geometry.setAttribute('aState', new THREE.BufferAttribute(state, 1));
+    geometry.setIndex(new THREE.BufferAttribute(indices, 1));
+    geometry.computeVertexNormals();
+    geometry.computeBoundingSphere();
+    return { geometry, ids: structures.map((s) => s.id), vertexStart, triStart };
+  })();
+  groupCache.set(url, p);
+  p.catch(() => groupCache.delete(url));
+  return p;
+}

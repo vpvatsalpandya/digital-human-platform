@@ -1,8 +1,9 @@
 'use client';
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import type { BodyId, Bookmark, ClipState, CompareState, SavedView, SystemId, ViewState } from '@/engine/types';
+import type { BodyId, Bookmark, ClipState, CompareState, Provenance, SavedView, SystemId, ViewState } from '@/engine/types';
 import { SYSTEM_IDS } from '@/engine/types';
+import { isPeeled } from '@/engine/layers';
 
 /**
  * Engine state (ADR-008). Per-frame values (camera during drag) are written with
@@ -22,8 +23,15 @@ export interface EngineState extends ViewState {
   bookmarks: Bookmark[];
   /** monotonically increasing; bump to ask the viewer to re-apply camera from state */
   cameraEpoch: number;
+  /** Detail-pack groups whose meshes are downloaded and drawn. */
+  groups: string[];
+  /** Peel-away depth through the skin-to-bone stack (0..6). */
+  peel: number;
 
   setBody: (b: BodyId) => void;
+  enableGroups: (ids: string[]) => void;
+  toggleGroup: (id: string) => void;
+  setPeel: (depth: number) => void;
   toggleSystem: (s: SystemId) => void;
   setVisibleSystems: (s: SystemId[]) => void;
   showAllSystems: () => void;
@@ -63,7 +71,7 @@ export function isDefaultCamera(c: ViewState['camera']): boolean {
     && c.target.every((v, i) => v === DEFAULT_CAMERA.target[i]);
 }
 
-const initialView: ViewState = {
+const initialView: ViewState & { groups: string[]; peel: number } = {
   body: 'male',
   camera: DEFAULT_CAMERA,
   visibleSystems: ['skeletal', 'cardiovascular', 'digestive', 'urinary', 'lymphatic', 'endocrine', 'nervous', 'respiratory', 'reproductive'],
@@ -75,6 +83,8 @@ const initialView: ViewState = {
   transparency: 0,
   clip: null,
   compare: null,
+  groups: [],
+  peel: 0,
 };
 
 function uid() {
@@ -94,6 +104,9 @@ export const useEngineStore = create<EngineState>()(
       cameraEpoch: 0,
 
       setBody: (body) => set({ body }),
+      enableGroups: (ids) => set((st) => (ids.every((i) => st.groups.includes(i)) ? {} : { groups: [...new Set([...st.groups, ...ids])] })),
+      toggleGroup: (id) => set((st) => ({ groups: st.groups.includes(id) ? st.groups.filter((x) => x !== id) : [...st.groups, id] })),
+      setPeel: (peel) => set({ peel: Math.min(6, Math.max(0, Math.round(peel))) }),
       toggleSystem: (s) =>
         set((st) => ({
           visibleSystems: st.visibleSystems.includes(s) ? st.visibleSystems.filter((x) => x !== s) : [...st.visibleSystems, s],
@@ -114,7 +127,7 @@ export const useEngineStore = create<EngineState>()(
       fadeSelected: () =>
         set((st) => ({ faded: [...new Set([...st.faded, ...st.selected])] })),
       unhide: (id) => set((st) => ({ hidden: st.hidden.filter((x) => x !== id), faded: st.faded.filter((x) => x !== id) })),
-      resetVisibility: () => set({ hidden: [], faded: [], isolated: null, selected: [], explode: 0, transparency: 0, clip: null }),
+      resetVisibility: () => set({ hidden: [], faded: [], isolated: null, selected: [], explode: 0, transparency: 0, clip: null, peel: 0 }),
       setExplode: (explode) => set({ explode: clamp01(explode) }),
       setTransparency: (transparency) => set({ transparency: clamp01(transparency) }),
       setClip: (clip) => set({ clip }),
@@ -128,6 +141,7 @@ export const useEngineStore = create<EngineState>()(
         return {
           body: s.body, camera: s.camera, visibleSystems: s.visibleSystems, hidden: s.hidden, faded: s.faded,
           isolated: s.isolated, selected: s.selected, explode: s.explode, transparency: s.transparency, clip: s.clip, compare: s.compare,
+          groups: s.groups, peel: s.peel,
         };
       },
       saveView: (name) => {
@@ -140,7 +154,7 @@ export const useEngineStore = create<EngineState>()(
         if (v) get().applyViewState(v.state);
       },
       deleteView: (id) => set((st) => ({ savedViews: st.savedViews.filter((v) => v.id !== id) })),
-      applyViewState: (s) => set((st) => ({ ...s, cameraEpoch: st.cameraEpoch + 1 })),
+      applyViewState: (s) => set((st) => ({ ...s, groups: s.groups ?? st.groups, peel: s.peel ?? 0, cameraEpoch: st.cameraEpoch + 1 })),
       toggleBookmark: (structureId, note) =>
         set((st) => ({
           bookmarks: st.bookmarks.some((b) => b.structureId === structureId)
@@ -166,15 +180,21 @@ function clamp01(v: number) { return Math.min(1, Math.max(0, v)); }
 
 /** Visibility resolution used by the renderer and by the accessible structure list. */
 export function structureVisibility(
-  st: Pick<EngineState, 'hidden' | 'faded' | 'isolated' | 'visibleSystems' | 'transparency' | 'showStandIns'>,
+  st: Pick<EngineState, 'hidden' | 'faded' | 'isolated' | 'visibleSystems' | 'transparency' | 'showStandIns'> & { peel?: number },
   id: string,
   systems: SystemId[],
-  provenance?: 'hra' | 'bp3d' | 'procedural',
+  provenance?: Provenance,
+  layer?: number,
 ): { visible: boolean; opacity: number } {
   // An explicit selection always wins: a student who searched for a structure should see it
   // even if it is a stand-in.
   const selected = st.isolated?.includes(id) ?? false;
   if (provenance === 'procedural' && !st.showStandIns && !selected) return { visible: false, opacity: 0 };
+  // The schematic dermis and hypodermis shells only make sense while peeling: drawn with the
+  // whole body intact they would sit invisibly inside the skin and add nothing but clutter.
+  const peel = st.peel ?? 0;
+  if (provenance === 'generated' && peel === 0 && !selected) return { visible: false, opacity: 0 };
+  if (isPeeled(layer, peel) && !selected) return { visible: false, opacity: 0 };
   if (!systems.some((s) => st.visibleSystems.includes(s))) return { visible: false, opacity: 0 };
   if (st.hidden.includes(id)) return { visible: false, opacity: 0 };
   if (st.isolated && !st.isolated.includes(id)) return { visible: true, opacity: 0.08 };

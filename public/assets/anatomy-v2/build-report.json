@@ -1,0 +1,224 @@
+{
+ "male": {
+  "structures": 3092,
+  "triangles": 1636676,
+  "bytes": 8973180,
+  "byGroup": {
+   "core-upgrades": 12,
+   "muscles": 509,
+   "organ-parts": 312,
+   "lymphatic": 162,
+   "nerves": 283,
+   "arteries": 425,
+   "fascia-bursae": 166,
+   "veins": 231,
+   "joints": 414,
+   "skeleton": 277,
+   "skin-layers": 19,
+   "brain-regions": 282
+  },
+  "groups": [
+   {
+    "id": "core-upgrades",
+    "bytes": 102535,
+    "count": 12
+   },
+   {
+    "id": "muscles",
+    "bytes": 2289303,
+    "count": 509
+   },
+   {
+    "id": "organ-parts",
+    "bytes": 1292956,
+    "count": 312
+   },
+   {
+    "id": "lymphatic",
+    "bytes": 113230,
+    "count": 162
+   },
+   {
+    "id": "nerves",
+    "bytes": 575640,
+    "count": 283
+   },
+   {
+    "id": "arteries",
+    "bytes": 969417,
+    "count": 425
+   },
+   {
+    "id": "fascia-bursae",
+    "bytes": 416135,
+    "count": 166
+   },
+   {
+    "id": "veins",
+    "bytes": 547679,
+    "count": 231
+   },
+   {
+    "id": "joints",
+    "bytes": 497579,
+    "count": 414
+   },
+   {
+    "id": "skeleton",
+    "bytes": 1392740,
+    "count": 277
+   },
+   {
+    "id": "skin-layers",
+    "bytes": 48258,
+    "count": 19
+   },
+   {
+    "id": "brain-regions",
+    "bytes": 727708,
+    "count": 282
+   }
+  ],
+  "skipped": {
+   "Z: brain / spinal-cord internals: provenance unverified (UW Brainder); Allen atlas used for brain": 239,
+   "Z: muscle attachment marker, not a structure": 705,
+   "Z: unnamed placeholder": 3,
+   "Z: reference line, plane or movement": 51,
+   "Z: duplicated by an HRA mesh": 27,
+   "Z: surface-region patch on the skin": 243,
+   "Z: brain / spinal-cord internal": 38,
+   "Z: cardiac chambers and valves: HRA heart used so they register with the core heart": 17,
+   "Z: inner ear: CC BY-NC-SA third-party model inside Z-Anatomy": 4,
+   "Z: not a structure": 2,
+   "Z: kidney: CC BY-NC third-party model inside Z-Anatomy; HRA kidney used": 4,
+   "Z: collection label": 5,
+   "Z: spleen: HRA spleen in core pack": 1,
+   "Z: eye: HRA eye used": 2,
+   "HRA: skin is in the core pack": 1,
+   "HRA: Z-Anatomy or vessels": 14,
+   "HRA: unclassified HRA mesh": 15,
+   "HRA: Z-Anatomy used": 26,
+   "HRA: landmark surface, not a structure": 12,
+   "HRA: vessels: Z-Anatomy vessels used": 107,
+   "HRA: covered by ileum": 1,
+   "HRA: airway/segment trees; Z-Anatomy lobes and bronchi used": 65,
+   "HRA: female-only structure": 2,
+   "HRA: lymph-node microanatomy, not gross anatomy": 7,
+   "HRA: Z-Anatomy / core": 2,
+   "HRA: skeleton and knee: Z-Anatomy used (patellar ligament handled separately)": 131,
+   "too small after cleanup": 1
+  }
+ },
+ "female": {
+  "structures": 3102,
+  "triangles": 1642602,
+  "bytes": 9011016,
+  "byGroup": {
+   "core-upgrades": 14,
+   "muscles": 509,
+   "organ-parts": 320,
+   "lymphatic": 162,
+   "nerves": 283,
+   "arteries": 425,
+   "fascia-bursae": 166,
+   "veins": 231,
+   "joints": 414,
+   "skeleton": 277,
+   "skin-layers": 19,
+   "brain-regions": 282
+  },
+  "groups": [
+   {
+    "id": "core-upgrades",
+    "bytes": 115875,
+    "count": 14
+   },
+   {
+    "id": "muscles",
+    "bytes": 2288225,
+    "count": 509
+   },
+   {
+    "id": "organ-parts",
+    "bytes": 1307187,
+    "count": 320
+   },
+   {
+    "id": "lymphatic",
+    "bytes": 113224,
+    "count": 162
+   },
+   {
+    "id": "nerves",
+    "bytes": 575795,
+    "count": 283
+   },
+   {
+    "id": "arteries",
+    "bytes": 969618,
+    "count": 425
+   },
+   {
+    "id": "fascia-bursae",
+    "bytes": 416033,
+    "count": 166
+   },
+   {
+    "id": "veins",
+    "bytes": 548435,
+    "count": 231
+   },
+   {
+    "id": "joints",
+    "bytes": 497563,
+    "count": 414
+   },
+   {
+    "id": "skeleton",
+    "bytes": 1393128,
+    "count": 277
+   },
+   {
+    "id": "skin-layers",
+    "bytes": 58180,
+    "count": 19
+   },
+   {
+    "id": "brain-regions",
+    "bytes": 727753,
+    "count": 282
+   }
+  ],
+  "skipped": {
+   "Z: brain / spinal-cord internals: provenance unverified (UW Brainder); Allen atlas used for brain": 239,
+   "Z: muscle attachment marker, not a structure": 705,
+   "Z: unnamed placeholder": 3,
+   "Z: reference line, plane or movement": 51,
+   "Z: duplicated by an HRA mesh": 27,
+   "Z: surface-region patch on the skin": 243,
+   "Z: brain / spinal-cord internal": 38,
+   "Z: cardiac chambers and valves: HRA heart used so they register with the core heart": 17,
+   "Z: inner ear: CC BY-NC-SA third-party model inside Z-Anatomy": 4,
+   "Z: male-only structure": 11,
+   "Z: not a structure": 2,
+   "Z: kidney: CC BY-NC third-party model inside Z-Anatomy; HRA kidney used": 4,
+   "Z: collection label": 5,
+   "Z: spleen: HRA spleen in core pack": 1,
+   "Z: eye: HRA eye used": 2,
+   "HRA: skin is in the core pack": 1,
+   "HRA: Z-Anatomy or vessels": 14,
+   "HRA: unclassified HRA mesh": 23,
+   "HRA: pregnancy model, not standard anatomy": 6,
+   "HRA: vessels: Z-Anatomy vessels used": 113,
+   "HRA: core ovary/uterus": 3,
+   "HRA: Z-Anatomy used": 17,
+   "HRA: landmark surface, not a structure": 12,
+   "HRA: covered by ileum": 1,
+   "HRA: airway/segment trees; Z-Anatomy lobes and bronchi used": 59,
+   "HRA: Z-Anatomy / core": 2,
+   "HRA: lymph-node microanatomy, not gross anatomy": 7,
+   "HRA: skeleton and knee: Z-Anatomy used (patellar ligament handled separately)": 129,
+   "too small after cleanup": 1
+  }
+ }
+}

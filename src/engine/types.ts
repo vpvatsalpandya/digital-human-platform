@@ -46,7 +46,33 @@ export interface ManifestStructure {
    * generated stand-in shown because no openly licensed mesh of this structure exists yet.
    * The interface tells the student which they are looking at.
    */
-  provenance?: 'hra' | 'bp3d' | 'procedural';
+  provenance?: Provenance;
+  /** Detail-pack membership: the id of the lazy-loaded bundle that carries this mesh. */
+  group?: string;
+  /** Anatomical kind, e.g. `bone`, `artery`, `nerve`, `ligament`. Used for counts and colour. */
+  category?: string;
+  /**
+   * Depth in the skin-to-bone peel-away stack: 0 epidermis/skin, 1 dermis, 2 hypodermis/fat,
+   * 3 deep fascia, 4 superficial muscle, 5 deep muscle, 6 skeleton and joints. Absent for
+   * structures that are not part of the stack (viscera, vessels, nerves).
+   */
+  layer?: number;
+  /** Location of this structure's mesh inside its detail group file (see packed.ts). */
+  packed?: { o: number; vb: number; ib: number; nv: number; ni: number };
+  /** Which open dataset the mesh came from, with its licence, for per-structure attribution. */
+  source?: { name: string; licence: string };
+}
+
+/**
+ * `hra` and `bp3d` and `zanatomy` are real anatomical meshes. `generated` is a schematic shape
+ * derived from a real surface (the dermis and hypodermis shells), shown only where a layer
+ * control asks for it and always labelled. `procedural` is a hand-made stand-in.
+ */
+export type Provenance = 'hra' | 'bp3d' | 'zanatomy' | 'generated' | 'procedural';
+
+/** True for provenance values that are real, openly licensed anatomical geometry. */
+export function isRealAnatomy(p: Provenance | undefined): boolean {
+  return p === 'hra' || p === 'bp3d' || p === 'zanatomy';
 }
 
 export type ProceduralShape =
@@ -61,7 +87,22 @@ export interface BodyManifest {
   pack: string;
   licence: string;
   attribution: string;
+  /** Detail-pack bundles (lazy loaded); absent in the core pack. */
+  groups?: DetailGroup[];
   structures: ManifestStructure[];
+}
+
+export interface DetailGroup {
+  id: string;
+  title: string;
+  description?: string;
+  url: string;
+  bytes: number;
+  count: number;
+  /** Core structures this group draws in more detail; hidden while the group is shown. */
+  replaces?: string[];
+  /** Loaded automatically once the manifest is known (small upgrades to stand-ins). */
+  auto?: boolean;
 }
 
 /** Everything needed to restore a view (FR-E9). Serialisable. */
@@ -77,6 +118,10 @@ export interface ViewState {
   transparency: number; // 0..1 global
   clip: ClipState | null;
   compare: CompareState | null;
+  /** Detail-pack groups switched on (lazy loaded). Absent in views saved before detail packs. */
+  groups?: string[];
+  /** Peel-away depth, 0 (nothing peeled) to 6 (only the skeleton left). */
+  peel?: number;
 }
 
 export interface ClipState {

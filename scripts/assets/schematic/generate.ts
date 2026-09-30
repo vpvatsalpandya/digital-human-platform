@@ -11,27 +11,30 @@
  */
 import { MeshBuilder, v, type Piece, type Pt, type V3 } from './geom';
 import { nearest, points, slabMean, type openBody } from './io';
+import type { SystemId } from '../../../src/engine/types';
+import { generateExtra } from './extra';
 
 type Body = Awaited<ReturnType<typeof openBody>>;
 export interface Item {
   id: string; name: string; aliases?: string[]; side: 'left' | 'right' | 'none';
-  systems: ('nervous' | 'cardiovascular' | 'skeletal' | 'digestive')[]; region: string; category: SchematicCategory; mesh: Piece;
+  systems: SystemId[]; region: string; category: SchematicCategory; mesh: Piece;
 }
-export const SCHEMATIC_CATEGORIES = ['schematic nerve', 'schematic plexus', 'schematic ganglion', 'schematic vessel', 'schematic tooth'] as const;
+export const SCHEMATIC_CATEGORIES = ['schematic nerve', 'schematic plexus', 'schematic ganglion', 'schematic vessel', 'schematic tooth', 'schematic eye', 'schematic capsule', 'schematic cartilage', 'schematic ligament', 'schematic tendon', 'schematic muscle', 'schematic conduction', 'schematic suture'] as const;
+export type Body_ = Body;
 export type SchematicCategory = (typeof SCHEMATIC_CATEGORIES)[number];
 
-const SIDES = [['left', 1, 'l', 'Left'], ['right', -1, 'r', 'Right']] as const;
-const pt = (p: V3, r: number): Pt => ({ p, r });
-const lerp = (a: V3, b: V3, t: number): V3 => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
+export const SIDES = [['left', 1, 'l', 'Left'], ['right', -1, 'r', 'Right']] as const;
+export const pt = (p: V3, r: number): Pt => ({ p, r });
+export const lerp = (a: V3, b: V3, t: number): V3 => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
 const R_SPINAL = 0.0014;
 
-function tubeMesh(paths: Pt[][], sides = 6, step = 0.003): Piece {
+export function tubeMesh(paths: Pt[][], sides = 6, step = 0.003): Piece {
   const b = new MeshBuilder();
   for (const p of paths) b.tube(p, { sides, step });
   return b.build();
 }
 /** A gently bowed branch from `a` to `b` (bow is a fraction of the length, perpendicular to the run). */
-function branch(a: V3, b: V3, r0: number, r1: number, bow = 0.18, out: V3 = [0, 0, 1]): Pt[] {
+export function branch(a: V3, b: V3, r0: number, r1: number, bow = 0.18, out: V3 = [0, 0, 1]): Pt[] {
   const d = v.sub(b, a), L = v.len(d) || 1e-3;
   let side = v.cross(v.norm(d), out); if (v.len(side) < 0.1) side = v.cross(v.norm(d), [1, 0, 0]);
   const m = v.add(lerp(a, b, 0.5), v.mul(v.norm(side), L * bow));
@@ -286,7 +289,7 @@ export async function generate(b: Body, body: 'male' | 'female'): Promise<Item[]
   }
 
   // ---- small vessel branches ------------------------------------------------------------------
-  const thy = S('thyroid-gland'), tongue = S('dorsal-tongue'), gb = S('gallbladder'), liver = S('liver'), bladder = S('urinary-bladder');
+  const thy = S('thyroid-gland'), tongue = S('dorsal-tongue'), bladder = S('urinary-bladder');
   const V = async (name: string) => P(name);
   const vessel = (idv: string, name: string, side: 'left' | 'right' | 'none', systems: Item['systems'], region: string, paths: Pt[][], aliases?: string[]) =>
     items.push({ id: idv, name: `${name} (schematic)`, aliases, side, systems, region, category: 'schematic vessel', mesh: tubeMesh(paths, 6, 0.004) });
@@ -318,9 +321,7 @@ export async function generate(b: Body, body: 'male' | 'female'): Promise<Item[]
     const sv = side === 'left' ? nearest(rnv, [adr.centroid[0] - 0.01, adr.centroid[1] - 0.015, adr.centroid[2]]) : nearest(ivc, [adr.centroid[0] + 0.02, adr.centroid[1], adr.centroid[2]]);
     vessel(`suprarenal-vein-${s}`, `${Side} suprarenal vein`, side, ['cardiovascular'], 'abdomen', [branch(adrV, sv, 0.0012, 0.0018, 0.1)], ['adrenal vein']);
     if (body === 'female') {
-      const uterus = S('uterus'), ov = S(`ovary-${s}`);
-      const uT: V3 = [uterus.centroid[0] + sg * 0.02, uterus.centroid[1] + 0.006, uterus.centroid[2]];
-      vessel(`uterine-artery-${s}`, `${Side} uterine artery`, side, ['cardiovascular'], 'pelvis', [branch(nearest(iia, uT), uT, 0.0013, 0.0009, 0.22)]);
+      const ov = S(`ovary-${s}`);
       const ostart = nearest(aortaPts, [S(`${side}-renal-artery`).centroid[0], S(`${side}-renal-artery`).centroid[1] - 0.04, S(`${side}-renal-artery`).centroid[2]]);
       const omid: V3 = [ostart[0] * 0.4 + ov.centroid[0] * 0.6, (ostart[1] + ov.centroid[1]) / 2, (ostart[2] + ov.centroid[2]) / 2 + 0.006];
       vessel(`ovarian-artery-${s}`, `${Side} ovarian artery`, side, ['cardiovascular'], 'pelvis', [[pt(ostart, 0.0011), pt(lerp(ostart, omid, 0.5), 0.001), pt(omid, 0.001), pt(lerp(omid, ov.centroid as V3, 0.5), 0.0009), pt(ov.centroid as V3, 0.0008)]]);
@@ -333,10 +334,6 @@ export async function generate(b: Body, body: 'male' | 'female'): Promise<Item[]
   const stomachTop = stomachPts.reduce((a, p) => (p[1] > a[1] ? p : a));
   vessel('right-gastric-artery', 'Right gastric artery', 'none', ['cardiovascular'], 'abdomen', [branch(nearest(phep, lesser), lesser, 0.0011, 0.0008, 0.15)]);
   vessel('short-gastric-arteries', 'Short gastric arteries', 'none', ['cardiovascular'], 'abdomen', [-0.012, 0, 0.012].map((dz, k) => branch(nearest(splenic, [stomachTop[0] + 0.03, stomachTop[1] - 0.01, stomachTop[2] - 0.01]), [stomachTop[0] + 0.006 * (k - 1) + 0.006, stomachTop[1] - 0.004 - 0.003 * k, stomachTop[2] + dz + 0.012], 0.0008, 0.0006, 0.12)));
-  vessel('cystic-artery', 'Cystic artery', 'none', ['cardiovascular'], 'abdomen', [branch(nearest(phep, gb.centroid as V3), [gb.centroid[0], gb.centroid[1] + 0.002, gb.centroid[2]], 0.001, 0.0007, 0.15)]);
-  const lvT = liver.centroid as V3;
-  vessel('right-hepatic-artery', 'Right hepatic artery', 'none', ['cardiovascular'], 'abdomen', [branch(nearest(phep, lvT), [lvT[0] - 0.035, lvT[1] + 0.008, lvT[2] + 0.005], 0.0014, 0.0009, 0.15)]);
-  vessel('left-hepatic-artery', 'Left hepatic artery', 'none', ['cardiovascular'], 'abdomen', [branch(nearest(phep, lvT), [lvT[0] + 0.04, lvT[1] + 0.012, lvT[2] + 0.02], 0.0012, 0.0008, 0.15)]);
   const fan = (parent: V3[], tgts: V3[], r: number) => tgts.map((t) => branch(nearest(parent, t), t, r, r * 0.6, 0.15));
   const jT: V3[] = [0.55, 0.65, 0.75, 0.85].map((f, k) => [siB[0] + (siB[3] - siB[0]) * (0.7 + 0.08 * (k % 2)), siB[1] + (siB[4] - siB[1]) * f, siB[2] + (siB[5] - siB[2]) * (0.4 + 0.1 * (k % 3))] as V3).map((t) => nearest(smallInt, t));
   const iT: V3[] = [0.15, 0.3, 0.42, 0.52].map((f, k) => [siB[0] + (siB[3] - siB[0]) * (0.35 + 0.06 * (k % 2)), siB[1] + (siB[4] - siB[1]) * f, siB[2] + (siB[5] - siB[2]) * (0.55 + 0.08 * (k % 3))] as V3).map((t) => nearest(smallInt, t));
@@ -344,5 +341,6 @@ export async function generate(b: Body, body: 'male' | 'female'): Promise<Item[]
   vessel('ileal-arteries', 'Ileal arteries', 'none', ['cardiovascular'], 'abdomen', fan(sma, iT, 0.0009));
   vessel('oesophageal-arteries', 'Oesophageal arteries', 'none', ['cardiovascular'], 'thorax', [0.5, 0.7, 0.85].map((f, k) => { const y = oy0 + (oy1 - oy0) * f, c = oesC(y); return branch(nearest(thAorta, [c[0], y, c[2] - 0.01]), [c[0], y + 0.002 * k, c[2] - 0.003], 0.0008, 0.0006, 0.1); }), ['esophageal arteries']);
 
+  await generateExtra(b, body, items, ends);
   return items;
 }

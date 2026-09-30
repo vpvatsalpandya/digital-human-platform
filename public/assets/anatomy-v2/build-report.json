@@ -1,22 +1,23 @@
 {
  "male": {
-  "structures": 3226,
-  "triangles": 1620572,
-  "bytes": 9182631,
+  "structures": 3478,
+  "triangles": 1673941,
+  "bytes": 9728040,
   "byGroup": {
    "core-upgrades": 12,
    "muscles": 507,
-   "organ-parts": 314,
+   "organ-parts": 315,
    "lymphatic": 160,
    "nerves": 261,
-   "arteries": 421,
+   "arteries": 436,
    "fascia-bursae": 166,
-   "veins": 227,
+   "veins": 250,
    "joints": 413,
    "skeleton": 277,
-   "skin-layers": 18,
+   "skin-layers": 21,
    "brain-regions": 282,
-   "schematic": 168
+   "inner-ear": 26,
+   "schematic": 352
   },
   "groups": [
    {
@@ -31,8 +32,8 @@
    },
    {
     "id": "organ-parts",
-    "bytes": 1298220,
-    "count": 314
+    "bytes": 1299680,
+    "count": 315
    },
    {
     "id": "lymphatic",
@@ -46,8 +47,8 @@
    },
    {
     "id": "arteries",
-    "bytes": 962526,
-    "count": 421
+    "bytes": 987513,
+    "count": 436
    },
    {
     "id": "fascia-bursae",
@@ -56,8 +57,8 @@
    },
    {
     "id": "veins",
-    "bytes": 539483,
-    "count": 227
+    "bytes": 573834,
+    "count": 250
    },
    {
     "id": "joints",
@@ -71,8 +72,8 @@
    },
    {
     "id": "skin-layers",
-    "bytes": 38061,
-    "count": 18
+    "bytes": 62734,
+    "count": 21
    },
    {
     "id": "brain-regions",
@@ -80,9 +81,14 @@
     "count": 282
    },
    {
+    "id": "inner-ear",
+    "bytes": 202110,
+    "count": 26
+   },
+   {
     "id": "schematic",
-    "bytes": 297985,
-    "count": 168
+    "bytes": 555813,
+    "count": 352
    }
   ],
   "skipped": {
@@ -107,10 +113,10 @@
    "HRA: unclassified HRA mesh": 15,
    "HRA: Z-Anatomy used": 26,
    "HRA: landmark surface, not a structure": 12,
-   "HRA: vessels: Z-Anatomy vessels used": 107,
    "HRA: covered by ileum": 1,
    "HRA: airway/segment trees; Z-Anatomy lobes and bronchi used": 65,
    "HRA: female-only structure": 2,
+   "HRA: vessels: Z-Anatomy vessels used": 68,
    "HRA: lymph-node microanatomy, not gross anatomy": 7,
    "HRA: Z-Anatomy / core": 2,
    "HRA: skeleton and knee: Z-Anatomy used (patellar ligament handled separately)": 131,
@@ -118,23 +124,24 @@
   }
  },
  "female": {
-  "structures": 3244,
-  "triangles": 1623416,
-  "bytes": 9244522,
+  "structures": 3500,
+  "triangles": 1681181,
+  "bytes": 9808423,
   "byGroup": {
    "core-upgrades": 14,
    "muscles": 509,
-   "organ-parts": 322,
+   "organ-parts": 323,
    "lymphatic": 162,
    "nerves": 261,
-   "arteries": 419,
+   "arteries": 437,
    "fascia-bursae": 166,
-   "veins": 227,
+   "veins": 253,
    "joints": 413,
    "skeleton": 277,
-   "skin-layers": 18,
+   "skin-layers": 21,
    "brain-regions": 282,
-   "schematic": 174
+   "inner-ear": 26,
+   "schematic": 356
   },
   "groups": [
    {
@@ -149,8 +156,8 @@
    },
    {
     "id": "organ-parts",
-    "bytes": 1312402,
-    "count": 322
+    "bytes": 1315487,
+    "count": 323
    },
    {
     "id": "lymphatic",
@@ -164,8 +171,8 @@
    },
    {
     "id": "arteries",
-    "bytes": 952611,
-    "count": 419
+    "bytes": 977018,
+    "count": 437
    },
    {
     "id": "fascia-bursae",
@@ -174,8 +181,8 @@
    },
    {
     "id": "veins",
-    "bytes": 538062,
-    "count": 227
+    "bytes": 590837,
+    "count": 253
    },
    {
     "id": "joints",
@@ -189,8 +196,8 @@
    },
    {
     "id": "skin-layers",
-    "bytes": 47987,
-    "count": 18
+    "bytes": 79495,
+    "count": 21
    },
    {
     "id": "brain-regions",
@@ -198,9 +205,14 @@
     "count": 282
    },
    {
+    "id": "inner-ear",
+    "bytes": 202208,
+    "count": 26
+   },
+   {
     "id": "schematic",
-    "bytes": 330904,
-    "count": 174
+    "bytes": 580822,
+    "count": 356
    }
   ],
   "skipped": {
@@ -224,7 +236,7 @@
    "HRA: Z-Anatomy or vessels": 14,
    "HRA: unclassified HRA mesh": 23,
    "HRA: pregnancy model, not standard anatomy": 6,
-   "HRA: vessels: Z-Anatomy vessels used": 113,
+   "HRA: vessels: Z-Anatomy vessels used": 68,
    "HRA: core ovary/uterus": 3,
    "HRA: Z-Anatomy used": 17,
    "HRA: landmark surface, not a structure": 12,

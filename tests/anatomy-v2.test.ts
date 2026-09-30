@@ -45,6 +45,8 @@ describe('layer stack', () => {
   it('does not count generated or procedural structures as real anatomy', () => {
     expect(isRealAnatomy('hra')).toBe(true);
     expect(isRealAnatomy('zanatomy')).toBe(true);
+    expect(isRealAnatomy('openear')).toBe(true);
+    expect(isRealAnatomy('iemap')).toBe(true);
     expect(isRealAnatomy('generated')).toBe(false);
     expect(isRealAnatomy('procedural')).toBe(false);
   });
@@ -122,8 +124,15 @@ describe.runIf(built)('anatomy-v2 detail pack', () => {
       });
 
       it('contains no excluded third-party models (inner ear, Z-Anatomy kidney)', () => {
+        // The Z-Anatomy inner ear is CC BY-NC-SA and stays out. The inner ear that IS shipped comes from two CC BY 4.0
+        // research scans, carries their provenance, and is the only way such a name may appear.
         for (const s of m.structures) {
-          if (s.category !== 'nerve') expect(s.name, s.id).not.toMatch(/cochlea|vestibul|semicircular|saccule|labyrinth/i);
+          if (s.category !== 'nerve' && !/schematic/.test(s.category ?? '') && s.provenance !== 'openear' && s.provenance !== 'iemap') expect(s.name, s.id).not.toMatch(/cochlea|vestibul|semicircular|saccule|labyrinth/i);
+        }
+        for (const s of m.structures.filter((x) => x.group === 'inner-ear')) {
+          expect(['openear', 'iemap'], s.id).toContain(s.provenance);
+          expect(s.source!.licence, s.id).toBe('CC-BY-4.0');
+          expect(s.source!.name, s.id).toMatch(/OpenEar|IE-Map/);
         }
         expect(m.structures.some((s) => /kidney/i.test(s.name) && s.provenance === 'zanatomy' && !['artery', 'vein'].includes(s.category ?? ''))).toBe(false);
       });
@@ -131,8 +140,9 @@ describe.runIf(built)('anatomy-v2 detail pack', () => {
       it('does not pass generated anatomy off as real', () => {
         const gen = m.structures.filter((s) => s.provenance === 'generated');
         const shells = gen.filter((s) => s.category === 'skin layer');
-        expect(shells.map((s) => s.id).sort()).toEqual(['dermis-shell', 'hypodermis-shell']);
+        expect(shells.map((s) => s.id).sort()).toEqual(['dermis-shell', 'epidermis-shell', 'hypodermis-shell', 'membranous-subcutaneous-shell', 'papillary-dermis-shell']);
         for (const s of shells) expect([1, 2]).toContain(s.layer);
+        for (const s of shells) expect(s.name, s.id).toMatch(/\(schematic shell\)$/);
         // every other generated structure is a labelled schematic stand-in in its own group
         for (const s of gen.filter((s) => s.category !== 'skin layer')) { expect(s.group, s.id).toBe('schematic'); expect(s.category, s.id).toMatch(/^schematic /); expect(s.name, s.id).toMatch(/\(schematic\)$/); }
         expect(m.structures.filter((s) => s.provenance === 'procedural')).toHaveLength(0);
@@ -148,6 +158,40 @@ describe.runIf(built)('anatomy-v2 detail pack', () => {
         expect(cat('ligament').length).toBeGreaterThanOrEqual(200);
         expect(cat('tooth').length).toBe(28);
         expect(cat('lymph node').length).toBeGreaterThanOrEqual(100);
+      });
+
+      it('ships the real inner ear: 13 structures per side from OpenEar and IE-Map, inside the temporal bone, left mirrored from right', () => {
+        const ear = m.structures.filter((s) => s.group === 'inner-ear');
+        expect(ear).toHaveLength(26);
+        for (const key of ['scala-tympani', 'scala-vestibuli', 'round-window', 'external-acoustic-meatus', 'cochlear-duct', 'anterior-semicircular-duct', 'lateral-semicircular-duct', 'posterior-semicircular-duct', 'anterior-membranous-ampulla', 'lateral-membranous-ampulla', 'posterior-membranous-ampulla', 'utricle', 'saccule']) {
+          const l = ear.find((s) => s.id === `${key}-l`), r = ear.find((s) => s.id === `${key}-r`);
+          expect(l, `${key}-l`).toBeDefined(); expect(r, `${key}-r`).toBeDefined();
+          expect(l!.centroid[0], key).toBeGreaterThan(0.02); expect(r!.centroid[0], key).toBeLessThan(-0.02);
+          expect(l!.laterality).toBe('left'); expect(r!.laterality).toBe('right');
+          if (key !== 'external-acoustic-meatus') {
+            // inside the temporal bone box of the same side
+            const tb = m.structures.find((s) => s.id === `temporal-bone-${l!.laterality === 'left' ? 'l' : 'r'}`)!;
+            for (const x of [l!, r!]) {
+              const t = m.structures.find((s) => s.id === (x === l ? 'temporal-bone-l' : 'temporal-bone-r'))!;
+              for (const a of [0, 1, 2]) { expect(x.centroid[a]!, `${x.id} axis ${a}`).toBeGreaterThan(t.bounds[a]!); expect(x.centroid[a]!, `${x.id} axis ${a}`).toBeLessThan(t.bounds[a + 3]!); }
+            }
+            void tb;
+          }
+          expect(l!.latinName, key).toBeDefined();
+        }
+        // real size: the cochlea is about 9 mm across
+        const st = ear.find((s) => s.id === 'scala-tympani-r')!;
+        expect(Math.max(st.bounds[3] - st.bounds[0], st.bounds[4] - st.bounds[1], st.bounds[5] - st.bounds[2])).toBeGreaterThan(0.007);
+        expect(Math.max(st.bounds[3] - st.bounds[0], st.bounds[4] - st.bounds[1], st.bounds[5] - st.bounds[2])).toBeLessThan(0.014);
+        expect((raw.attribution as string)).toMatch(/OpenEar/); expect((raw.attribution as string)).toMatch(/IE-Map/);
+      });
+
+      it('adds the allow-listed HRA coronary, cardiac-vein, hepatic, portal and bowel vessels as real meshes', () => {
+        const byId = new Map(m.structures.map((s) => [s.id, s]));
+        for (const id of ['left-anterior-descending-artery', 'right-marginal-artery', 'small-cardiac-vein', 'anterior-cardiac-vein', 'cystic-vein', 'right-hepatic-vein', 'middle-hepatic-vein', 'left-branch-of-portal-vein', 'sigmoid-artery-a', 'median-sacral-vein', 'central-retinal-vein-l']) {
+          expect(byId.get(id), id).toBeDefined(); expect(byId.get(id)!.provenance, id).toBe('hra');
+        }
+        if (body === 'female') for (const id of ['left-uterine-artery', 'right-uterine-vein']) expect(byId.get(id), id).toBeDefined();
       });
 
       it('carries all twelve cranial nerves', () => {

@@ -36,7 +36,7 @@ export const manifestStructure = z.object({
   bounds: z.tuple([z.number(), z.number(), z.number(), z.number(), z.number(), z.number()]),
   lods: z.array(manifestLod).min(1).optional(),
   procedural: z.unknown().optional(),
-  provenance: z.enum(['hra', 'bp3d', 'zanatomy', 'generated', 'procedural']).optional(),
+  provenance: z.enum(['hra', 'bp3d', 'zanatomy', 'openear', 'iemap', 'generated', 'procedural']).optional(),
   group: z.string().optional(),
   packed: z.object({ o: z.number().int().nonnegative(), vb: z.number().int().positive(), ib: z.number().int().positive(), nv: z.number().int().positive(), ni: z.number().int().positive() }).optional(),
   category: z.string().optional(),

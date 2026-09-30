@@ -115,3 +115,42 @@ export function frameAt(path: V3[], i: number): { T: V3; N: V3; B: V3 } {
   const N = norm(cross(T, ref));
   return { T, N, B: cross(T, N) };
 }
+
+/**
+ * A closed, thin-walled solid between two parametric surfaces on the same (u, v) grid: `outer`
+ * and `inner` return a point for u, v in [0, 1]. With `wrapU` the u direction is periodic (a
+ * sleeve); otherwise the four edges are closed with side strips. Winding is fixed so the volume
+ * is positive. Used for eyelids, tarsal plates, the periorbita and joint capsules.
+ */
+export function gridShell(outer: (u: number, v: number) => V3, inner: (u: number, v: number) => V3, nu: number, nv: number, wrapU = false): Piece {
+  const pos: number[] = [], idx: number[] = [];
+  const cols = wrapU ? nu : nu + 1;
+  const at = (i: number, j: number) => (wrapU ? ((i % nu) + nu) % nu : i) + j * cols;
+  for (const f of [outer, inner]) for (let j = 0; j <= nv; j++) for (let i = 0; i < cols; i++) pos.push(...f(i / nu, j / nv));
+  const n = cols * (nv + 1);
+  const O = (i: number, j: number) => at(i, j), I = (i: number, j: number) => n + at(i, j);
+  for (let j = 0; j < nv; j++) for (let i = 0; i < (wrapU ? nu : nu); i++) {
+    const A = O(i, j), B = O(i + 1, j), C = O(i + 1, j + 1), D = O(i, j + 1);
+    idx.push(A, B, C, A, C, D);
+    const Ai = I(i, j), Bi = I(i + 1, j), Ci = I(i + 1, j + 1), Di = I(i, j + 1);
+    idx.push(Ai, Ci, Bi, Ai, Di, Ci);
+  }
+  const side = (P: number, Q: number, Pi: number, Qi: number) => idx.push(Q, P, Pi, Q, Pi, Qi);
+  for (let i = 0; i < nu; i++) { side(O(i, 0), O(i + 1, 0), I(i, 0), I(i + 1, 0)); side(O(i + 1, nv), O(i, nv), I(i + 1, nv), I(i, nv)); }
+  if (!wrapU) for (let j = 0; j < nv; j++) { side(O(nu, j), O(nu, j + 1), I(nu, j), I(nu, j + 1)); side(O(0, j + 1), O(0, j), I(0, j + 1), I(0, j)); }
+  let m: Piece = { positions: new Float32Array(pos), indices: new Uint32Array(idx) };
+  if (signedVolume(m) < 0) { const f = new Uint32Array(idx.length); for (let t = 0; t < idx.length; t += 3) { f[t] = idx[t]!; f[t + 1] = idx[t + 2]!; f[t + 2] = idx[t + 1]!; } m = { positions: m.positions, indices: f }; }
+  return m;
+}
+
+/** A thin hollow cylinder (open at both ends) around `centre` along `axis`: a joint-capsule sleeve. */
+export function sleeve(centre: V3, axis: V3, length: number, radius: number, thickness: number, stretch: [number, number] = [1, 1]): Piece {
+  const a = norm(axis);
+  const ref: V3 = Math.abs(a[1]) < 0.9 ? [0, 1, 0] : [1, 0, 0];
+  const e1 = norm(cross(a, ref)), e2 = cross(a, e1);
+  const pt = (r: number) => (u: number, t: number): V3 => {
+    const ang = u * Math.PI * 2, bulge = 1 + 0.25 * Math.sin(t * Math.PI);
+    return add(add(centre, mul(a, (t - 0.5) * length)), add(mul(e1, Math.cos(ang) * r * bulge * stretch[0]), mul(e2, Math.sin(ang) * r * bulge * stretch[1])));
+  };
+  return gridShell(pt(radius + thickness), pt(radius), 12, 4, true);
+}

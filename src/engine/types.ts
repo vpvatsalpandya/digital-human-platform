@@ -64,15 +64,16 @@ export interface ManifestStructure {
 }
 
 /**
- * `hra` and `bp3d` and `zanatomy` are real anatomical meshes. `generated` is a schematic shape
+ * `hra`, `bp3d` and `zanatomy` are real anatomical meshes; so are `openear` (OpenEar temporal-bone
+ * scan) and `iemap` (IE-Map micro-CT inner-ear template), both CC BY 4.0 research scans registered into the body. `generated` is a schematic shape
  * derived from a real surface (the dermis and hypodermis shells), shown only where a layer
  * control asks for it and always labelled. `procedural` is a hand-made stand-in.
  */
-export type Provenance = 'hra' | 'bp3d' | 'zanatomy' | 'generated' | 'procedural';
+export type Provenance = 'hra' | 'bp3d' | 'zanatomy' | 'openear' | 'iemap' | 'generated' | 'procedural';
 
 /** True for provenance values that are real, openly licensed anatomical geometry. */
 export function isRealAnatomy(p: Provenance | undefined): boolean {
-  return p === 'hra' || p === 'bp3d' || p === 'zanatomy';
+  return p === 'hra' || p === 'bp3d' || p === 'zanatomy' || p === 'openear' || p === 'iemap';
 }
 
 export type ProceduralShape =

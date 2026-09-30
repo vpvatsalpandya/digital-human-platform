@@ -148,7 +148,7 @@ function LayerControls({ manifest }: { manifest: BodyManifest }) {
           </li>
         ))}
       </ol>
-      {generated && <p className="text-[11px] text-accent">The dermis and hypodermis shells are schematic — no open whole-body dermis or hypodermis mesh exists, so they are drawn as offsets of the real skin surface and labelled as generated. Subcutaneous fat over the abdomen is a real reference-atlas mesh.</p>}
+      {generated && <p className="text-[11px] text-accent">The epidermis, papillary and reticular dermis, membranous subcutaneous layer and hypodermis shells are schematic — no open whole-body mesh of these layers exists, so each is a uniform-thickness offset of the real skin surface, labelled as generated (real thicknesses vary). Subcutaneous fat over the abdomen is a real reference-atlas mesh.</p>}
       <p className="text-[11px] text-muted">Muscles, fasciae and the skeleton come from Z-Anatomy fitted to this body{manifest.body === 'female' ? ' (male reference subject, scaled to the female frame)' : ''}.</p>
     </div>
   );

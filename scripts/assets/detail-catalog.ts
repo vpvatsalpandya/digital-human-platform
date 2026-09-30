@@ -29,6 +29,7 @@ export const GROUPS: Record<string, { title: string; description: string }> = {
   nerves: { title: 'Nerves, plexuses and ganglia', description: 'Cranial nerves, spinal nerve roots, brachial and lumbosacral plexuses, named limb nerves, sympathetic trunk and ganglia.' },
   lymphatic: { title: 'Lymph nodes and lymphoid organs', description: 'Named lymph node groups, tonsils and thymic lobes.' },
   'organ-parts': { title: 'Organ parts and small structures', description: 'Lung lobes and bronchi, liver segments and ducts, pancreatic parts, bowel segments, renal calyces and pyramids, cardiac chambers and valves, larynx, tongue, eye, glands and reproductive structures.' },
+  'inner-ear': { title: 'Inner ear and ear canal', description: 'Real CC BY 4.0 research-scan meshes: cochlear scalae, round window, external acoustic meatus (OpenEar) and membranous labyrinth: semicircular ducts, ampullae, utricle, saccule, cochlear duct (IE-Map). Registered onto the Z-Anatomy ossicles; the left ear is the right ear mirrored.' },
   'brain-regions': { title: 'Brain regions', description: 'Allen Human Reference Atlas regions: cortical gyri, basal ganglia, thalamic nuclei, cerebellum and ventricles.' },
 };
 
@@ -175,6 +176,15 @@ export function classifyZ(o: ZIndexEntry, body: 'male' | 'female'): Classified {
   return none('unclassified');
 }
 
+
+/**
+ * HRA vessel meshes that the Z-Anatomy vessels do not already cover. The general vessel rule in
+ * HRA_SKIP drops HRA arteries and veins because Z-Anatomy names them; these are the exceptions
+ * (coronary and cardiac-vein branches, hepatic and portal branches, bowel and pelvic vessels,
+ * orbital veins), checked by name against the pack. They sit on the HRA organs themselves.
+ */
+export const HRA_VESSEL_ALLOW = /^(left_anterior_descending_artery|left_circumflex_artery|diagonal_branch_of_(anterior_descending_branch_of_left_coronary|left_anterior_descending)_artery|left_marginal_(branch|vein)|right_marginal_artery|right_posterior_descending_artery|left_posterior_descending_branch_of_circumflex_branch_of_left_coronary_artery|small_cardiac_vein|anterior_cardiac_vein|posterior_vein_of_left_ventricle|oblique_vein_of_left_atrium|cystic_(artery|vein)|(left|right)_hepatic_artery|(anterior|posterior)_segmental_right_hepatic_artery|middle_hepatic_artery_branch_of_left_hepatic_artery|(left|middle|right)_hepatic_vein|(left|right)_branch_of_portal_vein|sigmoid_artery_[abc]|left_colic_vein|ileocolic_vein|inferior_pancreaticoduodenal_vein|median_sacral_vein|superior_rectal_(vein|artery)|(inferior|middle)_rectal_vein_[LR]|central_retinal_vein_[LR]|ophthalmic_vein_[LR]|(left|right)_uterine_(artery|vein)|coronary_ligament_of_liver)$/;
+
 /** HRA "united" meshes not shipped in the detail pack, with the reason. */
 const HRA_SKIP: [RegExp, string][] = [
   [/skin$/i, 'skin is in the core pack'],
@@ -197,6 +207,7 @@ const HRA_SKIP: [RegExp, string][] = [
   [/^(left|right)_(ovary)$|^body_of_uterus$/i, 'core ovary/uterus'],
 ];
 export function hraSkipReason(name: string): string | null {
+  if (HRA_VESSEL_ALLOW.test(name)) return null;
   for (const [re, why] of HRA_SKIP) if (re.test(name)) return why;
   return null;
 }
@@ -227,6 +238,12 @@ export function classifyHra(name: string, body: 'male' | 'female'): Classified {
   const none = (s: string): Classified => ({ category: 'other', systems: ['surface'], group: 'organ-parts', skip: s });
   if (skip) return none(skip);
   if (body === 'male' && /uter|fallop|ovar|vagina|cervi|mesosalpinx|mesovarium|broad_ligament|cornua|round_ligament_of_uterus/.test(n)) return none('female-only structure');
+  // Allow-listed HRA vessels (coronary / cardiac-vein / hepatic / portal / bowel / pelvic / retinal branches).
+  if (HRA_VESSEL_ALLOW.test(name.replace(/^VH_[MF]_/, '')) && !/coronary_ligament/.test(n)) {
+    const vein = /vein/.test(n);
+    const region = /cardiac|ventricle|atrium|coronary|marginal|descending|circumflex/.test(n) ? 'thorax' : /retinal/.test(n) ? 'head' : /rectal|sacral|uterine/.test(n) ? 'pelvis' : 'abdomen';
+    return { category: vein ? 'vein' : 'artery', systems: ['cardiovascular'], group: vein ? 'veins' : 'arteries', region };
+  }
   if (/valve|papillary|atrium|ventricle|septum/.test(n) && !/urethra|bladder/.test(n)) return { category: /valve/.test(n) ? 'valve' : 'heart part', systems: ['cardiovascular'], group: 'organ-parts', region: 'thorax' };
   if (/retina|cornea|iris|sclera|lens|vitreous|aqueous|conjunctiva|pupil|fovea|macula|optic|choroid|ciliary|schlemm|trabecular|dura_mater|ora_serrata|corneo/.test(n)) return { category: 'eye structure', systems: ['nervous'], group: 'organ-parts', region: 'head' };
   if (/larynx|vocalis|cricoarytenoid|^arytenoid$|carina|tracheal_cartilage/.test(n)) return { category: 'larynx', systems: ['respiratory'], group: 'organ-parts', region: 'neck' };

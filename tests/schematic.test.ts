@@ -44,7 +44,7 @@ describe('generated structures are never real anatomy', () => {
     const core = bodyManifest.parse(read(`${CORE}/male.manifest.json`));
     const m = mergeManifests(core as never, bodyManifest.parse(read(`${V2}/male.manifest.json`)) as never);
     const sch = m.structures.filter((s) => s.category?.startsWith('schematic'));
-    expect(sch.length).toBeGreaterThan(150);
+    expect(sch.length).toBeGreaterThan(300);
     for (const s of sch) { expect(s.provenance, s.id).toBe('generated'); expect(isRealAnatomy(s.provenance), s.id).toBe(false); }
     const real = m.structures.filter((s) => isRealAnatomy(s.provenance)).length;
     expect(real + sch.length + m.structures.filter((s) => s.provenance === 'procedural' || s.category === 'skin layer').length).toBe(m.structures.length);
@@ -61,10 +61,10 @@ describe.runIf(built)('schematic group', () => {
       const coreSkin = core.structures.find((s) => s.id === 'skin')!;
 
       it('flags every member as generated, schematic, correctly licensed and named as a schematic', () => {
-        expect(sch.length).toBeGreaterThan(150);
+        expect(sch.length).toBeGreaterThan(300);
         for (const s of sch) {
           expect(s.provenance, s.id).toBe('generated');
-          expect(s.category, s.id).toMatch(/^schematic (nerve|plexus|ganglion|vessel|tooth)$/);
+          expect(s.category, s.id).toMatch(/^schematic (nerve|plexus|ganglion|vessel|tooth|eye|capsule|cartilage|ligament|tendon|muscle|conduction|suture)$/);
           expect(s.name, s.id).toMatch(/\(schematic/);
           expect(s.source?.name, s.id).toMatch(/Generated/i);
           expect(ALLOWED_PACK_LICENCES).toContain(s.source!.licence);
@@ -134,10 +134,10 @@ describe.runIf(built)('schematic group', () => {
       it('adds small vessel branches, and sex-appropriate ones only', () => {
         const v = sch.filter((s) => s.category === 'schematic vessel');
         expect(v.length).toBeGreaterThanOrEqual(24);
-        for (const id of ['superior-thyroid-artery-l', 'lingual-artery-r', 'bronchial-artery-l', 'middle-rectal-artery-r', 'right-hepatic-artery', 'cystic-artery', 'jejunal-arteries', 'ileal-arteries']) expect(byId.get(id), id).toBeDefined();
+        for (const id of ['superior-thyroid-artery-l', 'lingual-artery-r', 'bronchial-artery-l', 'middle-rectal-artery-r', 'right-gastric-artery', 'short-gastric-arteries', 'jejunal-arteries', 'ileal-arteries']) expect(byId.get(id), id).toBeDefined();
         const names = v.map((s) => s.name.toLowerCase()).join('|');
         if (body === 'male') { expect(names).not.toMatch(/uterine|ovarian|vaginal/); expect(byId.get('inferior-vesical-artery-l')).toBeDefined(); }
-        else { expect(names).toMatch(/uterine/); expect(names).toMatch(/ovarian/); expect(byId.get('vaginal-artery-l')).toBeDefined(); expect(names).not.toMatch(/inferior vesical|testicular/); }
+        else { expect(names).not.toMatch(/uterine/); expect(byId.get('uterine-artery-l')?.provenance ?? byId.get('left-uterine-artery')?.provenance).toBe('hra'); expect(names).toMatch(/ovarian/); expect(byId.get('vaginal-artery-l')).toBeDefined(); expect(names).not.toMatch(/inferior vesical|testicular/); }
       });
 
       it('places every schematic structure inside the body, with side matching the geometry', () => {
@@ -157,7 +157,17 @@ describe.runIf(built)('schematic group', () => {
           pairs++;
           expect(s.centroid[0] - r.centroid[0], `${s.id} vs ${r.id}`).toBeGreaterThan(0);
         }
-        expect(pairs).toBeGreaterThan(70);
+        expect(pairs).toBeGreaterThan(120);
+      });
+
+      it('adds the second batch: cutaneous nerves, cranial ganglia, small vessels, conduction tissue, eyelids, capsules, tendons, sutures', () => {
+        for (const base of ['supra-orbital-nerve', 'supratrochlear-nerve', 'lacrimal-nerve', 'infra-orbital-nerve', 'auriculotemporal-nerve', 'great-auricular-nerve', 'lesser-occipital-nerve', 'transverse-cervical-nerve', 'medial-supraclavicular-nerve', 'superior-laryngeal-nerve', 'intercostobrachial-nerve', 'lateral-sural-cutaneous-nerve', 'inferior-anal-nerve', 'trigeminal-ganglion', 'ciliary-ganglion', 'geniculate-ganglion', 'sublingual-artery', 'median-artery', 'princeps-pollicis-artery', 'labyrinthine-artery', 'posterior-spinal-artery', 'internal-cerebral-vein', 'upper-eyelid', 'lower-tarsal-plate', 'periorbita', 'cuneiform-cartilage', 'vestibular-fold', 'auricular-cartilage', 'sacroiliac-joint-capsule', 'talocrural-joint-capsule', 'quadriceps-tendon', 'triceps-tendon', 'greater-occipital-nerve', 'tensor-tympani', 'stapedius', 'vocal-fold'])
+          for (const side of ['l', 'r']) expect(byId.get(`${base}-${side}`), `${base}-${side}`).toBeDefined();
+        for (const id of ['great-cerebral-vein', 'tracheal-cartilages', 'sinu-atrial-node', 'atrioventricular-node', 'atrioventricular-bundle', 'left-bundle-branch', 'right-bundle-branch', 'sagittal-suture', 'coronal-suture', 'lambdoid-suture', 'thoracic-duct']) expect(byId.get(id), id).toBeDefined();
+        expect(sch.filter((s) => s.id.startsWith('facet-joint-capsule-'))).toHaveLength(46);
+        if (body === 'male') expect(byId.get('dorsal-nerve-of-penis-l')).toBeDefined(); else expect(byId.get('dorsal-nerve-of-penis-l')).toBeUndefined();
+        // the real HRA meshes replaced the first-batch schematic hepatic / cystic arteries
+        for (const id of ['right-hepatic-artery', 'left-hepatic-artery', 'cystic-artery']) expect(byId.get(id)?.provenance ?? 'hra', id).not.toBe('generated');
       });
 
       it('keeps ids unique and does not touch any real structure', () => {
@@ -184,9 +194,9 @@ describe.runIf(built)('schematic group', () => {
         expect(g.count).toBe(sch.length);
         const size = statSync(`public${g.url}`).size;
         expect(size).toBe(g.bytes);
-        expect(size).toBeLessThan(600 * 1024); // this group; any lazy group must stay under 3 MB (anatomy-v2.test.ts)
+        expect(size).toBeLessThan(620 * 1024); // this group; any lazy group must stay under 3 MB (anatomy-v2.test.ts)
         for (const s of sch) expect(s.packed!.o + s.packed!.vb + s.packed!.ib, s.id).toBeLessThanOrEqual(size);
-        expect(m.groups!.reduce((a, x) => a + x.bytes, 0)).toBeLessThan(9.6 * 1024 * 1024); // per-body lazy total
+        expect(m.groups!.reduce((a, x) => a + x.bytes, 0)).toBeLessThan(9.7 * 1024 * 1024); // per-body lazy total
         for (const x of m.groups!) expect(x.auto ?? false, x.id).toBe(x.id === 'core-upgrades' || x.id === 'skin-layers');
       });
     });

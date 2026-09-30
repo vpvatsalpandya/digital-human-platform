@@ -11,7 +11,7 @@
  *
  * Each structure is classified (detail-catalog.ts), merged, decimated to a per-category
  * triangle budget, quantised to 16 bits inside its own bounding box and meshopt-compressed
- * into a slice of its group file (src/engine/packed.ts). Nothing is generated except the two
+ * into a slice of its group file (src/engine/packed.ts). Nothing is generated except the five
  * schematic skin shells, which carry provenance `generated`.
  */
 import { mkdir, rm, writeFile } from 'node:fs/promises';
@@ -21,7 +21,7 @@ import { MeshoptEncoder, MeshoptSimplifier } from 'meshoptimizer';
 import { bodyManifest } from '../../src/engine/manifest';
 import type { BodyId, ManifestStructure, Provenance, SystemId } from '../../src/engine/types';
 import { boundsOf, type RawMesh } from './lod';
-import { GROUPS, baseName, classifyHra, classifyZ, humanizeHra, type Classified, type ZIndexEntry } from './detail-catalog';
+import { GROUPS, HRA_VESSEL_ALLOW, baseName, classifyHra, classifyZ, humanizeHra, type Classified, type ZIndexEntry } from './detail-catalog';
 
 const ROOT = process.env.ANATOMY_SOURCES ?? '/workspace/sources';
 const ZREG = process.env.ZREG ?? '/workspace/work/registered';
@@ -31,6 +31,7 @@ const OUT = path.resolve(process.cwd(), 'public/assets', PACK);
 
 const ZLIC = 'CC-BY-SA-4.0' as const;
 const HLIC = 'CC-BY-4.0' as const;
+const EAR = process.env.EAR_REGISTERED ?? '/workspace/work/ear-registered';
 
 /** [triangle cap, fraction of source triangles] per category. */
 const BUDGET: Record<string, [number, number]> = {
@@ -38,7 +39,7 @@ const BUDGET: Record<string, [number, number]> = {
   fascia: [1500, 0.4], bursa: [300, 0.5], 'tendon sheath': [500, 0.4], ligament: [400, 0.5], capsule: [600, 0.5],
   disc: [500, 0.5], membrane: [500, 0.5], artery: [700, 0.2], vein: [700, 0.2], nerve: [600, 0.25], ganglion: [200, 0.5],
   plexus: [600, 0.25], meninges: [800, 0.5], 'lymph node': [150, 0.5], lymphoid: [600, 0.4], hair: [1500, 0.15],
-  nail: [300, 0.5], 'brain region': [1200, 0.2], 'lung lobe': [6000, 0.6], 'spinal cord segment': [400, 1],
+  nail: [300, 0.5], 'inner ear': [1800, 0.3], 'ear canal': [1500, 0.3], 'brain region': [1200, 0.2], 'lung lobe': [6000, 0.6], 'spinal cord segment': [400, 1],
 };
 const DEFAULT_BUDGET: [number, number] = [1500, 0.3];
 
@@ -146,7 +147,7 @@ function loadFma(): Map<string, string> {
 interface Entry {
   id: string; name: string; base: string; side: 'left' | 'right' | 'none'; cls: Classified;
   provenance: Provenance; sourceName: string; sourceLicence: typeof ZLIC | typeof HLIC;
-  pieces: Piece[]; category?: string; overrides?: boolean;
+  pieces: Piece[]; category?: string; overrides?: boolean; aliases?: string[]; latin?: string;
 }
 
 /** Stand-ins in the core pack that this pack replaces with real geometry, by structure id. */
@@ -191,6 +192,24 @@ const REPLACES: Record<string, string[]> = {
   veins: ['inferior-vena-cava'],
   'organ-parts': ['liver', 'pancreas', 'small-intestine', 'large-intestine', 'heart', 'prostate', 'uterus'],
 };
+
+const EAR_SRC_OPENEAR = 'OpenEar library, specimen ALPHA (Sieber et al., Sci Data 2018, CC BY 4.0; Zenodo 1473724): temporal-bone scan, decimated and registered to this body';
+const EAR_SRC_IEMAP = 'IE-Map inner-ear template (Ahmadi et al., Sci Rep 2021, CC BY 4.0; Zenodo 10625570, built on David et al. 2016 and Wimmer et al. 2019, both CC BY 4.0): template surface fitted to the OpenEar cochlea and registered to this body';
+const EAR_PARTS: { key: string; name: string; latin: string; category: string; src: 'openear' | 'iemap'; aliases: string[] }[] = [
+  { key: 'scala-tympani', name: 'Scala tympani', latin: 'Scala tympani', category: 'inner ear', src: 'openear', aliases: ['cochlea', 'cochlear scala tympani', 'inner ear', 'perilymph space'] },
+  { key: 'scala-vestibuli', name: 'Scala vestibuli', latin: 'Scala vestibuli', category: 'inner ear', src: 'openear', aliases: ['cochlea', 'cochlear scala vestibuli', 'inner ear', 'perilymph space'] },
+  { key: 'round-window', name: 'Round window', latin: 'Fenestra cochleae', category: 'inner ear', src: 'openear', aliases: ['fenestra cochleae', 'cochlear window', 'inner ear'] },
+  { key: 'external-acoustic-meatus', name: 'External acoustic meatus', latin: 'Meatus acusticus externus', category: 'ear canal', src: 'openear', aliases: ['ear canal', 'external auditory canal', 'external auditory meatus', 'auditory canal'] },
+  { key: 'cochlear-duct', name: 'Cochlear duct', latin: 'Ductus cochlearis', category: 'inner ear', src: 'iemap', aliases: ['cochlea', 'scala media', 'membranous cochlea', 'inner ear'] },
+  { key: 'anterior-semicircular-duct', name: 'Anterior semicircular duct', latin: 'Ductus semicircularis anterior', category: 'inner ear', src: 'iemap', aliases: ['superior semicircular canal', 'semicircular canal', 'labyrinth', 'vestibular labyrinth', 'inner ear'] },
+  { key: 'lateral-semicircular-duct', name: 'Lateral semicircular duct', latin: 'Ductus semicircularis lateralis', category: 'inner ear', src: 'iemap', aliases: ['horizontal semicircular canal', 'semicircular canal', 'labyrinth', 'vestibular labyrinth', 'inner ear'] },
+  { key: 'posterior-semicircular-duct', name: 'Posterior semicircular duct', latin: 'Ductus semicircularis posterior', category: 'inner ear', src: 'iemap', aliases: ['semicircular canal', 'labyrinth', 'vestibular labyrinth', 'inner ear'] },
+  { key: 'anterior-membranous-ampulla', name: 'Anterior membranous ampulla', latin: 'Ampulla membranacea anterior', category: 'inner ear', src: 'iemap', aliases: ['superior ampulla', 'ampulla', 'labyrinth', 'inner ear'] },
+  { key: 'lateral-membranous-ampulla', name: 'Lateral membranous ampulla', latin: 'Ampulla membranacea lateralis', category: 'inner ear', src: 'iemap', aliases: ['horizontal ampulla', 'ampulla', 'labyrinth', 'inner ear'] },
+  { key: 'posterior-membranous-ampulla', name: 'Posterior membranous ampulla', latin: 'Ampulla membranacea posterior', category: 'inner ear', src: 'iemap', aliases: ['ampulla', 'labyrinth', 'inner ear'] },
+  { key: 'utricle', name: 'Utricle', latin: 'Utriculus', category: 'inner ear', src: 'iemap', aliases: ['utriculus', 'otolith organ', 'vestibule', 'labyrinth', 'inner ear'] },
+  { key: 'saccule', name: 'Saccule', latin: 'Sacculus', category: 'inner ear', src: 'iemap', aliases: ['sacculus', 'otolith organ', 'vestibule', 'labyrinth', 'inner ear'] },
+];
 
 async function main() {
   await MeshoptEncoder.ready; await MeshoptSimplifier.ready;
@@ -275,16 +294,45 @@ async function main() {
         continue;
       }
       if (cls.skip) { skip(`HRA: ${cls.skip}`); continue; }
+      if (HRA_VESSEL_ALLOW.test(o.name.replace(/^VH_[MF]_/, '')) && cls.group !== 'organ-parts') {
+        // Allow-listed HRA vessels keep their full anatomical name ("Left anterior descending artery").
+        const raw = o.name.replace(/^VH_[MF]_/, '');
+        let words = raw;
+        let vside: 'left' | 'right' | 'none' = 'none';
+        const tail = raw.match(/_(L|R)$/);
+        if (tail) { vside = tail[1] === 'L' ? 'left' : 'right'; words = raw.slice(0, tail.index); }
+        else if (/^left_/.test(raw)) vside = 'left'; else if (/^right_/.test(raw)) vside = 'right';
+        words = words.replace(/_+/g, ' ').replace(/opthalmic/g, 'ophthalmic').replace(/\s+[abc]$/, (m) => ` ${m.trim()}`);
+        const nm = tail ? titleCase(`${vside} ${words.toLowerCase()}`) : titleCase(words.toLowerCase());
+        const idv = uniqueId(tail ? `${slug(words)}-${vside === 'left' ? 'l' : 'r'}` : slug(words), cls.category);
+        const piece = readBin(hraDir, o.i);
+        entries.push({ id: idv, name: nm, base: words, side: vside, cls, provenance: 'hra', sourceName: 'Human Reference Atlas 3D Reference Object Library', sourceLicence: HLIC, pieces: [piece] });
+        continue;
+      }
       const { base, side: labelled } = humanizeHra(o.name);
       const side = sideByGeometry(labelled, readBin(hraDir, o.i), true);
       const id = uniqueId(`${slug(base)}${side === 'left' ? '-l' : side === 'right' ? '-r' : ''}`, cls.category);
       entries.push({ id, name: titleCase(`${side === 'none' ? '' : side + ' '}${base.toLowerCase()}`.trim()), base, side, cls, provenance: 'hra', sourceName: 'Human Reference Atlas 3D Reference Object Library', sourceLicence: HLIC, pieces: [readBin(hraDir, o.i)] });
     }
 
+    // 3b. Inner ear and ear canal: CC BY 4.0 research scans registered onto the Z-Anatomy ossicles
+    //     (scripts/assets/extract/ear/*.py documents the registration; outputs are read from EAR).
+    for (const t of EAR_PARTS) for (const side of ['right', 'left'] as const) {
+      const file = `${EAR}/${body}/${t.key}.${side === 'right' ? 'r' : 'l'}.bin`;
+      if (!existsSync(file)) { skip('ear: registered mesh missing'); continue; }
+      const b = readFileSync(file); const nv = b.readInt32LE(0), nt = b.readInt32LE(4);
+      const positions = new Float32Array(nv * 3); for (let k = 0; k < nv * 3; k++) positions[k] = b.readFloatLE(8 + k * 4);
+      const indices = new Uint32Array(nt * 3); for (let k = 0; k < nt * 3; k++) indices[k] = b.readUInt32LE(8 + nv * 12 + k * 4);
+      const src = t.src === 'openear' ? EAR_SRC_OPENEAR : EAR_SRC_IEMAP;
+      const mirrored = side === 'left' ? ' Left side is the right-ear mesh mirrored across the midline and re-registered to the left ossicles.' : '';
+      entries.push({ id: `${t.key}-${side === 'left' ? 'l' : 'r'}`, name: titleCase(`${side} ${t.name.toLowerCase()}`), base: t.name, side, provenance: t.src, sourceName: src + mirrored, sourceLicence: HLIC,
+        cls: { category: t.category, systems: ['nervous'], group: 'inner-ear', region: 'head' }, pieces: [{ positions, indices }], aliases: t.aliases, latin: t.latin });
+    }
+
     // 4. Schematic skin shells: the HRA skin surface displaced inward along its normals.
     const skinObj = hraIdx.find((o) => /_skin$/.test(o.name))!;
     const skinMesh = decimateTo(weld(readBin(hraDir, skinObj.i)), 60000);
-    for (const [key, name, depth, layer] of [['dermis', 'Dermis (schematic shell)', 0.004, 1], ['hypodermis', 'Hypodermis (schematic shell)', 0.014, 2]] as const) {
+    for (const [key, name, depth, layer] of [['epidermis', 'Epidermis (schematic shell)', 0.0008, 1], ['papillary-dermis', 'Papillary dermis (schematic shell)', 0.002, 1], ['dermis', 'Reticular dermis (schematic shell)', 0.004, 1], ['membranous-subcutaneous', 'Membranous layer of subcutaneous tissue (schematic shell)', 0.009, 2], ['hypodermis', 'Hypodermis (schematic shell)', 0.014, 2]] as const) {
       entries.push({ id: `${key}-shell`, name, base: name, side: 'none', provenance: 'generated', sourceName: 'Generated: Human Reference Atlas skin surface offset inward by a fixed depth (schematic, not anatomy)', sourceLicence: HLIC,
         cls: { category: 'skin layer', systems: ['integumentary'], group: 'skin-layers', layer, region: 'whole-body' }, pieces: [offsetInward(skinMesh, depth)] });
     }
@@ -303,10 +351,10 @@ async function main() {
       groups.set(e.cls.group, g);
       const fmaKey = e.side === 'none' ? e.base.toLowerCase() : `${e.side} ${e.base.toLowerCase()}`;
       const fma = UPGRADES.find((u) => u.id === e.id)?.fma ?? fmaByName.get(fmaKey) ?? fmaByName.get(e.base.toLowerCase());
-      const latin = UPGRADES.find((u) => u.id === e.id)?.latin ?? ta2.get(e.base.toLowerCase());
+      const latin = UPGRADES.find((u) => u.id === e.id)?.latin ?? e.latin ?? ta2.get(e.base.toLowerCase());
       const ref = { o: g.size, vb: enc.vb.byteLength, ib: enc.ib.byteLength, nv: enc.nv, ni: enc.ni };
       g.chunks.push(enc.vb, enc.ib); g.size += enc.vb.byteLength + enc.ib.byteLength;
-      const aliases = [...new Set([e.base, e.side === 'none' ? '' : `${e.base} ${e.side}`].filter((a) => a && a.toLowerCase() !== e.name.toLowerCase()))];
+      const aliases = [...new Set([e.base, e.side === 'none' ? '' : `${e.base} ${e.side}`, ...(e.aliases ?? [])].filter((a) => a && a.toLowerCase() !== e.name.toLowerCase()))];
       g.structures.push({
         id: e.id, name: e.name, ...(fma ? { fmaId: fma } : {}), ...(latin ? { latinName: latin } : {}), ...(aliases.length ? { aliases } : {}),
         systems: e.cls.systems, ...(e.cls.region ? { region: e.cls.region } : {}), laterality: e.side,
@@ -336,7 +384,7 @@ async function main() {
     }
     const manifest = {
       body, version: new Date().toISOString().slice(0, 10), pack: PACK, licence: ZLIC,
-      attribution: 'Z-Anatomy, the libre 3D atlas of anatomy (CC BY-SA 4.0), derived from BodyParts3D © The Database Center for Life Science (CC BY-SA 2.1 Japan / CC BY 4.0). Organ parts, spinal cord, patellar ligament, mammary gland, eye, skin and brain regions: Human Reference Atlas 3D Reference Object Library, HuBMAP Consortium (CC BY 4.0), with brain regions from the Allen Human Reference Atlas. Derived meshes in this pack are released under CC BY-SA 4.0.',
+      attribution: 'Z-Anatomy, the libre 3D atlas of anatomy (CC BY-SA 4.0), derived from BodyParts3D © The Database Center for Life Science (CC BY-SA 2.1 Japan / CC BY 4.0). Organ parts, spinal cord, patellar ligament, mammary gland, eye, skin and brain regions: Human Reference Atlas 3D Reference Object Library, HuBMAP Consortium (CC BY 4.0), with brain regions from the Allen Human Reference Atlas. Inner ear and ear canal: OpenEar library of 3D models of the human temporal bone (Sieber, Erfurt, John, Ribeiro dos Santos, Schurzig, Sørensen, Lenarz; Sci Data 2018, doi:10.1038/sdata.2018.297; CC BY 4.0) and IE-Map, a human inner-ear atlas and template (Ahmadi, Raiser, Ruehl, Flanagin, zu Eulenburg; Sci Rep 2021, doi:10.1038/s41598-021-82716-0; CC BY 4.0; surfaces derived from David et al. 2016 and Wimmer et al. 2019, both CC BY 4.0); modified: decimated, registered onto this body, left ear mirrored from the right. Additional coronary, cardiac, hepatic, portal, bowel, pelvic and retinal vessels: Human Reference Atlas (CC BY 4.0). Derived meshes in this pack are released under CC BY-SA 4.0.',
       groups: groupList, structures,
     };
     bodyManifest.parse(manifest);

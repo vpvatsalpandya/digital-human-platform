@@ -7,3 +7,4 @@ next-env.d.ts
 .env.local
 coverage
 .netlify
+__pycache__/

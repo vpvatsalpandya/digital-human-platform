@@ -1,8 +1,8 @@
 {
  "male": {
   "structures": 3543,
-  "triangles": 1677261,
-  "bytes": 9788049,
+  "triangles": 1677243,
+  "bytes": 9788309,
   "byGroup": {
    "core-upgrades": 12,
    "muscles": 509,
@@ -27,12 +27,12 @@
    },
    {
     "id": "muscles",
-    "bytes": 2286844,
+    "bytes": 2286818,
     "count": 509
    },
    {
     "id": "organ-parts",
-    "bytes": 1299540,
+    "bytes": 1299537,
     "count": 315
    },
    {
@@ -42,32 +42,32 @@
    },
    {
     "id": "nerves",
-    "bytes": 505500,
+    "bytes": 505456,
     "count": 261
    },
    {
     "id": "arteries",
-    "bytes": 990948,
+    "bytes": 991010,
     "count": 440
    },
    {
     "id": "fascia-bursae",
-    "bytes": 414048,
+    "bytes": 414157,
     "count": 166
    },
    {
     "id": "veins",
-    "bytes": 579261,
+    "bytes": 579244,
     "count": 254
    },
    {
     "id": "joints",
-    "bytes": 496543,
+    "bytes": 496552,
     "count": 413
    },
    {
     "id": "skeleton",
-    "bytes": 1393106,
+    "bytes": 1393121,
     "count": 277
    },
    {
@@ -87,7 +87,7 @@
    },
    {
     "id": "schematic",
-    "bytes": 614117,
+    "bytes": 614272,
     "count": 405
    }
   ],
@@ -124,8 +124,8 @@
  },
  "female": {
   "structures": 3570,
-  "triangles": 1680012,
-  "bytes": 9820673,
+  "triangles": 1679989,
+  "bytes": 9821214,
   "byGroup": {
    "core-upgrades": 14,
    "muscles": 509,
@@ -150,7 +150,7 @@
    },
    {
     "id": "muscles",
-    "bytes": 2284414,
+    "bytes": 2284518,
     "count": 509
    },
    {
@@ -165,32 +165,32 @@
    },
    {
     "id": "nerves",
-    "bytes": 502026,
+    "bytes": 502219,
     "count": 261
    },
    {
     "id": "arteries",
-    "bytes": 970776,
+    "bytes": 970980,
     "count": 437
    },
    {
     "id": "fascia-bursae",
-    "bytes": 413366,
+    "bytes": 413117,
     "count": 166
    },
    {
     "id": "veins",
-    "bytes": 585087,
+    "bytes": 585068,
     "count": 253
    },
    {
     "id": "joints",
-    "bytes": 494913,
+    "bytes": 494754,
     "count": 413
    },
    {
     "id": "skeleton",
-    "bytes": 1393693,
+    "bytes": 1393829,
     "count": 277
    },
    {
@@ -210,7 +210,7 @@
    },
    {
     "id": "schematic",
-    "bytes": 627498,
+    "bytes": 627829,
     "count": 427
    }
   ],

@@ -27,7 +27,7 @@
   {
    "system": "muscular",
    "url": "/assets/hra-v1/female/system-muscular.lod2.bin",
-   "bytes": 142888,
+   "bytes": 142792,
    "structureIds": [
     "deltoid-r",
     "deltoid-l",
@@ -1235,17 +1235,17 @@
     "muscular"
    ],
    "centroid": [
-    0.1106249988079071,
-    -0.4537399858236313,
-    -0.10357499867677689
+    0.10596499778330326,
+    -0.45610497891902924,
+    -0.10484499856829643
    ],
    "bounds": [
-    0.06609000265598297,
-    -0.594219982624054,
+    0.056770000606775284,
+    -0.5965799689292908,
     -0.1571899950504303,
     0.15515999495983124,
-    -0.3132599890232086,
-    -0.049960002303123474
+    -0.3156299889087677,
+    -0.05250000208616257
    ],
    "laterality": "left",
    "fmaId": "FMA:22541",
@@ -1259,21 +1259,21 @@
    "lods": [
     {
      "url": "/assets/hra-v1/female/gastrocnemius-l.lod0.glb",
-     "bytes": 22492,
+     "bytes": 22596,
      "triangles": 3408,
-     "hash": "21b9f60c04ad7952"
+     "hash": "a0023c40b9a9b541"
     },
     {
      "url": "/assets/hra-v1/female/gastrocnemius-l.lod1.glb",
-     "bytes": 22492,
+     "bytes": 22596,
      "triangles": 3408,
-     "hash": "21b9f60c04ad7952"
+     "hash": "a0023c40b9a9b541"
     },
     {
      "url": "/assets/hra-v1/female/gastrocnemius-l.lod2.glb",
-     "bytes": 16596,
+     "bytes": 16500,
      "triangles": 2398,
-     "hash": "8fe6196bbc5ac38c"
+     "hash": "9bd5df2b2345f705"
     }
    ]
   },

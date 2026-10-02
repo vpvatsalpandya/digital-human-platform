@@ -110,7 +110,7 @@ describe.runIf(built)('left / right placement and duplicates', () => {
     it(`${b}: every -l has a -r partner and vice versa (except declared single organs)`, () => {
       const ids = new Set(m.structures.map((s) => s.id));
       const orphan = m.structures.filter((s) => /-[lr]$/.test(s.id) && !ids.has(s.id.replace(/-[lr]$/, (x) => (x === '-l' ? '-r' : '-l')))).map((s) => s.id);
-      // Source gaps: the Allen brain model holds one hemisphere's regions and the kidney/heart sub-parts are
+      // Source gaps: brain regions are bilateral in the source (141 x 2) so they are never orphans; the kidney/heart sub-parts are
       // single units; any other lone side is a known gap in Z-Anatomy/HRA (documented in docs/gap-audit.md).
       const KNOWN = new Set(['iliocostalis-colli-muscle-r', 'intra-articular-ligament-of-head-of-rib-r', 'ulnopisiform-ligament-l', 'ligament-cricopharyngeal-ligament-r', 'descending-branch-of-lateral-circumflex-femoral-artery-l',
         'insular-branches-of-middle-cerebral-artery-m2-r', 'insular-branches-of-middle-cerebral-artery-m2-segment-l', 'right-testicular-artery-r', 'cochlear-nerve-l', 'common-plantar-digital-branches-of-medial-plantar-nerve-l']);

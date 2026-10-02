@@ -341,6 +341,8 @@ def apply_limbs(p, name, rigs):
     return p
 
 # Structures that sit on or in the skin by design (or are not anatomy proper) are not pulled inwards.
+# Rigid bodies that are articulated to their neighbours: never shifted on their own (a phalanx moved 2 cm from its metacarpal is not a better fit).
+REFIT_EXEMPT = re.compile(r'(\bbone\b|\bphalanx\b|\bpatella\b|^vertebra|\bsacrum\b|\bcoccyx\b|^(first|second|third|fourth|fifth|sixth|seventh|eighth|ninth|tenth|eleventh|twelfth) rib|\bsternum\b|\bmanubrium\b|\bclavicle\b|\bscapula\b|^(humerus|radius|ulna|femur|tibia|fibula|skull|mandible|maxilla|hyoid bone)\b|^intervertebral|\bcartilage\b|^(malleus|incus|stapes)\b|\bregion\b|\bmalleolus\b|symphysis|\bdisc\b)', re.I)
 CONTAIN_EXEMPT = re.compile(r'(nail|hair|lash|brow|onyx|skin|cutis|epiderm|dermis|auricle|ear |ear$|pinna|lobule|eyeball|cornea|lens|tooth|teeth|molar|incisor|canine|premolar)', re.I)
 
 def in_region(o, side):
@@ -367,7 +369,7 @@ def main():
             p = apply_limbs(p, o['name'].strip(), rigs)
             p = apply_head(p, head)
             if not CONTAIN_EXEMPT.search(o['name']):
-                p, tshift, fr0, fr1 = LB.refit(p, skin)
+                p, tshift, fr0, fr1 = (p, np.zeros(3), 0.0, 0.0) if REFIT_EXEMPT.search(o['name'].strip()) else LB.refit(p, skin)
                 if np.any(tshift): refitted[o['name']] = {'shift_mm': (tshift * 1000).round(1).tolist(), 'outside_before': round(fr0, 3), 'outside_after': round(fr1, 3)}
                 p, nmoved, mmove = LB.contain(p, skin)
                 if nmoved: contained[o['name']] = (nmoved, len(p), round(mmove * 1000, 2))

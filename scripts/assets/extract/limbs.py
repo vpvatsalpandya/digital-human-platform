@@ -294,7 +294,7 @@ def contain(p, solid, margin=0.002, max_disp=0.012, iters=5):
     return q, int(m.sum()), float(moved[m].mean()) if m.any() else 0.0
 
 
-def refit(p, solid, thr=0.15, tol=0.004, cap=0.030, reg=2e3):
+def refit(p, solid, thr=0.15, tol=0.004, cap=0.015, reg=6e3):
     """
     Per-structure rigid refit. A structure that is still `thr` or more outside the skin (by more than `tol`) after stages 1-3 is shifted as a
     whole by the translation (|t| <= `cap`, regularised) that brings most of it inside, so its shape is kept; the per-vertex `contain`

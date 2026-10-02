@@ -93,31 +93,54 @@ def register(sex):
         return q
     rms = np.sqrt(((warp(zc) - hc) ** 2).mean(0)) * 1000
     report = {'scale': s, 'translate': t.tolist(), 'landmarks': len(lab), 'spine_rms_mm_xyz': rms.tolist(), 'legs': {}}
-    # 3. legs
+    # 3. legs: each bone is fitted to its HRA counterpart (femur, tibia+fibula, patella), so the
+    # thigh and the shank are posed separately and meet at the knee, rather than one rigid leg.
+    from scipy.spatial import cKDTree
+    def icp(Zp, Hp, init, iters=40):
+        T = cKDTree(Hp[::2]); s_, R_, t_ = init; s0 = s_
+        for _ in range(iters):
+            q = s_ * (Zp @ R_.T) + t_
+            d, i = T.query(q); keep = d <= np.percentile(d, 85)
+            s_, R_, t_ = umeyama(Zp[keep], Hp[::2][i[keep]])
+            # the two subjects' bones differ in length by a few per cent, never by more: clamp the scale
+            s2 = float(np.clip(s_, s0 * 0.96, s0 * 1.04))
+            if s2 != s_: t_ = t_ + s_ * R_ @ Zp[keep].mean(0) - s2 * R_ @ Zp[keep].mean(0); s_ = s2
+        q = s_ * (Zp @ R_.T) + t_; d, _ = T.query(q)
+        return (s_, R_, t_), float(d.mean() * 1000)
     legs = {}
     for side, S, zs in (('left', 'L', 'l'), ('right', 'R', 'r')):
-        def lm4(get_f, get_t, get_p):
-            f, ti, p = get_f(), get_t(), get_p()
-            def band(v, top, frac=0.04):
-                h = v[:, 1].max() - v[:, 1].min()
-                m = v[:, 1] >= v[:, 1].max() - frac * h if top else v[:, 1] <= v[:, 1].min() + frac * h
-                return v[m].mean(0)
-            return np.array([band(f, True), band(f, False), band(ti, False, 0.03), p.mean(0)])
-        zl = lm4(lambda: warp(zmesh(f'Femur.{zs}')), lambda: warp(zmesh(f'Tibia.{zs}')), lambda: warp(zmesh(f'Patella.{zs}')))
-        hl = lm4(lambda: hmeshes(sex, [f'femur_{S}']), lambda: hmeshes(sex, [f'tibia_{S}']), lambda: hmeshes(sex, [f'patella_{S}']))
-        ls, R, lt = umeyama(zl, hl)
-        res = np.sqrt(((ls * (zl @ R.T) + lt - hl) ** 2).sum(1)) * 1000
-        legs[side] = (ls, R, lt, hl[0][1])
-        report['legs'][side] = {'scale': ls, 'landmark_residual_mm': res.tolist()}
+        def hra(names):
+            idx = {o['name']: o for o in json.load(open(f'{SRC}/hra/objs-{sex}/index.json'))}
+            P = 'VH_M_' if sex == 'm' else 'VH_F_'
+            return np.vstack([load(f'{SRC}/hra/objs-{sex}', idx[P + n]['i'])[0] for n in names if P + n in idx])
+        femur_h = hra([f'femur_{S}', f'lateral_condyle_of_femur_frontal_{S}', f'lateral_condyle_of_femur_inf_{S}', f'lateral_condyle_of_femur_sup_{S}'] + ([f'medial_condyle_of_{"left" if S == "L" else "right"}_femur_inf', f'medial_condyle_of_{"left" if S == "L" else "right"}_femur_sup']))
+        tf = {}
+        out = {}
+        for key, zn, hn in (('femur', [f'Femur.{zs}'], femur_h), ('shank', [f'Tibia.{zs}', f'Fibula.{zs}'], hra([f'tibia_{S}', f'fibula_{S}'])), ('patella', [f'Patella.{zs}'], hra([f'patella_{S}']))):
+            Zp = np.vstack([warp(zmesh(n)) for n in zn])
+            # initial guess: match end centres (femur/shank) or centroids (patella), same scale
+            ref_h = hn if key != 'shank' else hra([f'tibia_{S}'])
+            s0 = float(np.ptp(ref_h[:, 1]) / np.ptp(warp(zmesh(zn[0]))[:, 1]))
+            init = (s0, np.eye(3), hn.mean(0) - s0 * Zp.mean(0))
+            tr, res = icp(Zp, hn, init)
+            out[key] = tr; out[key + '_mm'] = res
+        hipy = hra([f'femur_{S}'])[:, 1].max()
+        kneey = (hra([f'femur_{S}'])[:, 1].min() + hra([f'tibia_{S}'])[:, 1].max()) / 2
+        legs[side] = (out, hipy, kneey)
+        report['legs'][side] = {'nn_mean_mm': {k: v for k, v in out.items() if k.endswith('_mm')}, 'scale': {k: float(out[k][0]) for k in ('femur', 'shank', 'patella')}}
     return warp, legs, report
 
-def apply_legs(p, legs):
-    """Stage 3: per-leg similarity blended in over the groin."""
+def apply_legs(p, legs, name=''):
+    """Stage 3: thigh and shank transforms blended over the knee, and in over the groin."""
     orig = p.copy()
     for side in ('left', 'right'):
-        ls, R, lt, hipy = legs[side]
-        q = ls * (orig @ R.T) + lt
-        wy = np.clip((hipy + 0.02 - orig[:, 1]) / 0.14, 0, 1)
+        T, hipy, kneey = legs[side]
+        def tr(k, X): s_, R_, t_ = T[k]; return s_ * (X @ R_.T) + t_
+        b = LB.smoothstep((kneey - orig[:, 1]) / 0.10 + 0.5)[:, None]
+        q = (1 - b) * tr('femur', orig) + b * tr('shank', orig)
+        if name.startswith('Patella.') and name[-1] == side[0]: q = tr('patella', orig)
+        wy = np.clip((hipy + 0.01 - orig[:, 1]) / 0.05, 0, 1)
+        if name.startswith('Femur.') and name[-1] == side[0]: wy = np.ones_like(wy)
         wx = np.clip((np.abs(orig[:, 0]) - 0.01) / 0.04, 0, 1) * ((orig[:, 0] > 0) if side == 'left' else (orig[:, 0] < 0))
         w = (wy * wx)[:, None]
         p = p + w * (q - orig)
@@ -138,7 +161,7 @@ def skin_solid(sex):
 
 def limb_rigs(sex, warp, legs, report, verbose=True):
     """Fit both arms and both feet to the skin; returns {'arm': {side: rig}, 'foot': {side: rig}}."""
-    P = lambda n: apply_legs(warp(zmesh(n)), legs)
+    P = lambda n: apply_legs(warp(zmesh(n)), legs, n)
     solid = skin_solid(sex); armF = LB.SkinField(LB.arm_field(solid))
     rigs = {'arm': {}, 'foot': {}}; report['limbs'] = {}
     side_names = {'l': 1, 'r': -1}
@@ -165,7 +188,7 @@ def limb_rigs(sex, warp, legs, report, verbose=True):
         S, E, W, p, f = best[s_]; b = fits[s_][0]
         pts = np.vstack([b['humerus'], b['forearm'], b['hand']])
         rigs['arm'][s_] = LB.ChainRig(S, E, W, p, pts)
-        rigs['arm'][s_].trunk_skip = True
+        rigs['arm'][s_].fingers = LB.fit_fingers(armF, rigs['arm'][s_], P, s_)
         report['limbs']['arm_' + s_] = {'cost': float(f), 'rot_deg': np.degrees(np.linalg.norm(p.reshape(3, 3), axis=1)).round(1).tolist(), 'S': S.tolist(), 'E': E.tolist(), 'W': W.tolist(), 'params': p.tolist()}
         if verbose: print('  arm', s_, 'cost %.3f' % f, 'rot deg', report['limbs']['arm_' + s_]['rot_deg'])
     for s_, sg in side_names.items():
@@ -184,9 +207,14 @@ def limb_rigs(sex, warp, legs, report, verbose=True):
     return rigs
 
 def apply_limbs(p, name, rigs):
+    orig = p
     for s_ in ('l', 'r'):
-        if not (LB.is_trunk_bone(name) and not name.startswith('Humer')):
-            p = rigs['arm'][s_].apply(p)
+        arm = rigs['arm'][s_]
+        if not LB.is_trunk_bone(name):
+            q = p
+            for rig in arm.fingers.values():          # fingers first, in the hand's own frame
+                q = rig.apply(q, pw=orig)
+            p = arm.apply(q, pw=orig)
         p = rigs['foot'][s_].apply(p)
     return p
 
@@ -207,7 +235,7 @@ def main():
             p = warp(np.stack([v[:, 0], v[:, 2], -v[:, 1]], 1))
             # Legs are picked geometrically, not by collection path: the source tags only some
             # right-foot bones with their region, which left them behind when the leg moved.
-            p = apply_legs(p, legs)
+            p = apply_legs(p, legs, o['name'].strip())
             p = apply_limbs(p, o['name'].strip(), rigs)
             pf = p.astype(np.float32)
             with open(f'{d}/{o["i"]}.bin', 'wb') as f:

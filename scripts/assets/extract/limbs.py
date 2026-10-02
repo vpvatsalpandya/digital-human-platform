@@ -39,7 +39,7 @@ def end_centres(P, axis_hint):
     a = P[t <= t.min() + 0.04 * L].mean(0); b = P[t >= t.max() - 0.04 * L].mean(0)
     return a, b, L
 
-def chain_fit(field, segs, joints, caps, starts, lam=0.02, verbose=False, free=None):
+def chain_fit(field, segs, joints, caps, starts, lam=0.02, verbose=False, free=None, post=None, extra=None):
     """
     segs: list of (N,3) point sets per segment index 0..2 (upper arm / forearm / hand),
     joints: S, E, W (3,) positions. Returns params (9,) = rotvecs R1, R2, R3.
@@ -53,8 +53,11 @@ def chain_fit(field, segs, joints, caps, starts, lam=0.02, verbose=False, free=N
     def cost(p):
         c = 0.0
         for k, X in enumerate(segs):
-            d = field.depth(pose(p, k, X))
+            if len(X) == 0: continue
+            Y = pose(p, k, X)
+            d = field.depth(post(Y) if post else Y)
             c += np.mean(np.maximum(0, caps[k] - d) ** 2) * (1e4)
+        if extra is not None: c += extra(p, lambda q, k, X: pose(q, k, X))
         return c + lam * (np.sum(p[3:6] ** 2) + np.sum(p[6:9] ** 2))
     best = None
     free = np.arange(9) if free is None else np.asarray(free)
@@ -130,8 +133,8 @@ class ChainRig:
         b1 = smoothstep(((p - self.E) @ self.uE + b[2]) / (2 * b[2]))
         b2 = smoothstep(((p - self.W) @ self.uW + b[3]) / (2 * b[3]))
         return wtop * wd, b1, b2
-    def apply(self, p):
-        w, b1, b2 = self.weights(p)
+    def apply(self, p, pw=None):
+        w, b1, b2 = self.weights(p if pw is None else pw)
         if not (w > 1e-4).any(): return p
         m = w > 1e-4; X = p[m]
         q = (1 - b1[m, None]) * self.pose(X, 0) + b1[m, None] * ((1 - b2[m, None]) * self.pose(X, 1) + b2[m, None] * self.pose(X, 2))
@@ -150,7 +153,11 @@ def fit_arm_side(field, bones, side_sign, init=None, verbose=False):
     caps = [0.025, 0.014, 0.005]
     starts = [np.array([fl, 0, -side_sign * ab, 0, 0, 0, 0, 0, 0]) for ab in (0.2, 0.45, 0.7) for fl in (-0.4, 0.0, 0.4)]
     if init is not None: starts.insert(0, init)
-    p, pose, f = chain_fit(field, segs, (S, E, W), caps, starts, verbose=verbose)
+    def hang(p, pose):
+        # anatomical sanity: the arm hangs (elbow below the shoulder, wrist below the elbow)
+        E2 = pose(p, 1, E[None])[0]; W2 = pose(p, 2, W[None])[0]
+        return 1e3 * (max(0.0, E2[1] - (S[1] - 0.15)) ** 2 + max(0.0, W2[1] - (E2[1] - 0.10)) ** 2)
+    p, pose, f = chain_fit(field, segs, (S, E, W), caps, starts, verbose=verbose, extra=hang)
     return S, E, W, p, f
 
 def mirror_params(p):
@@ -183,3 +190,40 @@ def leg_field(solid, side_sign):
     f = F(); f.lo, f.h, f.n = solid.lo, h, solid.n
     f.depth = ndimage.distance_transform_edt(M, sampling=h) - ndimage.distance_transform_edt(~M, sampling=h)
     return f
+
+
+FINGERS = ['first', 'second', 'third', 'fourth', 'fifth']
+
+def fit_fingers(field, arm_rig, get, side):
+    """
+    Pose each finger (metacarpophalangeal, proximal and distal interphalangeal joints) so its
+    phalanges sit in the skin's finger, in the hand frame of `arm_rig`. `get(name)` returns a
+    registered bone (stages 1-3). Returns {finger: ChainRig} in source coordinates.
+    """
+    rigs = {}
+    post = lambda Y: arm_rig.pose(Y, 2)
+    for f in FINGERS:
+        try:
+            P = get(f'Proximal phalanx of {f} finger of hand.{side}'); D = get(f'Distal phalanx of {f} finger of hand.{side}')
+            Mc = get(f'{f.capitalize()} metacarpal bone.{side}')
+        except KeyError:
+            continue
+        try: M = get(f'Middle phalanx of {f} finger of hand.{side}')
+        except KeyError: M = None
+        ax = D.mean(0) - Mc.mean(0); ax /= np.linalg.norm(ax)
+        def band(X, near_prox, frac=0.08):
+            t = (X - Mc.mean(0)) @ ax; L = t.max() - t.min()
+            m = t <= t.min() + frac * L if near_prox else t >= t.max() - frac * L
+            return X[m].mean(0)
+        MCP = band(P, True)
+        if M is not None:
+            PIP = (band(P, False) + band(M, True)) / 2; DIP = (band(M, False) + band(D, True)) / 2
+            segs = [sample(P, 250), sample(M, 250), sample(D, 250)]
+        else:
+            PIP = (band(P, False) + band(D, True)) / 2; DIP = band(D, False)
+            segs = [sample(P, 250), sample(D, 250), np.zeros((0, 3))]
+        caps = [0.004, 0.0035, 0.003]
+        p, pose, c = chain_fit(field, segs, (MCP, PIP, DIP), caps, [np.zeros(9)], lam=0.05, post=post)
+        pts = np.vstack([P, D] + ([M] if M is not None else []))
+        rigs[f] = ChainRig(MCP, PIP, DIP, p, pts, blend=(0.012, 0.012, 0.008, 0.006), reach=(0.012, 0.03))
+    return rigs

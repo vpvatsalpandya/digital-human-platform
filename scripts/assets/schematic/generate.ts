@@ -13,13 +13,14 @@ import { MeshBuilder, v, type Piece, type Pt, type V3 } from './geom';
 import { nearest, points, slabMean, type openBody } from './io';
 import type { SystemId } from '../../../src/engine/types';
 import { generateExtra } from './extra';
+import { generateMore } from './more';
 
 type Body = Awaited<ReturnType<typeof openBody>>;
 export interface Item {
   id: string; name: string; aliases?: string[]; side: 'left' | 'right' | 'none';
   systems: SystemId[]; region: string; category: SchematicCategory; mesh: Piece;
 }
-export const SCHEMATIC_CATEGORIES = ['schematic nerve', 'schematic plexus', 'schematic ganglion', 'schematic vessel', 'schematic tooth', 'schematic eye', 'schematic capsule', 'schematic cartilage', 'schematic ligament', 'schematic tendon', 'schematic muscle', 'schematic conduction', 'schematic suture'] as const;
+export const SCHEMATIC_CATEGORIES = ['schematic nerve', 'schematic plexus', 'schematic ganglion', 'schematic vessel', 'schematic tooth', 'schematic eye', 'schematic capsule', 'schematic cartilage', 'schematic ligament', 'schematic tendon', 'schematic muscle', 'schematic conduction', 'schematic suture', 'schematic organ'] as const;
 export type Body_ = Body;
 export type SchematicCategory = (typeof SCHEMATIC_CATEGORIES)[number];
 
@@ -342,5 +343,6 @@ export async function generate(b: Body, body: 'male' | 'female'): Promise<Item[]
   vessel('oesophageal-arteries', 'Oesophageal arteries', 'none', ['cardiovascular'], 'thorax', [0.5, 0.7, 0.85].map((f, k) => { const y = oy0 + (oy1 - oy0) * f, c = oesC(y); return branch(nearest(thAorta, [c[0], y, c[2] - 0.01]), [c[0], y + 0.002 * k, c[2] - 0.003], 0.0008, 0.0006, 0.1); }), ['esophageal arteries']);
 
   await generateExtra(b, body, items, ends);
+  await generateMore(b, body, items);
   return items;
 }

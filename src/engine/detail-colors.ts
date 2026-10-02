@@ -16,7 +16,7 @@ export const CATEGORY_COLOR: Record<string, string> = {
   'head-neck': '#c98d8d', other: '#c9b8a8',
   // Generated stand-ins are drawn in one violet family so they cannot be mistaken for scanned anatomy.
   'schematic nerve': '#b58cff', 'schematic plexus': '#a06bff', 'schematic ganglion': '#d2b3ff', 'schematic vessel': '#c79bff', 'schematic tooth': '#e2ccff',
-  'schematic eye': '#cdb0ff', 'schematic capsule': '#bfa0ff', 'schematic cartilage': '#d8c2ff', 'schematic ligament': '#c9aaff', 'schematic tendon': '#dcc6ff', 'schematic muscle': '#b496f2', 'schematic conduction': '#e9d9ff', 'schematic suture': '#b89af5',
+  'schematic eye': '#cdb0ff', 'schematic capsule': '#bfa0ff', 'schematic cartilage': '#d8c2ff', 'schematic ligament': '#c9aaff', 'schematic tendon': '#dcc6ff', 'schematic muscle': '#b496f2', 'schematic conduction': '#e9d9ff', 'schematic suture': '#b89af5', 'schematic organ': '#d9a8ff',
   // Real research-scan inner ear (OpenEar / IE-Map): a pearly pink so it reads as tissue, not as schematic.
   'inner ear': '#e7b9c4', 'ear canal': '#e3c9b8',
 };

@@ -104,7 +104,7 @@ describe.runIf(built)('anatomical plausibility', () => {
       });
 
       it('draws most of the body from real anatomical data', () => {
-        const real = m.structures.filter((s) => s.provenance === 'hra' || s.provenance === 'bp3d');
+        const real = m.structures.filter((s) => s.provenance === 'hra' || s.provenance === 'bp3d' || s.provenance === 'zanatomy');
         expect(real.length / m.structures.length).toBeGreaterThan(0.7);
       });
 

@@ -64,7 +64,7 @@ describe.runIf(built)('schematic group', () => {
         expect(sch.length).toBeGreaterThan(300);
         for (const s of sch) {
           expect(s.provenance, s.id).toBe('generated');
-          expect(s.category, s.id).toMatch(/^schematic (nerve|plexus|ganglion|vessel|tooth|eye|capsule|cartilage|ligament|tendon|muscle|conduction|suture)$/);
+          expect(s.category, s.id).toMatch(/^schematic (nerve|plexus|ganglion|vessel|tooth|eye|capsule|cartilage|ligament|tendon|muscle|conduction|suture|organ)$/);
           expect(s.name, s.id).toMatch(/\(schematic/);
           expect(s.source?.name, s.id).toMatch(/Generated/i);
           expect(ALLOWED_PACK_LICENCES).toContain(s.source!.licence);

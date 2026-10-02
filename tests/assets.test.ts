@@ -23,7 +23,7 @@ describe.runIf(built)('anatomy asset pack', () => {
 
   it('carries real anatomical meshes for the major viscera, not stand-ins', () => {
     const real = new Set(male.structures
-      .filter((s: { provenance?: string }) => s.provenance === 'hra' || s.provenance === 'bp3d')
+      .filter((s: { provenance?: string }) => s.provenance === 'hra' || s.provenance === 'bp3d' || s.provenance === 'zanatomy')
       .map((s: { id: string }) => s.id));
     for (const id of ['heart', 'liver', 'spleen', 'pancreas', 'kidney-l', 'kidney-r', 'small-intestine',
                       'large-intestine', 'brain', 'skin', 'pelvis', 'stomach',
@@ -44,7 +44,7 @@ describe.runIf(built)('anatomy asset pack', () => {
   });
 
   it('labels every structure with where its geometry came from', () => {
-    for (const s of male.structures) expect(['hra', 'bp3d', 'procedural'], s.id).toContain(s.provenance);
+    for (const s of male.structures) expect(['hra', 'bp3d', 'zanatomy', 'procedural'], s.id).toContain(s.provenance);
   });
 
   it('real organs are anatomically plausible in size', () => {

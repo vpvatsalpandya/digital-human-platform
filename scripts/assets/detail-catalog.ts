@@ -69,6 +69,10 @@ export function regionOf(paths: string[]): string | undefined {
   return undefined;
 }
 
+/** Sex-specific anatomy. Used to keep each body free of the other sex's structures (see tests/anatomy-sex.test.ts). */
+export const MALE_ONLY = /penis|penile|prostat|scrot|testicular|testis|testes|spermatic|seminal|deferens|epididym|ejaculatory|glans|prepuce|foreskin|cremaster|dartos|bulbospongios|ischiocavernos|bulbourethral|cowper|colliculus of urethra|utricle of prostate|prostatic utricle|fibromuscular stroma/i;
+export const FEMALE_ONLY = /\buter(us|ine)\b|uterus|ovar(y|ian)|vagina|fallopian|clitor|vulva|labi(um|a) (majus|minus|majora|minora)|\blabia\b|cervix|cervical os|mesosalpinx|mesovarium|broad ligament|hymen|bartholin|vestibular bulb|bulb of vestibule/i;
+
 const has = (paths: string[], s: string) => paths.some((p) => p.includes(s));
 
 /** Classify one Z-Anatomy object. Returns `skip` for anything deliberately excluded. */
@@ -82,8 +86,8 @@ export function classifyZ(o: ZIndexEntry, body: 'male' | 'female'): Classified {
   if (o.nt === 0) return none('label only');
   if (raw.includes('?')) return none('unnamed placeholder');
   if (/\.g$/.test(raw)) return none('collection label mesh');
-  if (body === 'female' && /penis|prostat|scrot|testicular|testis|spermatic|seminal|deferens|epididym/i.test(base)) return none('male-only structure');
-  if (body === 'male' && /uter|ovar|vagina|fallopian|clitor|vulva|labi(um|a)/i.test(base)) return none('female-only structure');
+  if (body === 'female' && (MALE_ONLY.test(base) || /^urethra$/i.test(base))) return none('male-only structure (Z-Anatomy urethra is the male, penile urethra; the female one is a labelled schematic)');
+  if (body === 'male' && FEMALE_ONLY.test(base)) return none('female-only structure');
   if (/^hairs of head$/i.test(raw)) return none('scalp hair volume from another subject does not fit either skull');
   if (INNER_EAR.test(base)) return none('inner ear: CC BY-NC-SA third-party model inside Z-Anatomy');
   if (KIDNEY.test(base)) return none('kidney: CC BY-NC third-party model inside Z-Anatomy; HRA kidney used');
@@ -156,7 +160,7 @@ export function classifyZ(o: ZIndexEntry, body: 'male' | 'female'): Classified {
 
   if (top.startsWith('8:')) {
     if (Z_DUPLICATES_OF_HRA.test(base)) return none('duplicated by an HRA mesh');
-    if (/penis|epididymis|ductus deferens|seminal|ejaculatory|glans/i.test(base) && body === 'female') return none('male-only structure');
+    if (MALE_ONLY.test(base) && body === 'female') return none('male-only structure');
     const sys: SystemId[] = has(paths, 'Respiratory') || /bronch|lung|pleura|epiglottis|larynx/i.test(base) ? ['respiratory']
       : has(paths, "Genital") || /penis|epididymis|deferens|seminal|ejaculatory/i.test(base) ? ['reproductive']
       : has(paths, 'Urinary') || /urethra/i.test(base) ? ['urinary']
@@ -237,7 +241,10 @@ export function classifyHra(name: string, body: 'male' | 'female'): Classified {
   const skip = hraSkipReason(name.replace(/^VH_[MF]_/, ''));
   const none = (s: string): Classified => ({ category: 'other', systems: ['surface'], group: 'organ-parts', skip: s });
   if (skip) return none(skip);
-  if (body === 'male' && /uter|fallop|ovar|vagina|cervi|mesosalpinx|mesovarium|broad_ligament|cornua|round_ligament_of_uterus/.test(n)) return none('female-only structure');
+  if (body === 'male' && /uter|fallop|ovar|vagina|cervi|mesosalpinx|mesovarium|broad_ligament|cornua|round_ligament_of_uterus|cardinal|uterosacral|infundibulum|fimbri|abdominal_ostium/.test(n)) return none('female-only structure');
+  if (body === 'female' && MALE_ONLY.test(n.replace(/_/g, ' '))) return none('male-only structure');
+  // The uterine-tube ampulla must not fall into the hepatopancreatic-ampulla rule below.
+  if (/uterine_tube|ampulla_of_uterine|isthmus_of_fallop/.test(n) || /fallop/.test(n)) return { category: 'reproductive part', systems: ['reproductive'], group: 'organ-parts', region: 'pelvis' };
   // Allow-listed HRA vessels (coronary / cardiac-vein / hepatic / portal / bowel / pelvic / retinal branches).
   if (HRA_VESSEL_ALLOW.test(name.replace(/^VH_[MF]_/, '')) && !/coronary_ligament/.test(n)) {
     const vein = /vein/.test(n);

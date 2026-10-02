@@ -39,7 +39,7 @@ def end_centres(P, axis_hint):
     a = P[t <= t.min() + 0.04 * L].mean(0); b = P[t >= t.max() - 0.04 * L].mean(0)
     return a, b, L
 
-def chain_fit(field, segs, joints, caps, starts, lam=0.02, verbose=False, free=None, post=None, extra=None):
+def chain_fit(field, segs, joints, caps, starts, lam=0.02, verbose=False, free=None, post=None, extra=None, hand_scale=1.0):
     """
     segs: list of (N,3) point sets per segment index 0..2 (upper arm / forearm / hand),
     joints: S, E, W (3,) positions. Returns params (9,) = rotvecs R1, R2, R3.
@@ -49,7 +49,7 @@ def chain_fit(field, segs, joints, caps, starts, lam=0.02, verbose=False, free=N
         R1, R2, R3 = rot(p[0:3]), rot(p[3:6]), rot(p[6:9])
         if k == 0: return S + (X - S) @ R1.T
         if k == 1: return S + (((E - S)) + (X - E) @ R2.T) @ R1.T
-        return S + ((E - S) + ((W - E) + (X - W) @ R3.T) @ R2.T) @ R1.T
+        return S + ((E - S) + ((W - E) + (hand_scale * (X - W)) @ R3.T) @ R2.T) @ R1.T
     def cost(p):
         c = 0.0
         for k, X in enumerate(segs):
@@ -113,8 +113,8 @@ def is_trunk_bone(name):
 
 class ChainRig:
     """Three-segment limb chain posed by rotations about its joints, applied to soft tissue by LBS."""
-    def __init__(self, S, E, W, params, bone_pts, blend=(0.06, 0.05, 0.04, 0.03), reach=(0.04, 0.085)):
-        self.S, self.E, self.W = S, E, W
+    def __init__(self, S, E, W, params, bone_pts, blend=(0.06, 0.05, 0.04, 0.03), reach=(0.04, 0.085), seg_scale=1.0):
+        self.S, self.E, self.W = S, E, W; self.seg_scale = seg_scale
         self.R1, self.R2, self.R3 = rot(params[0:3]), rot(params[3:6]), rot(params[6:9])
         self.tree = cKDTree(bone_pts); self.reach = reach; self.blend = blend
         uSE = (E - S) / np.linalg.norm(E - S); uEW = (W - E) / np.linalg.norm(W - E)
@@ -124,7 +124,7 @@ class ChainRig:
         S, E, W = self.S, self.E, self.W
         if k == 0: return S + (X - S) @ self.R1.T
         if k == 1: return S + ((E - S) + (X - E) @ self.R2.T) @ self.R1.T
-        return S + ((E - S) + ((W - E) + (X - W) @ self.R3.T) @ self.R2.T) @ self.R1.T
+        return S + ((E - S) + ((W - E) + (self.seg_scale * (X - W)) @ self.R3.T) @ self.R2.T) @ self.R1.T
     def weights(self, p):
         d, _ = self.tree.query(p)
         wd = 1 - smoothstep((d - self.reach[0]) / (self.reach[1] - self.reach[0]))
@@ -140,6 +140,9 @@ class ChainRig:
         q = (1 - b1[m, None]) * self.pose(X, 0) + b1[m, None] * ((1 - b2[m, None]) * self.pose(X, 1) + b2[m, None] * self.pose(X, 2))
         out = p.copy(); out[m] = X + w[m, None] * (q - X)
         return out
+
+HAND_SCALES = (1.0, 0.96, 0.92, 0.88, 0.84)
+HAND_SCALE_PENALTY = 2.0
 
 def fit_arm_side(field, bones, side_sign, init=None, verbose=False):
     """bones: dict with 'humerus','forearm','hand' (N,3) after stages 1-3. Returns (S,E,W,params,cost)."""
@@ -158,7 +161,16 @@ def fit_arm_side(field, bones, side_sign, init=None, verbose=False):
         E2 = pose(p, 1, E[None])[0]; W2 = pose(p, 2, W[None])[0]
         return 1e3 * (max(0.0, E2[1] - (S[1] - 0.15)) ** 2 + max(0.0, W2[1] - (E2[1] - 0.10)) ** 2)
     p, pose, f = chain_fit(field, segs, (S, E, W), caps, starts, verbose=verbose, extra=hang)
-    return S, E, W, p, f
+    # Hand size: the Z-Anatomy subject's hand is larger than the HRA female's (and the HRA skin fingers are thin), so the hand
+    # (carpals, metacarpals, phalanges) is scaled about the wrist by the factor in [hand_min, 1] that fits the skin best,
+    # re-fitting the wrist rotation for each candidate. A small penalty keeps the factor at 1 when the skin does not ask for less.
+    best = (f + 0.0, 1.0, p, f)
+    for k in HAND_SCALES[1:]:
+        pk, _, fk = chain_fit(field, segs, (S, E, W), caps, [p], free=np.arange(6, 9), extra=hang, hand_scale=k)
+        score = fk + HAND_SCALE_PENALTY * (1 - k)
+        if score < best[0]: best = (score, k, pk, fk)
+    _, k, p, f = best
+    return S, E, W, p, f, k
 
 def mirror_params(p):
     """Rotation vector of the mirror image (x -> -x) of a rotation."""
@@ -192,6 +204,10 @@ def leg_field(solid, side_sign):
     return f
 
 
+FINGER_STARTS = 6
+FINGER_SPACING_W = 1e5
+FINGER_SPACING_MIN = 0.013     # fingertip centres at least 13 mm apart across the hand
+FINGER_SPACING_MAX = 0.024     # and at most 24 mm
 FINGERS = ['first', 'second', 'third', 'fourth', 'fifth']
 
 def fit_fingers(field, arm_rig, get, side):
@@ -236,11 +252,43 @@ def fit_fingers(field, arm_rig, get, side):
             c = 500.0 * max(0.0, np.linalg.norm(p[0:3]) - lim) ** 2
             if ul is not None and f != 'first' and prev is not None:
                 tip = post(pose(p, 2, Dc))[0]
-                c += 2e3 * max(0.0, (prev - tip) @ ul + 0.010) ** 2   # each finger at least 1 cm further from the thumb than the last
+                gap = (prev - tip) @ ul; c += FINGER_SPACING_W * (max(0.0, FINGER_SPACING_MIN - gap) ** 2 + max(0.0, gap - FINGER_SPACING_MAX) ** 2)   # each finger at least 1.2 cm further from the thumb than the last
             return c
-        p, pose, c = chain_fit(field, segs, (MCP, PIP, DIP), caps, [np.zeros(9)], lam=0.05, post=post, extra=extra)
+        rng = np.random.RandomState(7)
+        starts = [np.zeros(9)] + [np.r_[rng.randn(3) * 0.12, np.zeros(6)] for _ in range(FINGER_STARTS)]
+        p, pose, c = chain_fit(field, segs, (MCP, PIP, DIP), caps, starts, lam=0.05, post=post, extra=extra)
         if f != 'first' and ul is not None: prev_tip = post(pose(p, 2, Dc))[0]
         pts = np.vstack([P, D] + ([M] if M is not None else []))
         rigs[f] = ChainRig(MCP, PIP, DIP, p, pts, blend=(0.012, 0.012, 0.008, 0.006), reach=(0.012, 0.03))
         print(f'    finger {f} {side} cost {c:.3f} mcp rot {np.degrees(np.linalg.norm(p[0:3])):.0f} deg', flush=True)
     return rigs
+
+
+# ───────────────────────── stage 4: containment in the skin ─────────────────────────
+def contain(p, solid, margin=0.002, max_disp=0.012, iters=5):
+    """
+    Pull vertices that lie outside the united skin back inside, along the gradient of the skin's signed depth field,
+    until they are `margin` deep (never more than `max_disp` from where stages 1-3 put them). Soft tissue, vessels,
+    nerves, ligaments and bones all belong inside the skin; a vertex a few millimetres out is registration error,
+    not anatomy. Vertices that would need more than `max_disp` stay where they are, so a structure that is badly
+    misplaced is still visible to the QA numbers instead of being hidden by a large distortion.
+    Returns (new points, number of vertices moved, mean move of moved vertices in m).
+    """
+    q = p.copy(); h = solid.h
+    f = SkinField(solid)
+    eps = h
+    for _ in range(iters):
+        d = f.depth(q)
+        bad = d < margin - 1e-4
+        if not bad.any(): break
+        Q = q[bad]
+        g = np.stack([(f.depth(Q + e) - f.depth(Q - e)) for e in np.eye(3) * eps], 1)
+        gn = np.linalg.norm(g, axis=1, keepdims=True)
+        ok = gn[:, 0] > 1e-6
+        step = np.zeros_like(Q); step[ok] = g[ok] / gn[ok] * (margin - d[bad][ok])[:, None]
+        cand = q.copy(); cand[bad] = Q + step
+        cap = np.linalg.norm(cand - p, axis=1) <= max_disp
+        q = np.where(cap[:, None], cand, q)
+    moved = np.linalg.norm(q - p, axis=1)
+    m = moved > 1e-6
+    return q, int(m.sum()), float(moved[m].mean()) if m.any() else 0.0

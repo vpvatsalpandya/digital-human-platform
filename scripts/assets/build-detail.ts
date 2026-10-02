@@ -261,13 +261,27 @@ async function main() {
       for (let n = 2; seenIds.has(id); n++) id = `${raw}-${n}`;
       seenIds.add(id); return id;
     };
+    // Z-Anatomy files one side of some pairs without a suffix ("Cochlear nerve" next to "Cochlear nerve.l"). That unsuffixed object is the
+    // partner of the suffixed one, so it takes the opposite side instead of being shipped as a side-less orphan.
+    const zSides = new Map<string, Set<string>>();
+    for (const o of zIdx) {
+      if (o.nt === 0) continue;
+      const b = baseName(o.name), k = b.base.toLowerCase();
+      if (!zSides.has(k)) zSides.set(k, new Set());
+      zSides.get(k)!.add(b.side);
+    }
     for (const o of zIdx) {
       if (o.nt === 0 || usedZ.has(o.i)) continue;
       const cls = classifyZ(o, body);
       if (cls.skip) { skip(`Z: ${cls.skip}`); continue; }
-      const { base, side: labelled } = baseName(o.name);
+      const { base, side: labelledRaw } = baseName(o.name);
       const piece = readBin(zDir, o.i);
-      const side = sideByGeometry(labelled, piece, /hair|lash|brow/i.test(base) || /ligament/i.test(base));
+      const sibSides = zSides.get(base.toLowerCase());
+      let labelled = labelledRaw;
+      if (labelled === 'none' && sibSides && sibSides.has('left') !== sibSides.has('right')) labelled = sibSides.has('left') ? 'right' : 'left';
+      // a pair that carries both labels is trusted over the centroid: a near-midline ligament pair would otherwise come out as two "right" meshes
+      const bothLabelled = !!sibSides && sibSides.has('left') && sibSides.has('right');
+      const side = sideByGeometry(labelled, piece, !bothLabelled && (/hair|lash|brow/i.test(base) || /ligament/i.test(base)));
       const sideWord = side === 'none' ? '' : `${side} `;
       const name = titleCase(`${sideWord}${base.charAt(0).toLowerCase()}${base.slice(1)}`.trim());
       const id = uniqueId(`${slug(base)}${side === 'left' ? '-l' : side === 'right' ? '-r' : ''}`, cls.category);

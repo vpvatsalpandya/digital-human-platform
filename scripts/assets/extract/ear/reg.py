@@ -1,4 +1,4 @@
-import numpy as np, struct, re, json, sys, glob, itertools
+import numpy as np, struct, re, json, sys, glob, itertools, os
 from scipy.spatial import cKDTree
 def ply(p):
     b=open(p,'rb').read(); h=b.index(b'end_header\n')+11
@@ -8,7 +8,7 @@ def ply(p):
     t=np.frombuffer(raw,dtype=np.uint8).reshape(nf,13)[:,1:].copy().view('<i4').reshape(nf,3)
     return v,t
 def zload(body,i):
-    b=open(f'/workspace/work/registered/{body}/{i}.bin','rb').read(); nv,nt=struct.unpack('<ii',b[:8])
+    b=open(f"{os.environ.get('ZREG','/workspace/work/registered')}/{body}/{i}.bin",'rb').read(); nv,nt=struct.unpack('<ii',b[:8])
     v=np.frombuffer(b,dtype=np.float32,count=nv*3,offset=8).reshape(-1,3).astype(float)
     t=np.frombuffer(b,dtype=np.uint32,count=nt*3,offset=8+nv*12).reshape(-1,3); return v,t
 Z=json.load(open('/workspace/sources/zanat/index.json'))

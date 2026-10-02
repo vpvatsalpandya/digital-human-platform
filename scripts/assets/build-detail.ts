@@ -263,10 +263,14 @@ async function main() {
     };
     // Z-Anatomy files one side of some pairs without a suffix ("Cochlear nerve" next to "Cochlear nerve.l"). That unsuffixed object is the
     // partner of the suffixed one, so it takes the opposite side instead of being shipped as a side-less orphan.
-    const zSides = new Map<string, Set<string>>();
+    // A few are filed as "Left testicular artery" beside "Right testicular artery.r": the leading word is the side, so it keys the pair and is not repeated in the name.
+    const leadSide = (b: string): 'left' | 'right' | 'none' => { const m = b.match(/^(left|right) /i); return m ? (m[1]!.toLowerCase() as 'left' | 'right') : 'none'; };
+    const pairKey = (b: string) => b.replace(/^(left|right) /i, '').toLowerCase();
+    const zSides = new Map<string, Set<string>>(), suffixedKeys = new Set<string>();
     for (const o of zIdx) {
       if (o.nt === 0) continue;
-      const b = baseName(o.name), k = b.base.toLowerCase();
+      const b = baseName(o.name), k = pairKey(b.base);
+      if (b.side !== 'none') suffixedKeys.add(k);
       if (!zSides.has(k)) zSides.set(k, new Set());
       zSides.get(k)!.add(b.side);
     }
@@ -274,9 +278,13 @@ async function main() {
       if (o.nt === 0 || usedZ.has(o.i)) continue;
       const cls = classifyZ(o, body);
       if (cls.skip) { skip(`Z: ${cls.skip}`); continue; }
-      const { base, side: labelledRaw } = baseName(o.name);
+      const { base: base0, side: labelledRaw0 } = baseName(o.name);
       const piece = readBin(zDir, o.i);
-      const sibSides = zSides.get(base.toLowerCase());
+      const sibSides = zSides.get(pairKey(base0));
+      // only a name that is part of a left/right pair loses its leading "Left"/"Right" (so "Left atrium" keeps its id)
+      const lead = leadSide(base0), inPair = suffixedKeys.has(pairKey(base0));
+      const base = inPair && lead !== 'none' && (labelledRaw0 === 'none' || labelledRaw0 === lead) ? base0.replace(/^(left|right) /i, '') : base0;
+      const labelledRaw = labelledRaw0 === 'none' && inPair ? lead : labelledRaw0;
       let labelled = labelledRaw;
       if (labelled === 'none' && sibSides && sibSides.has('left') !== sibSides.has('right')) labelled = sibSides.has('left') ? 'right' : 'left';
       // a pair that carries both labels is trusted over the centroid: a near-midline ligament pair would otherwise come out as two "right" meshes
@@ -360,7 +368,9 @@ async function main() {
       const { base, side: labelled } = humanizeHra(o.name);
       // VH_* names are anatomical sides, so a "left hepatic duct" keeps its name wherever the subject's organ sits. A few pairs
       // (round ligaments of the uterus) are labelled from the viewer's side, which shows as the pair being in the wrong order along x.
-      const side = vhSwap.has(o.name) ? (labelled === 'left' ? 'right' : labelled === 'right' ? 'left' : labelled) : labelled;
+      let side = vhSwap.has(o.name) ? (labelled === 'left' ? 'right' : labelled === 'right' ? 'left' : labelled) : labelled;
+      // the right kidney's pyramids are filed without a side in the male set (VH_M_renal_pyramid_a..i); they sit at x < 0, so they are the right kidney's
+      if (side === 'none' && /renal_(pyramid|papilla)|calyx/i.test(o.name)) { const { min, max } = boundsOf(readBin(hraDir, o.i).positions); const cx = (min[0] + max[0]) / 2; if (Math.abs(cx) > 0.02) side = cx > 0 ? 'left' : 'right'; }
       const id = uniqueId(`${slug(base)}${side === 'left' ? '-l' : side === 'right' ? '-r' : ''}`, cls.category);
       entries.push({ id, name: titleCase(`${side === 'none' ? '' : side + ' '}${base.toLowerCase()}`.trim()), base, side, cls, provenance: 'hra', sourceName: 'Human Reference Atlas 3D Reference Object Library', sourceLicence: HLIC, pieces: [readBin(hraDir, o.i)] });
     }

@@ -191,3 +191,27 @@ describe('system chips load the packs that hold their structures', () => {
     for (const b of ['male', 'female']) for (const g of read(`${V2}/${b}.manifest.json`).groups) expect(g.auto || reach.has(g.id) || g.id === 'schematic', `${b}:${g.id}`).toBe(true);
   });
 });
+
+// Registration regressions fixed in the limb/head/orphan pass (numbers come from scripts/qa/{limbfit,headfit,outside,orphans}.py).
+describe.runIf(built)('registration sanity (manifest bounds)', () => {
+  // Left/right items whose partner does not exist because the source has only one side (documented in scripts/qa/orphans.py).
+  const ONE_SIDED = /^(intermediate-bronchus-r|middle-lobar-bronchus-r|(major-calyx|minor-calyx|renal-pyramid|renal-papilla)-[a-z]-[lr])$/;
+  for (const b of ['male', 'female'] as const) {
+    const m = merged(b); const by = new Map(m.structures.map((s) => [s.id, s]));
+    it(`${b}: no left/right orphan outside the documented one-sided list`, () => {
+      const orphans = m.structures.map((s) => s.id).filter((id) => /-[lr]$/.test(id) && !by.has(id.slice(0, -1) + (id.endsWith('l') ? 'r' : 'l')) && !ONE_SIDED.test(id));
+      expect(orphans).toEqual([]);
+    });
+    it(`${b}: a "left" structure lies on the left of its right partner (brain regions included; the vagus trunks run down to the abdomen and cross the midline)`, () => {
+      const wrong = m.structures.filter((s) => /-l$/.test(s.id) && !/vagus/.test(s.id)).flatMap((s) => { const r = by.get(s.id.slice(0, -1) + 'r'); if (!r) return []; const cx = (x: ManifestStructure) => (x.bounds[0] + x.bounds[3]) / 2; return cx(s) > cx(r) ? [] : [s.id]; });
+      expect(wrong).toEqual([]);
+    });
+    it(`${b}: the brain regions sit inside the cranial vault (bounds, 2 mm margin)`, () => {
+      const vault = ['frontal-bone', 'occipital-bone', 'parietal-bone-l', 'parietal-bone-r', 'temporal-bone-l', 'temporal-bone-r', 'sphenoid-bone'].map((i) => by.get(i)).filter(Boolean) as ManifestStructure[];
+      const lo = [0, 1, 2].map((a) => Math.min(...vault.map((s) => s.bounds[a]!))), hi = [0, 1, 2].map((a) => Math.max(...vault.map((s) => s.bounds[a + 3]!)));
+      const brain = m.structures.filter((s) => s.provenance === 'hra' && /^(olfactory-bulb|head-of-caudate|hippocampus|cerebellar-vermis|hypothalamus)/.test(s.id));
+      expect(brain.length).toBeGreaterThan(4);
+      for (const s of brain) for (let a = 0; a < 3; a++) { expect(s.bounds[a]!, `${s.id} min ${a}`).toBeGreaterThan(lo[a]! - 0.002); expect(s.bounds[a + 3]!, `${s.id} max ${a}`).toBeLessThan(hi[a]! + 0.002); }
+    });
+  }
+});

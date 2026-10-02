@@ -27,7 +27,7 @@
   {
    "system": "muscular",
    "url": "/assets/hra-v1/male/system-muscular.lod2.bin",
-   "bytes": 143584,
+   "bytes": 143564,
    "structureIds": [
     "deltoid-r",
     "deltoid-l",
@@ -1087,12 +1087,12 @@
    ],
    "centroid": [
     -0.12033000215888023,
-    -0.2084749937057495,
+    -0.20792999863624573,
     0.01992000173777342
    ],
    "bounds": [
     -0.1935500055551529,
-    -0.4990899860858917,
+    -0.49799999594688416,
     -0.031109998002648354,
     -0.047109998762607574,
     0.0821399986743927,
@@ -1110,21 +1110,21 @@
    "lods": [
     {
      "url": "/assets/hra-v1/male/quadriceps-femoris-r.lod0.glb",
-     "bytes": 44260,
-     "triangles": 7780,
-     "hash": "c45a779005beb946"
+     "bytes": 44204,
+     "triangles": 7784,
+     "hash": "59a3654399988cb6"
     },
     {
      "url": "/assets/hra-v1/male/quadriceps-femoris-r.lod1.glb",
-     "bytes": 44260,
-     "triangles": 7780,
-     "hash": "c45a779005beb946"
+     "bytes": 44204,
+     "triangles": 7784,
+     "hash": "59a3654399988cb6"
     },
     {
      "url": "/assets/hra-v1/male/quadriceps-femoris-r.lod2.glb",
-     "bytes": 15180,
+     "bytes": 15240,
      "triangles": 2400,
-     "hash": "c5edb39220220272"
+     "hash": "003cb284c8b5b064"
     }
    ]
   },
@@ -1136,15 +1136,15 @@
    ],
    "centroid": [
     0.13738500326871872,
-    -0.20895501226186752,
+    -0.2091200016438961,
     0.016019999980926514
    ],
    "bounds": [
     0.07649999856948853,
-    -0.4984600245952606,
+    -0.4987899959087372,
     -0.03491999953985214,
     0.1982700079679489,
-    0.08055000007152557,
+    0.08054999262094498,
     0.06695999950170517
    ],
    "laterality": "left",
@@ -1159,21 +1159,21 @@
    "lods": [
     {
      "url": "/assets/hra-v1/male/quadriceps-femoris-l.lod0.glb",
-     "bytes": 44200,
-     "triangles": 7782,
-     "hash": "489da0e17bbf6f8c"
+     "bytes": 44028,
+     "triangles": 7778,
+     "hash": "48002bda35b27907"
     },
     {
      "url": "/assets/hra-v1/male/quadriceps-femoris-l.lod1.glb",
-     "bytes": 44200,
-     "triangles": 7782,
-     "hash": "489da0e17bbf6f8c"
+     "bytes": 44028,
+     "triangles": 7778,
+     "hash": "48002bda35b27907"
     },
     {
      "url": "/assets/hra-v1/male/quadriceps-femoris-l.lod2.glb",
-     "bytes": 15252,
+     "bytes": 15240,
      "triangles": 2400,
-     "hash": "77f22a6594b29b96"
+     "hash": "fdff3cf92a0e5996"
     }
    ]
   },
@@ -1184,17 +1184,17 @@
     "muscular"
    ],
    "centroid": [
-    -0.14453500136733055,
-    -0.5094900131225586,
-    -0.06851499574258924
+    -0.14589500054717064,
+    -0.5088799893856049,
+    -0.07033000327646732
    ],
    "bounds": [
-    -0.22529000043869019,
-    -0.6708900332450867,
-    -0.12606999278068542,
-    -0.06378000229597092,
+    -0.2272000014781952,
+    -0.6696699857711792,
+    -0.12970000505447388,
+    -0.06458999961614609,
     -0.3480899930000305,
-    -0.010959998704493046
+    -0.01096000149846077
    ],
    "laterality": "right",
    "fmaId": "FMA:22541",
@@ -1208,21 +1208,21 @@
    "lods": [
     {
      "url": "/assets/hra-v1/male/gastrocnemius-r.lod0.glb",
-     "bytes": 22420,
+     "bytes": 22488,
      "triangles": 3406,
-     "hash": "ae75ec1588a53d6f"
+     "hash": "166b2ca5c844335d"
     },
     {
      "url": "/assets/hra-v1/male/gastrocnemius-r.lod1.glb",
-     "bytes": 22420,
+     "bytes": 22488,
      "triangles": 3406,
-     "hash": "ae75ec1588a53d6f"
+     "hash": "166b2ca5c844335d"
     },
     {
      "url": "/assets/hra-v1/male/gastrocnemius-r.lod2.glb",
-     "bytes": 16332,
+     "bytes": 16392,
      "triangles": 2400,
-     "hash": "202d33a0c12893a9"
+     "hash": "def57bdbf7cb6683"
     }
    ]
   },
@@ -1233,17 +1233,17 @@
     "muscular"
    ],
    "centroid": [
-    0.16704000160098076,
-    -0.5098850131034851,
-    -0.07251499779522419
+    0.1615699976682663,
+    -0.5099949985742569,
+    -0.07208000216633081
    ],
    "bounds": [
-    0.10631000250577927,
-    -0.6706200242042542,
-    -0.12931999564170837,
-    0.22777000069618225,
-    -0.34915000200271606,
-    -0.015709999948740005
+    0.10129000246524811,
+    -0.670989990234375,
+    -0.12845000624656677,
+    0.22184999287128448,
+    -0.3490000069141388,
+    -0.015709998086094856
    ],
    "laterality": "left",
    "fmaId": "FMA:22541",
@@ -1257,21 +1257,21 @@
    "lods": [
     {
      "url": "/assets/hra-v1/male/gastrocnemius-l.lod0.glb",
-     "bytes": 22624,
-     "triangles": 3408,
-     "hash": "38a7485517a505bd"
+     "bytes": 22620,
+     "triangles": 3406,
+     "hash": "c018677e91d5fe8f"
     },
     {
      "url": "/assets/hra-v1/male/gastrocnemius-l.lod1.glb",
-     "bytes": 22624,
-     "triangles": 3408,
-     "hash": "38a7485517a505bd"
+     "bytes": 22620,
+     "triangles": 3406,
+     "hash": "c018677e91d5fe8f"
     },
     {
      "url": "/assets/hra-v1/male/gastrocnemius-l.lod2.glb",
-     "bytes": 16748,
-     "triangles": 2398,
-     "hash": "2cfa04f48bbb9f7b"
+     "bytes": 16620,
+     "triangles": 2400,
+     "hash": "380d17cc34e815be"
     }
    ]
   },

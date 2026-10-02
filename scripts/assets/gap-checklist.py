@@ -77,7 +77,12 @@ Intervertebral disc (L4/L5)=intervertebral-disc-l4-l5
 Cranial sutures: coronal=coronal-suture
 Cranial sutures: sagittal=sagittal-suture
 Cranial sutures: lambdoid=lambdoid-suture
-Cranial sutures: squamous / sphenofrontal etc.=squamous-suture*
+Cranial sutures: squamous=squamous-suture
+Metopic suture (closed in adults)=metopic-suture
+Cranial sutures: sphenofrontal / sphenoparietal=sphenofrontal-suture|sphenoparietal-suture
+Cranial sutures: occipitomastoid=occipitomastoid-suture
+Cranial sutures: frontonasal / frontomaxillary=frontonasal-suture|frontomaxillary-suture
+Cranial sutures: zygomatic (temporal, maxillary, frontal)=zygomaticotemporal-suture|zygomaticomaxillary-suture|zygomaticofrontal-suture
 '''),
  'Joints, capsules and ligaments': L('''
 Glenohumeral joint capsule=articular-capsule-of-glenohumeral-joint
@@ -405,7 +410,7 @@ Kidney=kidney
 Renal pyramids / calyces=renal-pyramid*|minor-calyx*|calyx*|renal-calyx*
 Ureter=ureter
 Urinary bladder=urinary-bladder
-Urethra=urethra*
+Urethra=urethra*|female-urethra
 Prostate=prostate
 Seminal gland=seminal-gland
 Ductus deferens=ductus-deferens
@@ -416,6 +421,12 @@ Uterus=uterus|fundus-of-uterus
 Uterine tube=~uterine-tube
 Ovary=ovary
 Vagina=vagina
+Vestibule of vagina=vestibule-of-vagina
+Clitoris (glans, body, crura)=glans-of-clitoris|body-of-clitoris|crus-of-clitoris
+Bulb of vestibule=bulb-of-vestibule
+Greater vestibular gland=greater-vestibular-gland
+Labia minora=labium-minus
+Labia majora=labium-majus
 Mammary gland=mammary-gland
 Uterine artery=~uterine-artery
 Ovarian artery / vein=ovarian-artery
@@ -459,17 +470,16 @@ Dermal nerve endings / capillary loops=dermal-*
 
 # Why something stays missing (shown in the audit); keyed by the label.
 REASON = {
- 'Cranial sutures: squamous / sphenofrontal etc.': 'only the three main sutures are drawn; the remaining sutures are not placed because the skull is one fitted mesh per bone.',
  'Sweat glands': 'microscopic appendage: no open mesh exists and a schematic of one gland per pore is not meaningful',
  'Sebaceous glands': 'microscopic appendage: no open mesh',
  'Hair follicles': 'microscopic appendage: no open mesh (scalp hair is also not shipped)',
  'Arrector pili': 'microscopic: no open mesh',
  'Dermal nerve endings / capillary loops': 'microscopic: out of scope for a gross-anatomy model',
- 'Articular cartilage': 'no open mesh and too thin to draw honestly as a separate schematic (the capsules, menisci, discs and ligaments are present)',
+ 'Metopic suture (closed in adults)': 'closed in adults (fused frontal bone); not present in an adult skeleton',
  'Umbilical artery': 'fetal vessel, obliterated after birth (remains as the medial umbilical ligament); not modelled',
 }
 
 # Sex-specific entries are "n/a" on the other body (not counted as missing).
 SEX = {}
-for _l in ('Uterus','Uterine tube','Ovary','Vagina','Mammary gland','Uterine artery','Ovarian artery / vein','Dorsal nerve of clitoris','Breast / mammary gland'): SEX[_l] = 'female'
+for _l in ('Uterus','Uterine tube','Ovary','Vagina','Vestibule of vagina','Clitoris (glans, body, crura)','Bulb of vestibule','Greater vestibular gland','Labia minora','Labia majora','Mammary gland','Uterine artery','Ovarian artery / vein','Dorsal nerve of clitoris','Breast / mammary gland'): SEX[_l] = 'female'
 for _l in ('Prostate','Seminal gland','Ductus deferens','Testis','Epididymis','Penis (corpus cavernosum)','Testicular artery','Dorsal nerve of penis'): SEX[_l] = 'male'

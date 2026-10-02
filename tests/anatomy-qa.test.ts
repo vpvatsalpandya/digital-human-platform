@@ -152,6 +152,11 @@ describe.runIf(built)('names and labelling', () => {
         expect(s.name, s.id).not.toMatch(/\s{2,}/);
       }
     });
+    it(`${b}: no two structures share a display name (a duplicate would list twice in search and overlap on screen)`, () => {
+      const seen = new Map<string, string>(); const dup: string[] = [];
+      for (const s of m.structures) { const k = s.name.toLowerCase(); const p = seen.get(k); if (p) dup.push(`${p}=${s.id} "${s.name}"`); else seen.set(k, s.id); }
+      expect(dup).toEqual([]);
+    });
     it(`${b}: laterality in the name agrees with the id`, () => {
       const bad = m.structures.filter((s) => (/-l$/.test(s.id) && /\bright\b/i.test(s.name)) || (/-r$/.test(s.id) && /\bleft\b/i.test(s.name))).map((s) => s.id);
       expect(bad).toEqual([]);

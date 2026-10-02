@@ -63,10 +63,10 @@ for body in ('male', 'female'):
         shells=sum(1 for s in merged if s.get('category') == 'skin layer' and s.get('provenance') == 'generated'),
         procedural=sum(1 for s in merged if s.get('provenance') == 'procedural'),
         ear=sum(1 for s in merged if s.get('provenance') in ('openear', 'iemap')))
-# PREV = the pack as committed in 88ba986 (the previous release of this PR), recorded by hand from that build.
-PREV = {'male': dict(after=3271, real=3099, generated=170, schematic=168, procedural=2), 'female': dict(after=3289, real=3111, generated=176, schematic=174, procedural=2)}
+# PREV = the pack as committed in 68c259c (the release before the anatomy-completeness QA round), recorded by hand from that build.
+PREV = {'male': dict(after=3523, real=3164, generated=357, schematic=352, procedural=2), 'female': dict(after=3545, real=3182, generated=361, schematic=356, procedural=2)}
 r = rows
-w('| | Male: core only | Male: previous (88ba986) | Male: now | Female: core only | Female: previous (88ba986) | Female: now |\n|---|---:|---:|---:|---:|---:|---:|')
+w('| | Male: core only | Male: previous (68c259c) | Male: now | Female: core only | Female: previous (68c259c) | Female: now |\n|---|---:|---:|---:|---:|---:|---:|')
 def line(label, key, corekey=None, prevkey=None):
     cm = r['male'][corekey] if corekey else 0; cf = r['female'][corekey] if corekey else 0
     w(f"| {label} | {cm} | {PREV['male'][prevkey or key]} | {r['male'][key]} | {cf} | {PREV['female'][prevkey or key]} | {r['female'][key]} |")
@@ -75,7 +75,7 @@ line('… real anatomy (HRA, BodyParts3D, Z-Anatomy, OpenEar, IE-Map)', 'real', 
 line('… generated (schematic stand-ins + skin-layer shells)', 'generated')
 line('… of which schematic stand-ins (nerves, vessels, capsules, eye, cartilage, conduction, …)', 'schematic')
 line('… procedural landmarks (points, not meshes)', 'procedural')
-w(f"\nReal inner-ear and ear-canal structures added this round (OpenEar + IE-Map): **{r['male']['ear']}** male / **{r['female']['ear']}** female. Net change in real anatomy since 88ba986: **+{r['male']['real']-PREV['male']['real']}** male / **+{r['female']['real']-PREV['female']['real']}** female; schematic stand-ins **+{r['male']['schematic']-PREV['male']['schematic']}** / **+{r['female']['schematic']-PREV['female']['schematic']}**. Generated structures are flagged `generated` in the manifest, violet with a badge in the UI, and are never counted as real anatomy.\n")
+w(f"\nReal inner-ear and ear-canal structures in the pack (OpenEar + IE-Map): **{r['male']['ear']}** male / **{r['female']['ear']}** female. Net change in real anatomy since 68c259c: **+{r['male']['real']-PREV['male']['real']}** male / **+{r['female']['real']-PREV['female']['real']}** female; schematic stand-ins **+{r['male']['schematic']-PREV['male']['schematic']}** / **+{r['female']['schematic']-PREV['female']['schematic']}**. Generated structures are flagged `generated` in the manifest, violet with a badge in the UI, and are never counted as real anatomy.\n")
 
 w('## 2. Detail pack by category (after)\n')
 for body in ('male', 'female'):

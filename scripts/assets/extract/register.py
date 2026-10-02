@@ -16,7 +16,7 @@ cartilages, femur, tibia, fibula, patella):
 Input : /workspace/sources/zanat/{index.json,objs/*.bin}, /workspace/sources/hra/objs-{m,f}
 Output: <out>/{male,female}/{i}.bin (same raw format) + index.json + report.json
 """
-import json, struct, sys, os, pickle
+import json, struct, sys, os, pickle, re
 import numpy as np
 pass
 import limbs as LB
@@ -96,14 +96,14 @@ def register(sex):
     # 3. legs: each bone is fitted to its HRA counterpart (femur, tibia+fibula, patella), so the
     # thigh and the shank are posed separately and meet at the knee, rather than one rigid leg.
     from scipy.spatial import cKDTree
-    def icp(Zp, Hp, init, iters=40):
+    def icp(Zp, Hp, init, iters=40, clamp=0.04):
         T = cKDTree(Hp[::2]); s_, R_, t_ = init; s0 = s_
         for _ in range(iters):
             q = s_ * (Zp @ R_.T) + t_
             d, i = T.query(q); keep = d <= np.percentile(d, 85)
             s_, R_, t_ = umeyama(Zp[keep], Hp[::2][i[keep]])
             # the two subjects' bones differ in length by a few per cent, never by more: clamp the scale
-            s2 = float(np.clip(s_, s0 * 0.96, s0 * 1.04))
+            s2 = float(np.clip(s_, s0 * (1 - clamp), s0 * (1 + clamp)))
             if s2 != s_: t_ = t_ + s_ * R_ @ Zp[keep].mean(0) - s2 * R_ @ Zp[keep].mean(0); s_ = s2
         q = s_ * (Zp @ R_.T) + t_; d, _ = T.query(q)
         return (s_, R_, t_), float(d.mean() * 1000)
@@ -124,15 +124,23 @@ def register(sex):
             init = (s0, np.eye(3), hn.mean(0) - s0 * Zp.mean(0))
             tr, res = icp(Zp, hn, init)
             out[key] = tr; out[key + '_mm'] = res
+        # the hip bone is fitted to the HRA ilium on its own (the two subjects' pelves differ most in the female), so the
+        # acetabulum lands on the HRA femoral head, which the femur fit above already matches
+        Zh = warp(zmesh(f'Hip bone.{zs}')); Hh = hra([f'ilium_compact_bone_{S}', f'ilium_spongy_bone_{S}'])
+        # the atlas models only the ilium, so fit on the upper part of the Z hip bone (ilium + acetabulum roof) and move the whole bone
+        up = Zh[:, 1] > Zh[:, 1].min() + 0.35 * np.ptp(Zh[:, 1])
+        trh, resh = icp(Zh[up], Hh, (1.0, np.eye(3), Hh.mean(0) - Zh[up].mean(0)), iters=40, clamp=0.15)
+        out['hip'] = trh; out['hip_mm'] = resh; out['hip_tree'] = cKDTree(Zh[::3])
         hipy = hra([f'femur_{S}'])[:, 1].max()
         kneey = (hra([f'femur_{S}'])[:, 1].min() + hra([f'tibia_{S}'])[:, 1].max()) / 2
         legs[side] = (out, hipy, kneey)
-        report['legs'][side] = {'nn_mean_mm': {k: v for k, v in out.items() if k.endswith('_mm')}, 'scale': {k: float(out[k][0]) for k in ('femur', 'shank', 'patella')}}
+        report['legs'][side] = {'nn_mean_mm': {k: v for k, v in out.items() if k.endswith('_mm')}, 'scale': {k: float(out[k][0]) for k in ('femur', 'shank', 'patella', 'hip')}}
     return warp, legs, report
 
 def apply_legs(p, legs, name=''):
     """Stage 3: thigh and shank transforms blended over the knee, and in over the groin."""
     orig = p.copy()
+    if name.startswith('Hip bone.'): return p        # the pelvis has its own transform (apply_hips)
     for side in ('left', 'right'):
         T, hipy, kneey = legs[side]
         def tr(k, X): s_, R_, t_ = T[k]; return s_ * (X @ R_.T) + t_
@@ -143,6 +151,27 @@ def apply_legs(p, legs, name=''):
         if name.startswith('Femur.') and name[-1] == side[0]: wy = np.ones_like(wy)
         wx = np.clip((np.abs(orig[:, 0]) - 0.01) / 0.04, 0, 1) * ((orig[:, 0] > 0) if side == 'left' else (orig[:, 0] < 0))
         w = (wy * wx)[:, None]
+        p = p + w * (q - orig)
+    return p
+
+NOT_PELVIC = ('Sacrum', 'Coccyx', 'Vertebra', 'Atlas', 'Axis', 'Intervertebral', 'Femur', 'Tibia', 'Fibula', 'Patella', 'rib', 'Rib', 'Costal', 'Sternum', 'Manubrium', 'Body of sternum',
+              'Scapula', 'Clavicle', 'Humer', 'Radius', 'Ulna', 'Skull', 'Mandible')
+
+def apply_hips(p, name, legs):
+    """Pelvis: the hip bone takes its own fitted transform; soft tissue near it follows, fading into the thigh transform below the joint."""
+    if any(k in name for k in NOT_PELVIC) and not name.startswith('Hip bone.'): return p
+    orig = p.copy()
+    for side in ('left', 'right'):
+        T, hipy, kneey = legs[side]
+        s_, R_, t_ = T['hip']; q = s_ * (orig @ R_.T) + t_
+        if name.startswith('Hip bone.'):
+            if name[-1] != side[0]: continue
+            return q
+        d, _ = T['hip_tree'].query(orig)
+        w = 1 - LB.smoothstep((d - 0.015) / 0.05)
+        wy = np.clip((hipy + 0.01 - orig[:, 1]) / 0.05, 0, 1)
+        wx = np.clip((np.abs(orig[:, 0]) - 0.01) / 0.04, 0, 1) * ((orig[:, 0] > 0) if side == 'left' else (orig[:, 0] < 0))
+        w = (w * (1 - wy * wx))[:, None]
         p = p + w * (q - orig)
     return p
 
@@ -161,9 +190,14 @@ def skin_solid(sex):
 
 def limb_rigs(sex, warp, legs, report, verbose=True):
     """Fit both arms and both feet to the skin; returns {'arm': {side: rig}, 'foot': {side: rig}}."""
-    P = lambda n: apply_legs(warp(zmesh(n)), legs, n)
+    P = lambda n: apply_legs(apply_hips(warp(zmesh(n)), n, legs), legs, n)
     solid = skin_solid(sex); armF = LB.SkinField(LB.arm_field(solid))
     rigs = {'arm': {}, 'foot': {}}; report['limbs'] = {}
+    # Trunk gate: soft tissue inside the rib cage (lungs, heart, great vessels…) must not be dragged along with the arm.
+    from scipy.spatial import Delaunay, cKDTree
+    rib_names = [n for n in zi if re.match(r'^(First|Second|Third|Fourth|Fifth|Sixth|Seventh|Eighth|Ninth|Tenth|Eleventh|Twelfth) rib\.[lr]$', n)] + ['Body of sternum', 'Manubrium of sternum']
+    RP = np.vstack([P(n) for n in rib_names if n in zi])
+    rigs['torso'] = (Delaunay(RP), cKDTree(RP))
     side_names = {'l': 1, 'r': -1}
     fits = {}
     for s_, sg in side_names.items():
@@ -206,15 +240,23 @@ def limb_rigs(sex, warp, legs, report, verbose=True):
         if verbose: print('  foot', s_, 'cost %.3f' % f, 'rot deg', report['limbs']['foot_' + s_]['rot_deg'])
     return rigs
 
+ARM_BONES = re.compile(r'^(Humerus|Radius|Ulna|.*(metacarpal bone|phalanx of .* of hand)|Scaphoid|Lunate|Triquetrum|Pisiform|Trapez|Capitate|Hamate)')
+
 def apply_limbs(p, name, rigs):
     orig = p
+    hull, rtree = rigs['torso']
+    inside = hull.find_simplex(orig) >= 0
+    dout, _ = rtree.query(orig)
+    gate = np.where(inside, 0.0, LB.smoothstep(dout / 0.04))[:, None]     # 0 in the rib cage, 1 beyond 4 cm of it
+    if ARM_BONES.match(name): gate = np.ones_like(gate)
     for s_ in ('l', 'r'):
         arm = rigs['arm'][s_]
         if not LB.is_trunk_bone(name):
             q = p
             for rig in arm.fingers.values():          # fingers first, in the hand's own frame
                 q = rig.apply(q, pw=orig)
-            p = arm.apply(q, pw=orig)
+            q = arm.apply(q, pw=orig)
+            p = p + gate * (q - p)
         p = rigs['foot'][s_].apply(p)
     return p
 
@@ -235,6 +277,7 @@ def main():
             p = warp(np.stack([v[:, 0], v[:, 2], -v[:, 1]], 1))
             # Legs are picked geometrically, not by collection path: the source tags only some
             # right-foot bones with their region, which left them behind when the leg moved.
+            p = apply_hips(p, o['name'].strip(), legs)
             p = apply_legs(p, legs, o['name'].strip())
             p = apply_limbs(p, o['name'].strip(), rigs)
             pf = p.astype(np.float32)

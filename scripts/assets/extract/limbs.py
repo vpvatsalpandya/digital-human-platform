@@ -236,7 +236,7 @@ def fit_fingers(field, arm_rig, get, side):
             c = 50.0 * max(0.0, np.linalg.norm(p[0:3]) - lim) ** 2
             if ul is not None and f != 'first' and prev is not None:
                 tip = post(pose(p, 2, Dc))[0]
-                c += 1e3 * max(0.0, (prev - tip) @ ul + 0.010) ** 2   # each finger at least 1 cm further from the thumb than the last
+                c += 1e5 * max(0.0, (prev - tip) @ ul + 0.012) ** 2   # each finger at least 1.2 cm further from the thumb than the last
             return c
         p, pose, c = chain_fit(field, segs, (MCP, PIP, DIP), caps, [np.zeros(9)], lam=0.05, post=post, extra=extra)
         if f != 'first' and ul is not None: prev_tip = post(pose(p, 2, Dc))[0]

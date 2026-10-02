@@ -275,12 +275,30 @@ async function main() {
     }
 
     // 3. HRA united structures not already in the core pack or an upgrade.
+    // Allen regions come as an _L / _R pair per region. Their labels follow the viewer's side and their midline sits a few mm off x = 0,
+    // so a per-mesh centroid test can give both meshes of a tiny, near-midline region the same side (a duplicate "Left olfactory bulb").
+    // Pair them instead: the mesh with the lower x is the body's right, the other its left.
+    const allenSide = new Map<string, 'left' | 'right'>();
+    {
+      const byBase = new Map<string, { name: string; cx: number }[]>();
+      for (const o of hraIdx) {
+        if (usedH.has(o.i) || o.nt === 0 || !o.name.startsWith('Allen_')) continue;
+        const { min, max } = boundsOf(readBin(hraDir, o.i).positions);
+        const base = o.name.replace(/_[LR]$/, '');
+        const list = byBase.get(base) ?? []; list.push({ name: o.name, cx: (min[0] + max[0]) / 2 }); byBase.set(base, list);
+      }
+      for (const list of byBase.values()) {
+        if (list.length !== 2 || new Set(list.map((x) => x.name.slice(-2))).size !== 2) continue;
+        list.sort((a, b) => a.cx - b.cx);
+        allenSide.set(list[0]!.name, 'right'); allenSide.set(list[1]!.name, 'left');
+      }
+    }
     for (const o of hraIdx) {
       if (usedH.has(o.i) || o.nt === 0) continue;
       const cls = classifyHra(o.name, body);
       if (o.name.startsWith('Allen_')) {
         const { base, side: labelled } = humanizeHra(o.name);
-        const side = sideByGeometry(labelled, readBin(hraDir, o.i), true);
+        const side = allenSide.get(o.name) ?? sideByGeometry(labelled, readBin(hraDir, o.i), true);
         const id = uniqueId(`${slug(base)}${side === 'left' ? '-l' : side === 'right' ? '-r' : ''}`, 'brain');
         // The Allen atlas is a brain subject; one file in the united body per hemisphere side.
         entries.push({ id, name: titleCase(`${side === 'none' ? '' : side + ' '}${base.toLowerCase()}`.trim()), base, side, provenance: 'hra', sourceName: 'Human Reference Atlas (Allen Human Reference Atlas brain regions)', sourceLicence: HLIC,
@@ -310,7 +328,7 @@ async function main() {
         continue;
       }
       const { base, side: labelled } = humanizeHra(o.name);
-      const side = sideByGeometry(labelled, readBin(hraDir, o.i), true);
+      const side = allenSide.get(o.name) ?? sideByGeometry(labelled, readBin(hraDir, o.i), true);
       const id = uniqueId(`${slug(base)}${side === 'left' ? '-l' : side === 'right' ? '-r' : ''}`, cls.category);
       entries.push({ id, name: titleCase(`${side === 'none' ? '' : side + ' '}${base.toLowerCase()}`.trim()), base, side, cls, provenance: 'hra', sourceName: 'Human Reference Atlas 3D Reference Object Library', sourceLicence: HLIC, pieces: [readBin(hraDir, o.i)] });
     }

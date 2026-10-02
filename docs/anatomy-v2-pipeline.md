@@ -43,11 +43,17 @@ zanat -> HRA body space:  python3 extract/register.py   (per body; writes work/r
 npm run assets:build:v2   (scripts/assets/build-detail.ts, ~25 s)
    classify (detail-catalog.ts) -> weld -> decimate per category -> quantise 16-bit in own bbox
    -> meshopt -> slice into group-<id>.bin -> manifest with `packed` byte ranges
-npm run assets:build:schematic   (adds the generated `schematic` group; idempotent, ~2 s)
+npm run assets:build:v2 && npm run assets:build:schematic   (adds the generated `schematic` group; idempotent, ~2 s)
+npx tsx scripts/qa/dump.ts /workspace/qa/dump                    (decode the merged body for the QA scripts, ~5 s)
+python3 scripts/assets/extract/core_rebase.py <registered> /workspace/qa/dump /workspace/work/core-rebase
+npx tsx scripts/assets/rebuild-core.ts --in /workspace/work/core-rebase   (re-bake the core aggregates in the united frame)
+npm run assets:build:schematic && npx tsx scripts/qa/dump.ts /workspace/qa/dump   (schematic reads the rebuilt core skin)
 python3 scripts/assets/gap-audit.py . > docs/gap-audit.md
 ```
 
-`assets:build:v2` deletes and rewrites the whole pack, so always run `assets:build:schematic` straight after it.
+`assets:build:v2` deletes and rewrites the whole pack, so always run `assets:build:schematic` straight after it. `rebuild-core.ts`
+edits the core pack (`hra-v1`) in place and is idempotent, but it must come after `assets:build:v2` because it merges the registered
+detail meshes into the core aggregates; run `assets:build:schematic` again afterwards.
 
 The source dumps live outside git (`/workspace/sources`, several GB) and must be re-fetched to
 rebuild; the built pack is what is committed. Paths are constants at the top of
@@ -61,6 +67,39 @@ spine, and a similarity transform per leg. Residuals: spine about 4 mm RMS; leg 
 24–40 mm (male), 8–18 mm (female). The female body uses the same male-derived skeleton, muscles,
 nerves and vessels; sex-specific organs come from the female HRA objects. Side labels that
 contradict the geometry are corrected in the build (`sideByGeometry`).
+
+#### Limb-segment fitting (arms, hands, fingers, legs, feet)
+
+The three-stage fit above puts the trunk and spine in the right place but leaves the limbs wrong wherever the Z-Anatomy subject
+holds a limb differently from the HRA body (the HRA arms are abducted in an A-pose; Z-Anatomy's hang by the side). Stage 3 is therefore
+per segment (`extract/limbs.py`, driven from `register.py`):
+
+- **Arms**: a three-segment chain (shoulder about the humeral head, elbow, wrist) is fitted by maximising the depth of the arm bones inside
+  an arm-only skin compartment (`arm_field`), with caps on translation, a prior that the arm hangs (elbow below shoulder, wrist below elbow,
+  which removes a folded-back local optimum) and several starts. Soft tissue follows by linear blend skinning. Scapula, clavicle and trunk
+  bones never follow the arm.
+- **Fingers**: each finger is a three-joint chain (MCP, PIP, DIP) posed inside the skin finger; MCP swing is capped (~17 degrees, thumb 35)
+  and fingers must stay in anatomical order, at least 1 cm apart, so a finger cannot swap into its neighbour's skin.
+- **Legs**: per-bone similarity ICP (femur, tibia+fibula, patella) onto the HRA bones with the scale clamped to the length ratio +/-4 %,
+  blended across the knee and the groin.
+- **Feet**: posed about the ankle and the toes about the metatarsophalangeal line, inside one body half of the skin (`leg_field`).
+
+`scripts/qa/` measures the result: `outside.py` lists structures at least 20 % outside the skin solid (`extract/solid.py`),
+`icp_core.py` checks that core aggregates share the detail frame, `render.py` is an offline orthographic renderer, and
+`dump.ts` decodes the merged body for them. The vitest file `tests/anatomy-qa.test.ts` runs the same sanity rules in CI
+(sex allow/deny lists, bone completeness, laterality, duplicates, naming, system-chip to pack mapping).
+
+#### Core pack frame (`rebuild-core.ts`)
+
+The core pack (`hra-v1`) was baked from standalone reference-atlas files and BodyParts3D meshes placed by a stature-scaled fit. They
+sat 2 cm (male) to 5-8 cm and ~10 % in size (female) away from the united model that the detail packs, skin shells and registered
+Z-Anatomy structures use, so the core skull, ribs, heart and brain no longer lined up with the skin or with the detail layers
+(female skull 33 % and brain 22 % outside the skin). `core_rebase.py` rebuilds each affected core id in the united frame: from the
+united reference-atlas meshes (skin, heart, aorta, IVC, trachea, spleen, thymus, pelvis, brain, large intestine), or by merging the
+registered detail meshes (skull, vertebral column, rib cage, humerus, radius+ulna, deltoid, biceps, pectoralis, quadriceps,
+gastrocnemius, stomach, adrenals, testes), so an aggregate and its parts coincide exactly. Those aggregates now carry provenance
+`zanatomy`. The jugular notch and umbilicus landmarks are measured on the united skin. After the rebuild every reference-atlas core
+structure matches the united model with zero residual (`icp_core.py`).
 
 ### Groups (lazy)
 
@@ -105,6 +144,23 @@ the right ear mirrored, not a separate scan. The structure card says so.
 SA/AV node, AV bundle and bundle branches, eyelids, tarsal plates, periorbita, tracheal, cuneiform and auricular cartilages,
 vestibular and vocal folds, tensor tympani and stapedius, three cranial sutures, 46 facet-joint capsules and four other capsules,
 three tendons. Same flagging as the first batch.
+
+### Sex-specific anatomy and the female external genitalia
+
+`detail-catalog.ts` exports `MALE_ONLY` and `FEMALE_ONLY` and denies each on the other body, for Z-Anatomy and the reference atlas alike
+(the female body no longer receives the penile urethra mesh or any penis/testis/prostate/seminal part; the male body no longer receives
+uterine-tube, cardinal/uterosacral or other female parts; uterine-tube items are classified as reproductive, not digestive).
+Open meshes of the female external genitalia do not exist in the sources, so `schematic/more.ts` generates them, labelled
+"(schematic)", provenance `generated`, category `schematic organ`: female urethra, glans, body and crura of the clitoris, vestibular bulbs,
+greater vestibular glands, labia minora and majora, and the vestibule of the vagina, placed from the real vagina, pubic symphysis,
+bladder, skin and hip bones. `tests/anatomy-qa.test.ts` holds the allow/deny lists.
+
+### Articular cartilage and further sutures
+
+`schematic/more.ts` also adds articular cartilage pads (two per joint, each side, nine joint types: glenohumeral, humeroulnar, humeroradial,
+radiocarpal, tibiofemoral, patellofemoral, talocrural, subtalar, first carpometacarpal; 36 pads per body) as thin domed shells at the closest approach of the
+registered bones, and nine more cranial sutures (17 meshes per body, left/right where paired) traced where the registered skull bones meet. The metopic suture is closed in adults and not
+drawn; the umbilical artery is fetal; the skin's glands, follicles, arrector pili and nerve endings are below mesh resolution and belong to the histology module.
 
 ### Gap audit
 

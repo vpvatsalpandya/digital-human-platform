@@ -16,8 +16,10 @@ cartilages, femur, tibia, fibula, patella):
 Input : /workspace/sources/zanat/{index.json,objs/*.bin}, /workspace/sources/hra/objs-{m,f}
 Output: <out>/{male,female}/{i}.bin (same raw format) + index.json + report.json
 """
-import json, struct, sys, os
+import json, struct, sys, os, pickle
 import numpy as np
+pass
+import limbs as LB
 
 SRC = '/workspace/sources'
 OUT = sys.argv[1] if len(sys.argv) > 1 else '/workspace/work/registered'
@@ -109,6 +111,85 @@ def register(sex):
         report['legs'][side] = {'scale': ls, 'landmark_residual_mm': res.tolist()}
     return warp, legs, report
 
+def apply_legs(p, legs):
+    """Stage 3: per-leg similarity blended in over the groin."""
+    orig = p.copy()
+    for side in ('left', 'right'):
+        ls, R, lt, hipy = legs[side]
+        q = ls * (orig @ R.T) + lt
+        wy = np.clip((hipy + 0.02 - orig[:, 1]) / 0.14, 0, 1)
+        wx = np.clip((np.abs(orig[:, 0]) - 0.01) / 0.04, 0, 1) * ((orig[:, 0] > 0) if side == 'left' else (orig[:, 0] < 0))
+        w = (wy * wx)[:, None]
+        p = p + w * (q - orig)
+    return p
+
+CARPALS = ['Scaphoid bone', 'Lunate bone', 'Triquetrum bone', 'Pisiform bone', 'Trapezium bone', 'Trapezoid bone', 'Capitate bone', 'Hamate bone']
+ORD = ['First', 'Second', 'Third', 'Fourth', 'Fifth']
+
+def skin_solid(sex):
+    """Voxel depth field of the united HRA skin (the arm and foot ground truth), cached."""
+    from solid import Solid
+    cache = f'/workspace/work/skin-solid-{sex}.pkl'
+    if os.path.exists(cache): return pickle.load(open(cache, 'rb'))
+    d = f'{SRC}/hra/objs-{sex}'
+    idx = {o['name']: o for o in json.load(open(f'{d}/index.json'))}
+    v, t = load(d, idx[('VH_M_skin' if sex == 'm' else 'VH_F_skin')]['i'])
+    S = Solid(v, t, h=0.004); pickle.dump(S, open(cache, 'wb'), protocol=4); return S
+
+def limb_rigs(sex, warp, legs, report, verbose=True):
+    """Fit both arms and both feet to the skin; returns {'arm': {side: rig}, 'foot': {side: rig}}."""
+    P = lambda n: apply_legs(warp(zmesh(n)), legs)
+    solid = skin_solid(sex); armF = LB.SkinField(LB.arm_field(solid))
+    rigs = {'arm': {}, 'foot': {}}; report['limbs'] = {}
+    side_names = {'l': 1, 'r': -1}
+    fits = {}
+    for s_, sg in side_names.items():
+        names = [n for n in zi if n.endswith('.' + s_)]
+        bones = {
+            'humerus': P(f'Humerus.{s_}'),
+            'forearm': np.vstack([P(f'Radius.{s_}'), P(f'Ulna.{s_}')]),
+            'hand': np.vstack([P(f'{c}.{s_}') for c in CARPALS] + [P(f'{o} metacarpal bone.{s_}') for o in ORD]
+                              + [P(n) for n in names if 'phalanx' in n and 'of hand' in n]),
+        }
+        fits[s_] = (bones, None)
+    # right arm first from a clean start, left from the mirrored right as one more candidate
+    best = {}
+    for s_ in ('l', 'r'):
+        S, E, W, p, f = LB.fit_arm_side(armF, fits[s_][0], side_names[s_])
+        best[s_] = (S, E, W, p, f)
+    for s_, o in (('l', 'r'), ('r', 'l')):
+        S, E, W, _, _ = best[s_]
+        S2, E2, W2, p2, f2 = LB.fit_arm_side(armF, fits[s_][0], side_names[s_], init=LB.mirror_params(best[o][3]))
+        if f2 < best[s_][4]: best[s_] = (S2, E2, W2, p2, f2)
+    for s_ in ('l', 'r'):
+        S, E, W, p, f = best[s_]; b = fits[s_][0]
+        pts = np.vstack([b['humerus'], b['forearm'], b['hand']])
+        rigs['arm'][s_] = LB.ChainRig(S, E, W, p, pts)
+        rigs['arm'][s_].trunk_skip = True
+        report['limbs']['arm_' + s_] = {'cost': float(f), 'rot_deg': np.degrees(np.linalg.norm(p.reshape(3, 3), axis=1)).round(1).tolist(), 'S': S.tolist(), 'E': E.tolist(), 'W': W.tolist(), 'params': p.tolist()}
+        if verbose: print('  arm', s_, 'cost %.3f' % f, 'rot deg', report['limbs']['arm_' + s_]['rot_deg'])
+    for s_, sg in side_names.items():
+        names = [n for n in zi if n.endswith('.' + s_)]
+        fb = {
+            'tibia': np.vstack([P(f'Tibia.{s_}'), P(f'Fibula.{s_}')]),
+            'foot': np.vstack([P(f'{n}.{s_}') for n in ('Talus', 'Calcaneus', 'Navicular bone', 'Cuboid bone', 'Medial cuneiform bone', 'Intermediate cuneiform bone', 'Lateral cuneiform bone')]
+                              + [P(f'{o} metatarsal bone.{s_}') for o in ORD] + [P(n) for n in names if n.startswith('Sesamoid bones of foot')]),
+            'toes': np.vstack([P(n) for n in names if 'phalanx' in n and 'of foot' in n]),
+        }
+        K, A, W, p, f = LB.fit_foot_side(LB.SkinField(LB.leg_field(solid, sg)), fb, sg)
+        pts = np.vstack([fb['foot'], fb['toes'], fb['tibia'][fb['tibia'][:, 1] < A[1] + 0.09]])
+        rigs['foot'][s_] = LB.ChainRig(K, A, W, p, pts, blend=(0.06, 0.05, 0.04, 0.03), reach=(0.03, 0.07))
+        report['limbs']['foot_' + s_] = {'cost': float(f), 'rot_deg': np.degrees(np.linalg.norm(p.reshape(3, 3), axis=1)).round(1).tolist(), 'K': K.tolist(), 'A': A.tolist(), 'W': W.tolist(), 'params': p.tolist()}
+        if verbose: print('  foot', s_, 'cost %.3f' % f, 'rot deg', report['limbs']['foot_' + s_]['rot_deg'])
+    return rigs
+
+def apply_limbs(p, name, rigs):
+    for s_ in ('l', 'r'):
+        if not (LB.is_trunk_bone(name) and not name.startswith('Humer')):
+            p = rigs['arm'][s_].apply(p)
+        p = rigs['foot'][s_].apply(p)
+    return p
+
 def in_region(o, side):
     key = 'Left' if side == 'left' else 'Right'
     return any(p.endswith(f'Main divisions/{key} lower limb') or p.endswith(f'Main divisions/{key} foot') for p in o['paths'])
@@ -117,6 +198,7 @@ def main():
     os.makedirs(OUT, exist_ok=True)
     for sex, name in (('m', 'male'), ('f', 'female')):
         warp, legs, report = register(sex)
+        rigs = limb_rigs(sex, warp, legs, report)
         d = f'{OUT}/{name}'; os.makedirs(d, exist_ok=True)
         idx = []
         for o in Z:
@@ -125,14 +207,8 @@ def main():
             p = warp(np.stack([v[:, 0], v[:, 2], -v[:, 1]], 1))
             # Legs are picked geometrically, not by collection path: the source tags only some
             # right-foot bones with their region, which left them behind when the leg moved.
-            orig = p.copy()
-            for side in ('left', 'right'):
-                ls, R, lt, hipy = legs[side]
-                q = ls * (orig @ R.T) + lt
-                wy = np.clip((hipy + 0.02 - orig[:, 1]) / 0.14, 0, 1)
-                wx = np.clip((np.abs(orig[:, 0]) - 0.01) / 0.04, 0, 1) * ((orig[:, 0] > 0) if side == 'left' else (orig[:, 0] < 0))
-                w = (wy * wx)[:, None]
-                p = p + w * (q - orig)
+            p = apply_legs(p, legs)
+            p = apply_limbs(p, o['name'].strip(), rigs)
             pf = p.astype(np.float32)
             with open(f'{d}/{o["i"]}.bin', 'wb') as f:
                 f.write(struct.pack('<ii', len(pf), len(t))); f.write(pf.tobytes()); f.write(t.astype(np.uint32).tobytes())

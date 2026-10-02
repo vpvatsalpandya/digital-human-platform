@@ -11,6 +11,7 @@ import { tissueFor } from './tissue';
 import { chooseLod, loadStructureGeometry, proceduralGeometry } from './loader';
 import { CORE_LAYERS } from './layers';
 import { DetailGroupMesh } from './DetailGroup';
+import { DEFAULT_GROUPS, groupsForNewSystems } from './system-groups';
 
 // BVH-accelerated raycasting for picking (Phase G §5).
 const geomProto = THREE.BufferGeometry.prototype as unknown as Record<string, unknown>;
@@ -158,6 +159,24 @@ function Body({ manifest, onSelect }: { manifest: BodyManifest; onSelect?: (id: 
   const autoIds = useMemo(() => groups.filter((g) => g.auto).map((g) => g.id), [groups]);
   const enableGroups = useEngineStore((s) => s.enableGroups);
   useEffect(() => { if (autoIds.length) enableGroups(autoIds); }, [autoIds, enableGroups]);
+  // The skeleton loads at start, and a system chip loads its packs the first time it is on, so
+  // a visible system always shows its named structures (every phalanx, not one hand block).
+  const lowBandwidth = useEngineStore((s) => s.lowBandwidth);
+  const visibleSystems = useEngineStore((s) => s.visibleSystems);
+  const groupIds = useMemo(() => groups.map((g) => g.id), [groups]);
+  const seenSystems = useRef<SystemId[] | null>(null);
+  useEffect(() => {
+    if (!groupIds.length) return;
+    const want = new Set<string>();
+    if (seenSystems.current === null) {
+      // First sight of the catalogue: load the skeleton only (not every default-on system).
+      if (!lowBandwidth) for (const g of DEFAULT_GROUPS) if (groupIds.includes(g)) want.add(g);
+    } else {
+      for (const g of groupsForNewSystems(seenSystems.current, visibleSystems, groupIds)) want.add(g);
+    }
+    seenSystems.current = visibleSystems;
+    if (want.size) enableGroups([...want]);
+  }, [groupIds, visibleSystems, lowBandwidth, enableGroups]);
   return (
     <group onPointerMissed={() => { select(null); onSelect?.(null); }}>
       {drawn.map((s) => (

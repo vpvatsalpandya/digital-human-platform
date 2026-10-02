@@ -201,3 +201,9 @@ export function structureVisibility(
   const faded = st.faded.includes(id) ? 0.15 : 1;
   return { visible: true, opacity: faded * (1 - st.transparency * 0.85) };
 }
+
+// QA hook: with `?qa` in the URL the store is reachable from the browser console so the
+// headless screenshot tool (scripts/qa) can set body, groups, systems and camera directly.
+if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('qa')) {
+  (window as unknown as { __engine: typeof useEngineStore }).__engine = useEngineStore;
+}

@@ -20,7 +20,7 @@ interface S { id: string; bounds: number[]; centroid: number[]; provenance?: str
 const SPAN: Record<string, [number, number]> = {
   liver: [0.15, 0.30], spleen: [0.08, 0.16], pancreas: [0.10, 0.25], heart: [0.09, 0.17],
   'kidney-l': [0.09, 0.14], 'kidney-r': [0.09, 0.14], 'small-intestine': [0.15, 0.45],
-  'large-intestine': [0.25, 0.60], 'urinary-bladder': [0.04, 0.12], thymus: [0.03, 0.12],
+  'large-intestine': [0.25, 0.60], 'urinary-bladder': [0.04, 0.12], thymus: [0.03, 0.13], // HRA female thymus lobes span 12.4 cm in the reference model
   brain: [0.13, 0.20], pelvis: [0.22, 0.40], 'femur-l': [0.38, 0.52], 'femur-r': [0.38, 0.52],
   'tibia-fibula-l': [0.32, 0.50], 'tibia-fibula-r': [0.32, 0.50], trachea: [0.08, 0.18],
   aorta: [0.30, 0.55], 'inferior-vena-cava': [0.20, 0.45], 'lung-l': [0.18, 0.32],
@@ -104,7 +104,7 @@ describe.runIf(built)('anatomical plausibility', () => {
       });
 
       it('draws most of the body from real anatomical data', () => {
-        const real = m.structures.filter((s) => s.provenance === 'hra' || s.provenance === 'bp3d');
+        const real = m.structures.filter((s) => s.provenance === 'hra' || s.provenance === 'bp3d' || s.provenance === 'zanatomy');
         expect(real.length / m.structures.length).toBeGreaterThan(0.7);
       });
 

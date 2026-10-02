@@ -5,7 +5,8 @@ import { useEngineStore } from '@/store/engine';
 import { demoManifest } from '@/engine/demo-manifest';
 import { useBodyManifest } from '@/engine/useBodyManifest';
 import { StructureSearch } from '@/engine/search';
-import { SYSTEM_IDS, SYSTEM_META, type ManifestStructure, type SystemId } from '@/engine/types';
+import { SYSTEM_IDS, SYSTEM_META, isRealAnatomy, type BodyManifest, type ManifestStructure, type SystemId } from '@/engine/types';
+import { LAYER_NAMES, PEEL_STEPS } from '@/engine/layers';
 import { Slider, Sheet, Tabs } from '@/components/ui';
 import { StructureCard } from './StructureCard';
 import { focusOn } from '@/engine/Viewer';
@@ -13,16 +14,17 @@ import { useAnalytics } from '@/lib/analytics';
 
 const Viewer = dynamic(() => import('@/engine/Viewer').then((m) => m.Viewer), { ssr: false, loading: () => <div className="grid h-full place-items-center text-sm text-muted">Starting engine…</div> });
 
-type Tool = 'view' | 'explode' | 'transparency' | 'clip' | 'compare' | 'views';
+type Tool = 'view' | 'explode' | 'transparency' | 'clip' | 'compare' | 'views' | 'layers' | 'detail';
 
 export function AtlasScreen({ mode = 'mbbs' }: { mode?: string }) {
   const body = useEngineStore((s) => s.body);
   const setBody = useEngineStore((s) => s.setBody);
-  const { manifest, baked } = useBodyManifest(body);
+  const { manifest, baked, detailLoading } = useBodyManifest(body);
   const search = useMemo(() => new StructureSearch(manifest.structures), [manifest]);
   const byId = useMemo(() => new Map(manifest.structures.map((s) => [s.id, s])), [manifest]);
   const [q, setQ] = useState('');
   const hits = useMemo(() => (q ? search.query(q) : []), [q, search]);
+  const schematicCount = useMemo(() => manifest.structures.filter((x) => x.provenance === 'generated' && x.category?.startsWith('schematic')).length, [manifest]);
   const [tool, setTool] = useState<Tool>('view');
   const [listView, setListView] = useState(false);
 
@@ -49,8 +51,8 @@ export function AtlasScreen({ mode = 'mbbs' }: { mode?: string }) {
               <ul className="absolute z-30 mt-1 max-h-64 w-full overflow-y-auto rounded border border-border bg-surface shadow-xl" role="listbox">
                 {hits.map((h) => (
                   <li key={h.structure.id}>
-                    <button className="flex w-full items-center justify-between px-3 py-2 text-left text-sm hover:bg-surface-2 min-h-[44px]" onClick={() => { s.select(h.structure.id); s.setVisibleSystems([...new Set([...s.visibleSystems, ...h.structure.systems])]); setQ(''); setListView(false); focusOn(h.structure, true); }}>
-                      <span>{h.structure.name}</span><span className="text-[11px] text-muted">{h.structure.systems.map((x) => SYSTEM_META[x].name).join(', ')}</span>
+                    <button className="flex w-full items-center justify-between px-3 py-2 text-left text-sm hover:bg-surface-2 min-h-[44px]" onClick={() => { if (h.structure.group) s.enableGroups([h.structure.group]); s.select(h.structure.id); s.setVisibleSystems([...new Set([...s.visibleSystems, ...h.structure.systems])]); setQ(''); setListView(false); focusOn(h.structure, true); }}>
+                      <span>{h.structure.name}</span><span className="text-[11px] text-muted">{h.structure.provenance === 'generated' && h.structure.category?.startsWith('schematic') ? 'Schematic · ' : ''}{h.structure.systems.map((x) => SYSTEM_META[x].name).join(', ')}</span>
                     </button>
                   </li>
                 ))}
@@ -61,7 +63,7 @@ export function AtlasScreen({ mode = 'mbbs' }: { mode?: string }) {
         </div>
         <div className="pointer-events-none absolute inset-x-0 top-14 z-10 px-3 text-[11px] text-accent">
           {baked
-            ? `${manifest.structures.filter((x) => x.provenance === 'hra' || x.provenance === 'bp3d').length} of ${manifest.structures.length} structures from real anatomy · ${manifest.licence}`
+            ? `${manifest.structures.filter((x) => isRealAnatomy(x.provenance)).length} of ${manifest.structures.length} structures from real anatomy${schematicCount ? ` · ${schematicCount} schematic stand-ins (violet, generated)` : ''}${detailLoading ? ' · loading detail catalogue…' : ''} · ${manifest.licence}`
             : 'Procedural stand-ins — no anatomical mesh data'}
         </div>
 
@@ -93,10 +95,12 @@ export function AtlasScreen({ mode = 'mbbs' }: { mode?: string }) {
             <button className="btn-ghost" disabled={!selected} onClick={() => selected && s.isolateSelected(related(selected))} title="Isolate with region">+Region</button>
             <button className="btn-ghost" disabled={!selected} onClick={() => s.hideSelected()}>Hide</button>
             <button className="btn-ghost" disabled={!selected} onClick={() => s.fadeSelected()}>Fade</button>
-            {(['explode', 'transparency', 'clip', 'views'] as Tool[]).map((t) => (
-              <button key={t} className={`btn-ghost ${tool === t ? '!bg-primary !text-primary-fg' : ''}`} onClick={() => setTool(tool === t ? 'view' : t)} aria-pressed={tool === t}>{t[0]!.toUpperCase() + t.slice(1)}</button>
+            {(['layers', 'detail', 'explode', 'transparency', 'clip', 'views'] as Tool[]).map((t) => (
+              <button key={t} className={`btn-ghost ${tool === t ? '!bg-primary !text-primary-fg' : ''}`} onClick={() => setTool(tool === t ? 'view' : t)} aria-pressed={tool === t}>{t === 'detail' ? 'Detail packs' : t[0]!.toUpperCase() + t.slice(1)}</button>
             ))}
           </div>
+          {tool === 'layers' && <LayerControls manifest={manifest} />}
+          {tool === 'detail' && <DetailControls manifest={manifest} body={body} />}
           {tool === 'explode' && <Slider label="Explode" value={s.explode} onChange={s.setExplode} />}
           {tool === 'transparency' && <Slider label="Transparency" value={s.transparency} onChange={s.setTransparency} />}
           {tool === 'clip' && <ClipControls />}
@@ -107,6 +111,69 @@ export function AtlasScreen({ mode = 'mbbs' }: { mode?: string }) {
           {selected ? <StructureCard structure={selected} mode={mode} /> : <p className="text-sm text-muted">Tap a structure. Long-press or Shift-click to multi-select. Double-tap to focus.</p>}
         </Sheet>
       </div>
+    </div>
+  );
+}
+
+/**
+ * Peel-away through the skin-to-bone stack. Each step removes the layer above it; the layers
+ * a step needs are switched on automatically, so peeling to muscle loads the muscle group.
+ */
+function LayerControls({ manifest }: { manifest: BodyManifest }) {
+  const peel = useEngineStore((s) => s.peel);
+  const setPeel = useEngineStore((s) => s.setPeel);
+  const enableGroups = useEngineStore((s) => s.enableGroups);
+  const toggleSystem = useEngineStore((s) => s.setVisibleSystems);
+  const systems = useEngineStore((s) => s.visibleSystems);
+  const counts = useMemo(() => {
+    const c = new Array(7).fill(0) as number[];
+    for (const st of manifest.structures) if (st.layer !== undefined) c[st.layer]! += 1;
+    return c;
+  }, [manifest]);
+  const go = (depth: number) => {
+    setPeel(depth);
+    // Layers need their systems visible and their groups loaded to be meaningful.
+    const need: SystemId[] = ['integumentary', 'fascial', 'muscular', 'connective', 'skeletal'];
+    toggleSystem([...new Set([...systems, ...need])]);
+    enableGroups(['skin-layers', 'fascia-bursae', 'muscles', 'skeleton', 'joints'].filter((g) => manifest.groups?.some((x) => x.id === g)));
+  };
+  const generated = manifest.structures.some((x) => x.provenance === 'generated' && x.category === 'skin layer');
+  return (
+    <div className="mb-3 flex flex-col gap-2">
+      <Slider label="Peel away" value={peel} min={0} max={6} step={1} onChange={go} format={(v) => PEEL_STEPS[v]!} />
+      <ol className="flex flex-col gap-1 text-xs">
+        {LAYER_NAMES.map((n, i) => (
+          <li key={n} className={`flex justify-between rounded px-2 py-1 ${i < peel ? 'bg-surface-2 text-muted line-through' : 'bg-surface-2'}`}>
+            <span>{i}. {n}</span><span className="tabular-nums text-muted">{counts[i] ?? 0}</span>
+          </li>
+        ))}
+      </ol>
+      {generated && <p className="text-[11px] text-accent">The epidermis, papillary and reticular dermis, membranous subcutaneous layer and hypodermis shells are schematic — no open whole-body mesh of these layers exists, so each is a uniform-thickness offset of the real skin surface, labelled as generated (real thicknesses vary). Subcutaneous fat over the abdomen is a real reference-atlas mesh.</p>}
+      <p className="text-[11px] text-muted">Muscles, fasciae and the skeleton come from Z-Anatomy fitted to this body{manifest.body === 'female' ? ' (male reference subject, scaled to the female frame)' : ''}.</p>
+    </div>
+  );
+}
+
+/** Detail packs: every named structure, downloaded per group when switched on. */
+function DetailControls({ manifest, body }: { manifest: BodyManifest; body: string }) {
+  const enabled = useEngineStore((s) => s.groups);
+  const toggle = useEngineStore((s) => s.toggleGroup);
+  const enable = useEngineStore((s) => s.enableGroups);
+  const groups = manifest.groups ?? [];
+  if (!groups.length) return <p className="mb-3 text-xs text-muted">The detail catalogue is loading…</p>;
+  const shown = groups.filter((g) => g.id !== 'core-upgrades');
+  const mb = (n: number) => (n / 1048576).toFixed(1);
+  const total = shown.reduce((a, g) => a + g.bytes, 0);
+  return (
+    <div className="mb-3 flex flex-col gap-1">
+      <p className="text-[11px] text-muted">Each pack downloads once and is cached. {shown.filter((g) => g.id !== 'schematic').reduce((a, g) => a + g.count, 0).toLocaleString()} named structures from real anatomy in {shown.filter((g) => g.id !== 'schematic').length} packs, plus {(shown.find((g) => g.id === 'schematic')?.count ?? 0).toLocaleString()} generated schematic stand-ins in their own pack; {mb(total)} MB in all ({body}).</p>
+      <button className="btn-ghost text-xs" onClick={() => enable(shown.map((g) => g.id))}>Load everything</button>
+      {shown.map((g) => (
+        <label key={g.id} className="flex items-start gap-2 rounded bg-surface-2 px-2 py-1 text-xs">
+          <input type="checkbox" className="mt-1 h-4 w-4" checked={enabled.includes(g.id) || !!g.auto} disabled={!!g.auto} onChange={() => toggle(g.id)} />
+          <span><b className={g.id === 'schematic' ? 'text-[#d2b3ff]' : ''}>{g.title}</b> <span className="text-muted">· {g.count.toLocaleString()} · {mb(g.bytes)} MB</span><br /><span className="text-muted">{g.description}</span></span>
+        </label>
+      ))}
     </div>
   );
 }
@@ -151,18 +218,18 @@ function ViewsPanel() {
 /** Text alternative to the canvas (Phase F §3 accessibility). */
 function StructureList({ manifest }: { manifest: ReturnType<typeof demoManifest> }) {
   const s = useEngineStore();
-  const groups = SYSTEM_IDS.map((sys) => ({ sys, items: manifest.structures.filter((x) => x.systems.includes(sys)) })).filter((g) => g.items.length);
+  const groups = SYSTEM_IDS.map((sys) => ({ sys, items: manifest.structures.filter((x) => x.systems[0] === sys) })).filter((g) => g.items.length);
   return (
     <div className="h-full overflow-y-auto p-4 pt-16">
       {groups.map((g) => (
-        <section key={g.sys} className="mb-4">
-          <h3 className="mb-1 text-sm font-semibold">{SYSTEM_META[g.sys].name}</h3>
+        <details key={g.sys} className="mb-3" open={g.items.length <= 60}>
+          <summary className="mb-1 cursor-pointer text-sm font-semibold">{SYSTEM_META[g.sys].name} <span className="font-normal text-muted">({g.items.length})</span></summary>
           <ul className="grid grid-cols-2 gap-1 md:grid-cols-3">
             {g.items.map((x) => (
-              <li key={x.id}><button className={`chip w-full justify-start ${s.selected.includes(x.id) ? 'chip-on' : ''}`} onClick={() => s.select(x.id)}>{x.name}</button></li>
+              <li key={x.id}><button className={`chip w-full justify-start ${s.selected.includes(x.id) ? 'chip-on' : ''}`} onClick={() => { if (x.group) s.enableGroups([x.group]); s.select(x.id); }}>{x.name}</button></li>
             ))}
           </ul>
-        </section>
+        </details>
       ))}
     </div>
   );

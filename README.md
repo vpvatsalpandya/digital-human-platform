@@ -39,7 +39,7 @@ npx prisma validate           # DATABASE_URL must be set (any value)
 
 | Area | Real now | Scaffolded / next sprint |
 |---|---|---|
-| Digital Human Engine (`src/engine`, `src/store/engine.ts`) | R3F viewer; male/female bodies; 14 system toggles; search (name/alias/Latin/FMA, fuzzy); select, multi-select, isolate, isolate-with-region, hide, fade, explode, global transparency, axial/coronal/sagittal clipping, saved views, bookmarks, deep links, accessible list view; BVH picking; adaptive DPR and demand-driven frameloop; **streams real anatomical meshes** with level of detail chosen by camera distance | 43 of 57 male structures (43 of 59 female) are real anatomy; the rest are generated stand-ins, hidden by default and labelled. Compare mode UI is not wired yet. |
+| Digital Human Engine (`src/engine`, `src/store/engine.ts`) | R3F viewer; male/female bodies; 14 system toggles; search (name/alias/Latin/FMA, fuzzy); select, multi-select, isolate, isolate-with-region, hide, fade, explode, global transparency, axial/coronal/sagittal clipping, saved views, bookmarks, deep links, accessible list view; BVH picking; adaptive DPR and demand-driven frameloop; **streams real anatomical meshes** with level of detail chosen by camera distance | The core pack has 43 of 57 male structures (43 of 59 female) as real anatomy; the lazy-loaded `anatomy-v2` detail pack adds about 3,000 named structures per body (see `docs/gap-audit.md`). Two surface landmarks and two schematic skin shells remain non-real, all labelled. Compare mode UI is not wired yet. |
 | Knowledge Engine (`src/knowledge`) | Zod schema for the 20 fields with per-field citations and audience-mode overrides; publishability rule (non-empty ⇒ cited) enforced in Zod and in a DB trigger; review state machine; 6 seed records (10 structure ids) citing OpenStax A&P 2e and standard textbooks | Seed records are `in_review`, not published. Authoring UI with source picker (Sprint 2). |
 | Physiology (`src/simulations`) | Time-varying elastance LV + Windkessel cardiac model (RK4), Hodgkin–Huxley action potential, alveolar gas equation; unit tests assert textbook ranges | Nephron, synaptic transmission, endocrine axes (Sprint 6). |
 | Histology (`src/modules/histology`) | Deep-zoom tile viewer with pyramid levels, pinch/wheel zoom, pan, minimap, scale bar, annotation layers, guided/self/assessment modes; DZI tile source | Slides are procedural schematics; partner whole-slide images (Sprint 5). |
@@ -119,6 +119,20 @@ the interface:
   60–73%, bladder 44–54%.
 - The liver is right of the midline and the spleen left of it.
 - Paired structures are mirrored and level with each other.
+
+## Detail pack (`anatomy-v2`)
+
+The atlas loads the core `hra-v1` pack first, then the detail manifest, and each detail group
+(skeleton, joints, muscles, fascia, arteries, veins, nerves, lymphatics, organ parts, brain
+regions) only when it is switched on under **Detail packs**. Numbers, sources and gaps are in
+[`docs/gap-audit.md`](docs/gap-audit.md); licences, ShareAlike duties and the build steps are in
+[`docs/anatomy-v2-pipeline.md`](docs/anatomy-v2-pipeline.md). Rebuild with `npm run assets:build:v2`
+(needs the source dumps described there). The **Layers** tool peels skin, dermis, hypodermis,
+fascia, muscle layers away; the dermis and hypodermis shells are generated schematics and are
+labelled as such.
+
+The `anatomy-v2` meshes are CC BY-SA 4.0 (Z-Anatomy / BodyParts3D derivatives, plus CC BY 4.0
+HRA objects). Attribution is in the manifest and on `/about/attribution`.
 
 ## Asset pipeline
 

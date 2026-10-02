@@ -1,0 +1,250 @@
+{
+ "male": {
+  "structures": 3543,
+  "triangles": 1677324,
+  "bytes": 9795727,
+  "byGroup": {
+   "core-upgrades": 12,
+   "muscles": 509,
+   "organ-parts": 315,
+   "lymphatic": 162,
+   "nerves": 261,
+   "arteries": 440,
+   "fascia-bursae": 166,
+   "veins": 254,
+   "joints": 413,
+   "skeleton": 277,
+   "skin-layers": 21,
+   "brain-regions": 282,
+   "inner-ear": 26,
+   "schematic": 405
+  },
+  "groups": [
+   {
+    "id": "core-upgrades",
+    "bytes": 102470,
+    "count": 12
+   },
+   {
+    "id": "muscles",
+    "bytes": 2288558,
+    "count": 509
+   },
+   {
+    "id": "organ-parts",
+    "bytes": 1299640,
+    "count": 315
+   },
+   {
+    "id": "lymphatic",
+    "bytes": 113276,
+    "count": 162
+   },
+   {
+    "id": "nerves",
+    "bytes": 506280,
+    "count": 261
+   },
+   {
+    "id": "arteries",
+    "bytes": 992102,
+    "count": 440
+   },
+   {
+    "id": "fascia-bursae",
+    "bytes": 415755,
+    "count": 166
+   },
+   {
+    "id": "veins",
+    "bytes": 580584,
+    "count": 254
+   },
+   {
+    "id": "joints",
+    "bytes": 496799,
+    "count": 413
+   },
+   {
+    "id": "skeleton",
+    "bytes": 1392789,
+    "count": 277
+   },
+   {
+    "id": "skin-layers",
+    "bytes": 62744,
+    "count": 21
+   },
+   {
+    "id": "brain-regions",
+    "bytes": 727708,
+    "count": 282
+   },
+   {
+    "id": "inner-ear",
+    "bytes": 202110,
+    "count": 26
+   },
+   {
+    "id": "schematic",
+    "bytes": 614912,
+    "count": 405
+   }
+  ],
+  "skipped": {
+   "Z: brain / spinal-cord internals: provenance unverified (UW Brainder); Allen atlas used for brain": 239,
+   "Z: muscle attachment marker, not a structure": 705,
+   "Z: unnamed placeholder": 3,
+   "Z: reference line, plane or movement": 47,
+   "Z: duplicated by an HRA mesh": 27,
+   "Z: surface-region patch on the skin": 242,
+   "Z: eye: HRA eye used": 22,
+   "Z: brain / spinal-cord internal": 38,
+   "Z: cardiac chambers and valves: HRA heart used so they register with the core heart": 17,
+   "Z: inner ear: CC BY-NC-SA third-party model inside Z-Anatomy": 4,
+   "Z: collection label mesh": 11,
+   "Z: scalp hair volume from another subject does not fit either skull": 1,
+   "Z: not a structure": 2,
+   "Z: kidney: CC BY-NC third-party model inside Z-Anatomy; HRA kidney used": 4,
+   "Z: spleen: HRA spleen in core pack": 1,
+   "HRA: skin is in the core pack": 1,
+   "HRA: Z-Anatomy or vessels": 14,
+   "HRA: unclassified HRA mesh": 15,
+   "HRA: Z-Anatomy used": 26,
+   "HRA: landmark surface, not a structure": 12,
+   "HRA: covered by ileum": 1,
+   "HRA: airway/segment trees; Z-Anatomy lobes and bronchi used": 65,
+   "HRA: female-only structure": 2,
+   "HRA: vessels: Z-Anatomy vessels used": 68,
+   "HRA: lymph-node microanatomy, not gross anatomy": 7,
+   "HRA: Z-Anatomy / core": 2,
+   "HRA: skeleton and knee: Z-Anatomy used (patellar ligament handled separately)": 131,
+   "too small after cleanup": 1
+  }
+ },
+ "female": {
+  "structures": 3570,
+  "triangles": 1680000,
+  "bytes": 9826374,
+  "byGroup": {
+   "core-upgrades": 14,
+   "muscles": 509,
+   "organ-parts": 322,
+   "lymphatic": 162,
+   "nerves": 261,
+   "arteries": 437,
+   "fascia-bursae": 166,
+   "veins": 253,
+   "joints": 413,
+   "skeleton": 277,
+   "skin-layers": 21,
+   "brain-regions": 282,
+   "inner-ear": 26,
+   "schematic": 427
+  },
+  "groups": [
+   {
+    "id": "core-upgrades",
+    "bytes": 115756,
+    "count": 14
+   },
+   {
+    "id": "muscles",
+    "bytes": 2284548,
+    "count": 509
+   },
+   {
+    "id": "organ-parts",
+    "bytes": 1311364,
+    "count": 322
+   },
+   {
+    "id": "lymphatic",
+    "bytes": 113179,
+    "count": 162
+   },
+   {
+    "id": "nerves",
+    "bytes": 503466,
+    "count": 261
+   },
+   {
+    "id": "arteries",
+    "bytes": 971630,
+    "count": 437
+   },
+   {
+    "id": "fascia-bursae",
+    "bytes": 414240,
+    "count": 166
+   },
+   {
+    "id": "veins",
+    "bytes": 586167,
+    "count": 253
+   },
+   {
+    "id": "joints",
+    "bytes": 495917,
+    "count": 413
+   },
+   {
+    "id": "skeleton",
+    "bytes": 1393321,
+    "count": 277
+   },
+   {
+    "id": "skin-layers",
+    "bytes": 79432,
+    "count": 21
+   },
+   {
+    "id": "brain-regions",
+    "bytes": 727753,
+    "count": 282
+   },
+   {
+    "id": "inner-ear",
+    "bytes": 202208,
+    "count": 26
+   },
+   {
+    "id": "schematic",
+    "bytes": 627393,
+    "count": 427
+   }
+  ],
+  "skipped": {
+   "Z: brain / spinal-cord internals: provenance unverified (UW Brainder); Allen atlas used for brain": 239,
+   "Z: muscle attachment marker, not a structure": 705,
+   "Z: unnamed placeholder": 3,
+   "Z: reference line, plane or movement": 47,
+   "Z: duplicated by an HRA mesh": 24,
+   "Z: surface-region patch on the skin": 242,
+   "Z: eye: HRA eye used": 22,
+   "Z: brain / spinal-cord internal": 38,
+   "Z: cardiac chambers and valves: HRA heart used so they register with the core heart": 17,
+   "Z: inner ear: CC BY-NC-SA third-party model inside Z-Anatomy": 4,
+   "Z: male-only structure (Z-Anatomy urethra is the male, penile urethra; the female one is a labelled schematic)": 25,
+   "Z: collection label mesh": 11,
+   "Z: scalp hair volume from another subject does not fit either skull": 1,
+   "Z: not a structure": 2,
+   "Z: kidney: CC BY-NC third-party model inside Z-Anatomy; HRA kidney used": 4,
+   "Z: spleen: HRA spleen in core pack": 1,
+   "HRA: skin is in the core pack": 1,
+   "HRA: Z-Anatomy or vessels": 14,
+   "HRA: unclassified HRA mesh": 23,
+   "HRA: pregnancy model, not standard anatomy": 6,
+   "HRA: vessels: Z-Anatomy vessels used": 68,
+   "HRA: core ovary/uterus": 3,
+   "HRA: Z-Anatomy used": 17,
+   "HRA: landmark surface, not a structure": 12,
+   "HRA: covered by ileum": 1,
+   "HRA: airway/segment trees; Z-Anatomy lobes and bronchi used": 59,
+   "HRA: Z-Anatomy / core": 2,
+   "HRA: lymph-node microanatomy, not gross anatomy": 7,
+   "HRA: skeleton and knee: Z-Anatomy used (patellar ligament handled separately)": 129,
+   "too small after cleanup": 1
+  }
+ }
+}

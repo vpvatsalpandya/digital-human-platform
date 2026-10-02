@@ -9,6 +9,9 @@ import { useEngineStore, structureVisibility, isDefaultCamera, DEFAULT_CAMERA, t
 import { type BodyManifest, type ManifestStructure, type SystemId } from './types';
 import { tissueFor } from './tissue';
 import { chooseLod, loadStructureGeometry, proceduralGeometry } from './loader';
+import { CORE_LAYERS } from './layers';
+import { DetailGroupMesh } from './DetailGroup';
+import { DEFAULT_GROUPS, groupsForNewSystems } from './system-groups';
 
 // BVH-accelerated raycasting for picking (Phase G §5).
 const geomProto = THREE.BufferGeometry.prototype as unknown as Record<string, unknown>;
@@ -148,10 +151,39 @@ function Body({ manifest, onSelect }: { manifest: BodyManifest; onSelect?: (id: 
     return acc;
   }, [manifest]);
   const select = useEngineStore((s) => s.select);
+  const enabled = useEngineStore((s) => s.groups);
+  const groups = useMemo(() => manifest.groups ?? [], [manifest.groups]);
+  // Detail groups that redraw a core structure in finer parts hide the coarse version.
+  const replaced = useMemo(() => new Set(groups.filter((g) => enabled.includes(g.id) || g.auto).flatMap((g) => (enabled.includes(g.id) ? g.replaces ?? [] : []))), [groups, enabled]);
+  const drawn = useMemo(() => manifest.structures.filter((s) => !s.packed && !replaced.has(s.id)), [manifest, replaced]);
+  const autoIds = useMemo(() => groups.filter((g) => g.auto).map((g) => g.id), [groups]);
+  const enableGroups = useEngineStore((s) => s.enableGroups);
+  useEffect(() => { if (autoIds.length) enableGroups(autoIds); }, [autoIds, enableGroups]);
+  // The skeleton loads at start, and a system chip loads its packs the first time it is on, so
+  // a visible system always shows its named structures (every phalanx, not one hand block).
+  const lowBandwidth = useEngineStore((s) => s.lowBandwidth);
+  const visibleSystems = useEngineStore((s) => s.visibleSystems);
+  const groupIds = useMemo(() => groups.map((g) => g.id), [groups]);
+  const seenSystems = useRef<SystemId[] | null>(null);
+  useEffect(() => {
+    if (!groupIds.length) return;
+    const want = new Set<string>();
+    if (seenSystems.current === null) {
+      // First sight of the catalogue: load the skeleton only (not every default-on system).
+      if (!lowBandwidth) for (const g of DEFAULT_GROUPS) if (groupIds.includes(g)) want.add(g);
+    } else {
+      for (const g of groupsForNewSystems(seenSystems.current, visibleSystems, groupIds)) want.add(g);
+    }
+    seenSystems.current = visibleSystems;
+    if (want.size) enableGroups([...want]);
+  }, [groupIds, visibleSystems, lowBandwidth, enableGroups]);
   return (
     <group onPointerMissed={() => { select(null); onSelect?.(null); }}>
-      {manifest.structures.map((s) => (
+      {drawn.map((s) => (
         <StructureMesh key={s.id} structure={s} systemCentroid={systemCentroids.get(s.systems[0]!) ?? new THREE.Vector3()} onSelect={onSelect} />
+      ))}
+      {groups.filter((g) => enabled.includes(g.id)).map((g) => (
+        <DetailGroupMesh key={`${manifest.body}:${g.id}`} group={g} structures={manifest.structures} onSelect={onSelect} />
       ))}
     </group>
   );
@@ -225,7 +257,7 @@ function StructureMesh({ structure: s, systemCentroid, onSelect }: { structure: 
   useEffect(() => {
     const apply = (st: EngineState) => {
     const m = meshRef.current; if (!m) return;
-    const { visible, opacity: rawOpacity } = structureVisibility(st, s.id, s.systems, s.provenance);
+    const { visible, opacity: rawOpacity } = structureVisibility(st, s.id, s.systems, s.provenance, s.layer ?? CORE_LAYERS[s.id]);
     const opacity = rawOpacity * (tissue.baseOpacity ?? 1);
     m.visible = visible;
     const selected = st.selected.includes(s.id), hovered = st.hoverId === s.id;

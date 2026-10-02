@@ -37,6 +37,16 @@ export function StructureCard({ structure, mode }: { structure: ManifestStructur
           {structure.provenance === 'procedural' && (
             <div className="text-[11px] text-accent">Shape is a stand-in — no openly licensed mesh of this structure yet</div>
           )}
+          {structure.provenance === 'generated' && structure.category === 'skin layer' && (
+            <div className="text-[11px] text-accent">Schematic shell generated from the real skin surface — not measured anatomy</div>
+          )}
+          {structure.provenance === 'generated' && structure.category?.startsWith('schematic') && (
+            <div className="rounded border border-[#b58cff] bg-[#b58cff]/10 px-2 py-1 text-[11px] text-[#d2b3ff]" data-testid="schematic-badge">Schematic stand-in — generated, not a scan. Its course is indicative, placed from neighbouring real structures; do not use it to learn exact anatomy.</div>
+          )}
+          {(structure.provenance === 'openear' || structure.provenance === 'iemap') && (
+            <div className="text-[11px] text-accent" data-testid="ear-note">Real scan-derived mesh from another subject, registered onto this body&apos;s ossicles (about 1 mm); left side is the right ear mirrored.</div>
+          )}
+          {structure.source && <div className="text-[11px] text-muted">Mesh: {structure.source.name} · {structure.source.licence}</div>}
           {structure.latinName && <div className="text-xs italic text-muted">{structure.latinName}</div>}
         </div>
         <button className={`btn-ghost ${marked ? '!bg-accent !text-black' : ''}`} onClick={() => toggleBookmark(structure.id)} aria-pressed={marked} aria-label="Bookmark structure">★</button>

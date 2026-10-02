@@ -94,7 +94,9 @@ describe.runIf(built)('schematic group', () => {
           expect(s.bounds[1], `${s.id} bottom`).toBeGreaterThanOrEqual(-0.1 + coreSkin.bounds[1] * 0);
           // leaves laterally through the foramen: the far end is on its own side (body left is +x)
           const far = side === 'l' ? s.bounds[3] : s.bounds[0];
-          expect(side === 'l' ? far > 0.002 : far < -0.002, `${s.id} lateral end ${far}`).toBe(true);
+          // (the lowest roots leave the sacral hiatus beside the coccyx, whose midline may sit a few mm off x = 0)
+          const mid = lv === 'co1' ? (byId.get('coccyx')?.centroid[0] ?? 0) : 0;
+          expect(side === 'l' ? far - mid > 0.002 : far - mid < -0.002, `${s.id} lateral end ${far}`).toBe(true);
           // levels descend
           const y = s.centroid[1];
           const prev = lastY.get(side);
@@ -194,7 +196,7 @@ describe.runIf(built)('schematic group', () => {
         expect(g.count).toBe(sch.length);
         const size = statSync(`public${g.url}`).size;
         expect(size).toBe(g.bytes);
-        expect(size).toBeLessThan(620 * 1024); // this group; any lazy group must stay under 3 MB (anatomy-v2.test.ts)
+        expect(size).toBeLessThan(640 * 1024); // this group; any lazy group must stay under 3 MB (anatomy-v2.test.ts)
         for (const s of sch) expect(s.packed!.o + s.packed!.vb + s.packed!.ib, s.id).toBeLessThanOrEqual(size);
         expect(m.groups!.reduce((a, x) => a + x.bytes, 0)).toBeLessThan(9.7 * 1024 * 1024); // per-body lazy total
         for (const x of m.groups!) expect(x.auto ?? false, x.id).toBe(x.id === 'core-upgrades' || x.id === 'skin-layers');

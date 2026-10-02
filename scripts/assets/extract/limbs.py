@@ -202,7 +202,14 @@ def fit_fingers(field, arm_rig, get, side):
     """
     rigs = {}
     post = lambda Y: arm_rig.pose(Y, 2)
-    for f in FINGERS:
+    try:
+        # lateral axis of the hand (pinky -> index side) in the arm frame, to keep the fingers in anatomical order
+        ul = post(get(f'Second metacarpal bone.{side}').mean(0)[None])[0] - post(get(f'Fifth metacarpal bone.{side}').mean(0)[None])[0]
+        ul = ul / np.linalg.norm(ul)
+    except KeyError:
+        ul = None
+    prev_tip = None
+    for f in ['first', 'second', 'third', 'fourth', 'fifth']:
         try:
             P = get(f'Proximal phalanx of {f} finger of hand.{side}'); D = get(f'Distal phalanx of {f} finger of hand.{side}')
             Mc = get(f'{f.capitalize()} metacarpal bone.{side}')
@@ -223,7 +230,17 @@ def fit_fingers(field, arm_rig, get, side):
             PIP = (band(P, False) + band(D, True)) / 2; DIP = band(D, False)
             segs = [sample(P, 250), sample(D, 250), np.zeros((0, 3))]
         caps = [0.004, 0.0035, 0.003]
-        p, pose, c = chain_fit(field, segs, (MCP, PIP, DIP), caps, [np.zeros(9)], lam=0.05, post=post)
+        Dc = D.mean(0)[None]; lim = 0.6 if f == 'first' else 0.3
+        def extra(p, pose, Dc=Dc, lim=lim, prev=prev_tip):
+            # the metacarpophalangeal joint swings a finger by at most ~17 degrees (thumb 35), and fingers keep their order
+            c = 50.0 * max(0.0, np.linalg.norm(p[0:3]) - lim) ** 2
+            if ul is not None and f != 'first' and prev is not None:
+                tip = post(pose(p, 2, Dc))[0]
+                c += 1e3 * max(0.0, (prev - tip) @ ul + 0.010) ** 2   # each finger at least 1 cm further from the thumb than the last
+            return c
+        p, pose, c = chain_fit(field, segs, (MCP, PIP, DIP), caps, [np.zeros(9)], lam=0.05, post=post, extra=extra)
+        if f != 'first' and ul is not None: prev_tip = post(pose(p, 2, Dc))[0]
         pts = np.vstack([P, D] + ([M] if M is not None else []))
         rigs[f] = ChainRig(MCP, PIP, DIP, p, pts, blend=(0.012, 0.012, 0.008, 0.006), reach=(0.012, 0.03))
+        print(f'    finger {f} {side} cost {c:.3f} mcp rot {np.degrees(np.linalg.norm(p[0:3])):.0f} deg', flush=True)
     return rigs

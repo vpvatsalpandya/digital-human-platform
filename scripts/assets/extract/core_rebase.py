@@ -97,8 +97,8 @@ def main():
         skin = load_bin(f'{OUT}/{body}/skin.bin')[0]
         man = [e for e in di if e['id'] == 'manubrium-of-sternum'][0]; mv = dm(man)[0]
         top = mv[np.abs(mv[:, 0]) < 0.012]; jy = top[:, 1].max() - 0.004
-        def front(x, y, r=0.03):
-            m = (np.hypot(skin[:, 0] - x, skin[:, 1] - y) < r); return skin[m, 2].max()
+        def front(x, y, r=0.008):
+            m = (np.hypot(skin[:, 0] - x, skin[:, 1] - y) < r); return skin[m, 2].max() - 0.004
         jug = [0.0, jy, front(0.0, jy)]
         umb = [o for o in uidx if o['name'].endswith('adipose_tissue_umbilicus_area')][0]
         ux = (umb['min'][0] + umb['max'][0]) / 2; uy = (umb['min'][1] + umb['max'][1]) / 2

@@ -340,11 +340,21 @@ async function main() {
     // 5. Encode groups.
     const groups = new Map<string, { chunks: Uint8Array[]; size: number; structures: ManifestStructure[] }>();
     let seq = 0;
+    const pairKeys = new Set(entries.map((e) => `${e.base}|${e.side}`));
+    const takenIds = new Set(entries.map((e) => e.id));
     for (const e of entries) {
       const merged = merge(e.pieces);
       const dec = decimate(merged, e.cls.category);
       if (dec.indices.length < 9) { skip('too small after cleanup'); continue; }
       const { min, max } = boundsOf(dec.positions);
+      // A single midline structure (corpus callosum, third ventricle, pineal body…) that the source files
+      // under "right" is not lateral: it has no partner and sits on the midline, so drop the side from its
+      // id, name and laterality instead of calling it "Right corpus callosum".
+      if (e.side !== 'none' && !e.id.startsWith('ear-') && !pairKeys.has(`${e.base}|${e.side === 'left' ? 'right' : 'left'}`)
+        && Math.abs((min[0] + max[0]) / 2) < 0.012 && max[0] - min[0] > 0.008 && min[0] < 0.004 && max[0] > -0.004) {
+        const nid = e.id.replace(/-[lr]$/, '');
+        if (nid !== e.id && !takenIds.has(nid)) { takenIds.add(nid); e.id = nid; e.name = e.name.replace(/^(Left|Right)\s+/i, ''); e.side = 'none'; }
+      }
       const centroid: [number, number, number] = [(min[0] + max[0]) / 2, (min[1] + max[1]) / 2, (min[2] + max[2]) / 2];
       const enc = encode(dec, min, max);
       const g = groups.get(e.cls.group) ?? { chunks: [], size: 0, structures: [] };

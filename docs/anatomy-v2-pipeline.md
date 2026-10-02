@@ -89,6 +89,31 @@ per segment (`extract/limbs.py`, driven from `register.py`):
 `dump.ts` decodes the merged body for them. The vitest file `tests/anatomy-qa.test.ts` runs the same sanity rules in CI
 (sex allow/deny lists, bone completeness, laterality, duplicates, naming, system-chip to pack mapping).
 
+#### Containment, head fit and left/right checks (anatomy-fixes-3)
+
+After the limb stages `register.py` runs a fourth, per-structure stage (`limbs.py: refit`, `contain`):
+
+- **Refit**: a structure still 15 % or more outside the skin is shifted as one rigid body (translation capped at 15 mm, regularised) so its
+  shape is kept. Articulated rigid bodies (phalanges, patella, vertebrae, ribs, long bones, skull, cartilages, ossicles, regions) are
+  exempt: a phalanx moved 2 cm away from its metacarpal is not a better fit, those are posed by stage 3 instead.
+- **Contain**: remaining vertices more than 2 mm outside the skin are pulled in by at most 12 mm, smoothed over neighbours. Nails, hair,
+  skin layers, ear, eyes and teeth are exempt (they sit on or in the skin by design).
+- **Head**: the HRA brain is the reference; the Z-Anatomy head structures (skull, face, soft tissue; blended into the neck) get a uniform scale and a
+  translation until the brain regions lie inside the cranial vault hull (female: scale 1.059, brain inside 87 % -> 99.9 %, worst exceedance 12.6 -> 3 mm).
+- **Left/right**: Z-Anatomy files one side of some pairs without a suffix, or as "Left X" next to "Right X.r"; the build pairs them
+  (`zSides`, `pairKey`). Kidney pyramids/papillae/calyces without a side take it from their x position. Remaining lone -l/-r ids are the
+  ones where the other side does not exist anatomically (`scripts/qa/orphans.py`: right-only intermediate and middle lobar bronchus, kidney
+  calyx/pyramid counts that differ between sides in the HRA kidneys).
+- **Brain regions**: the Allen atlas objects in the HRA library come as `_L` and `_R` for all 141 regions (282 per body, checked on the
+  source index), so no hemisphere is missing and nothing is mirrored. The older comment that the Allen model holds one hemisphere was wrong
+  and has been removed. A hemisphere label always follows the geometry (`allenSide`: lower x is the body's right).
+- **Netlify hydration error #418**: Netlify injects `\n<!-- This site is hosted on Netlify ... -->` after the charset meta in `<head>` of
+  every page; React 19 hydrates `<head>` as a singleton and throws on the stray whitespace text node. `src/lib/head-clean.ts` is an inline
+  script that removes whitespace-only text nodes from `<head>` while it is still being parsed. A no-op elsewhere (Vercel never shows it).
+
+QA scripts for these: `limbfit.py` (hands, fingers, lower leg, feet), `legfit.py`, `headfit.py` (brain inside vault hull), `orphans.py`,
+`outside.py`, `limbshots.py` (renders). Results are asserted in `tests/anatomy-qa.test.ts` (registration sanity) and `tests/head-clean.test.ts`.
+
 #### Core pack frame (`rebuild-core.ts`)
 
 The core pack (`hra-v1`) was baked from standalone reference-atlas files and BodyParts3D meshes placed by a stature-scaled fit. They

@@ -4,6 +4,7 @@ import './globals.css';
 import { resolveTenant, tokensToCss } from '@/lib/tenant';
 import { Nav } from '@/components/Nav';
 import { StoreHydration } from '@/components/StoreHydration';
+import { HEAD_CLEAN_SCRIPT } from '@/lib/head-clean';
 
 export const metadata: Metadata = { title: 'Digital Human Learning Platform', description: 'Mobile-first medical education platform' };
 export const viewport: Viewport = { width: 'device-width', initialScale: 1, viewportFit: 'cover', themeColor: '#0b1020' };
@@ -14,6 +15,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   return (
     <html lang="en" data-tenant={tenant.slug}>
       <head>
+        {/* strips the whitespace node Netlify injects into <head> (hydration error #418 on *.netlify.app), see lib/head-clean.ts */}
+        <script dangerouslySetInnerHTML={{ __html: HEAD_CLEAN_SCRIPT }} />
         <style dangerouslySetInnerHTML={{ __html: tokensToCss(tenant.tokens) }} />
         <link rel="manifest" href="/manifest.webmanifest" />
       </head>

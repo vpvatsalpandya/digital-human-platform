@@ -160,7 +160,7 @@ NOT_PELVIC = ('Sacrum', 'Coccyx', 'Vertebra', 'Atlas', 'Axis', 'Intervertebral',
 def apply_hips(p, name, legs):
     """Pelvis: the hip bone takes its own fitted transform; soft tissue near it follows, fading into the thigh transform below the joint."""
     if any(k in name for k in NOT_PELVIC) and not name.startswith('Hip bone.'): return p
-    orig = p.copy()
+    orig = p.copy(); disp = np.zeros_like(p); wsum = np.zeros(len(p))
     for side in ('left', 'right'):
         T, hipy, kneey = legs[side]
         s_, R_, t_ = T['hip']; q = s_ * (orig @ R_.T) + t_
@@ -171,9 +171,81 @@ def apply_hips(p, name, legs):
         w = 1 - LB.smoothstep((d - 0.015) / 0.05)
         wy = np.clip((hipy + 0.01 - orig[:, 1]) / 0.05, 0, 1)
         wx = np.clip((np.abs(orig[:, 0]) - 0.01) / 0.04, 0, 1) * ((orig[:, 0] > 0) if side == 'left' else (orig[:, 0] < 0))
-        w = (w * (1 - wy * wx))[:, None]
-        p = p + w * (q - orig)
-    return p
+        w = (w * (1 - wy * wx))
+        disp = disp + w[:, None] * (q - orig); wsum = wsum + w
+    # a midline structure (pubic symphysis, interpubic disc, pubic ligaments) is near both hip bones: it follows their weighted average,
+    # not the sum of both displacements (which used to carry it up to ~3 cm in front of the pubic bodies)
+    return orig + disp / np.maximum(1.0, wsum)[:, None]
+
+
+# ───────────────────── head: cranial vault vs the HRA brain ─────────────────────
+CRANIAL_Z = ['Frontal bone', 'Occipital bone', 'Sphenoid bone', 'Parietal bone.l', 'Parietal bone.r', 'Temporal bone.l', 'Temporal bone.r']
+
+def head_fit(sex, warp, margin=0.004):
+    """
+    The Z-Anatomy skull is a different (male) head: after the spine fit the female cranial vault came out about 5 mm too
+    small / too far forward and the HRA brain stuck out of it (86 % of brain vertices inside the vault hull; the male is 99.6 %).
+    Fit one similarity (scale about the vault centre + translation) that puts the HRA brain inside the vault's outer hull with
+    `margin` to spare, staying as close to the identity as possible. The same transform moves the whole head (faded out over the
+    neck) so the face, muscles and vessels keep their place relative to the skull.
+    """
+    from scipy.spatial import ConvexHull
+    from scipy import optimize
+    sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'qa'))
+    from core_sel import select
+    C = np.vstack([warp(zmesh(n)) for n in CRANIAL_Z if n in zi])
+    hd = f'{SRC}/hra/objs-{sex}'; hidx = json.load(open(f'{hd}/index.json')); hn = [o['name'] for o in hidx]; by = {o['name']: o for o in hidx}
+    B = np.vstack([load(hd, by[n]['i'])[0] for n in select(hn, 'brain')])
+    B = B[::max(1, len(B) // 6000)]
+    c0 = centre(C); hull = ConvexHull(C); N, b0 = hull.equations[:, :3], hull.equations[:, 3]
+    def clearance(q, X):                      # signed distance (m) of X to the transformed hull, negative inside
+        s, t = q[0], q[1:4]
+        Xi = (X - c0 - t) / s + c0
+        return s * (Xi @ N.T + b0).max(1)
+    def cost(q):
+        ex = np.maximum(0, clearance(q, B) + margin)
+        return 1e6 * np.mean(ex ** 2) + 30.0 * (q[0] - 1) ** 2 + 2e4 * np.sum(q[1:4] ** 2) * 1e-2
+    q0 = np.array([1.0, 0, 0, 0]); before = clearance(q0, B)
+    res = optimize.minimize(cost, q0, method='Powell', bounds=[(0.9, 1.15), (-0.03, 0.03), (-0.03, 0.03), (-0.03, 0.03)], options={'xtol': 1e-5, 'ftol': 1e-9, 'maxiter': 6000})
+    q = res.x; after = clearance(q, B)
+    info = {'scale': float(q[0]), 'translate_mm': (q[1:4] * 1000).round(2).tolist(), 'brain_inside_before': float((before < 0).mean()), 'brain_inside_after': float((after < 0).mean()),
+            'brain_inside_margin_after': float((after < -margin + 1e-4).mean()), 'max_exceed_before_mm': float(max(0, before.max()) * 1000), 'max_exceed_after_mm': float(max(0, after.max()) * 1000)}
+    lv = {k: float(centre(warp(zmesh(n)))[1]) for k, n in (('c1', 'Atlas (C1)'), ('c3', 'Vertebra C3')) if n in zi}
+    return {'q': q, 'c0': c0, 'y_lo': lv['c3'], 'y_hi': lv['c1'], 'info': info}
+
+def apply_head(p, head):
+    q, c0 = head['q'], head['c0']
+    w = LB.smoothstep((p[:, 1] - head['y_lo']) / (head['y_hi'] - head['y_lo']))[:, None]
+    moved = c0 + q[0] * (p - c0) + q[1:4]
+    return p + w * (moved - p)
+
+LEG_BONES = {'femur': ['Femur.{s}'], 'shank': ['Tibia.{s}', 'Fibula.{s}']}
+
+def refine_legs(sex, warp, legs, report, margin=0.008, cap=0.035):
+    """
+    Stage 3b: the per-bone ICP matches the HRA bones, but the HRA skin of the leg is not always centred on them (the male right ankle and
+    the female shank sat 1-2 cm medial of the skin's centre line, which put the medial ligaments, bursae and veins outside the skin).
+    Each leg segment (thigh, shank) is therefore shifted rigidly by the translation (|t| <= `cap`, regularised) that puts its bones
+    at least `margin` inside that leg's skin, measured on the skin depth field restricted to the leg's own body half.
+    """
+    from scipy import optimize
+    solid = skin_solid(sex); report['leg_refine'] = {}
+    for side, sg, zs in (('left', 1.0, 'l'), ('right', -1.0, 'r')):
+        field = LB.SkinField(LB.leg_field(solid, sg)); T, hipy, kneey = legs[side]; shifts = {}
+        for key, names in LEG_BONES.items():
+            X = LB.sample(np.vstack([warp(zmesh(n.format(s=zs))) for n in names if n.format(s=zs) in zi]), 4000)
+            s_, R_, t_ = T[key]; Q = s_ * (X @ R_.T) + t_
+            def cost(t): return 1e6 * np.mean(np.maximum(0.0, margin - field.depth(Q + t)) ** 2) + 2e3 * float(t @ t)
+            c0 = cost(np.zeros(3))
+            cp = cap if key == 'shank' else 0.4 * cap          # the thigh must stay on the acetabulum: it may only shift by ~1.4 cm
+            res = optimize.minimize(cost, np.zeros(3), method='Powell', bounds=[(-cp, cp)] * 3, options={'xtol': 1e-4, 'ftol': 1e-8})
+            t = res.x if res.fun < c0 else np.zeros(3)
+            d0 = field.depth(Q); d1 = field.depth(Q + t)
+            T[key] = (s_, R_, t_ + t); shifts[key] = t
+            report['leg_refine'][f'{side}_{key}'] = {'shift_mm': (t * 1000).round(1).tolist(), 'outside_before': float((d0 < -0.004).mean()), 'outside_after': float((d1 < -0.004).mean()),
+                                                    'shallowest5_before_mm': float(np.percentile(d0, 5) * 1000), 'shallowest5_after_mm': float(np.percentile(d1, 5) * 1000)}
+        s_, R_, t_ = T['patella']; T['patella'] = (s_, R_, t_ + 0.5 * (shifts['femur'] + shifts['shank']))
+    return legs
 
 CARPALS = ['Scaphoid bone', 'Lunate bone', 'Triquetrum bone', 'Pisiform bone', 'Trapezium bone', 'Trapezoid bone', 'Capitate bone', 'Hamate bone']
 ORD = ['First', 'Second', 'Third', 'Fourth', 'Fifth']
@@ -212,18 +284,17 @@ def limb_rigs(sex, warp, legs, report, verbose=True):
     # right arm first from a clean start, left from the mirrored right as one more candidate
     best = {}
     for s_ in ('l', 'r'):
-        S, E, W, p, f = LB.fit_arm_side(armF, fits[s_][0], side_names[s_])
-        best[s_] = (S, E, W, p, f)
+        S, E, W, p, f, k = LB.fit_arm_side(armF, fits[s_][0], side_names[s_])
+        best[s_] = (S, E, W, p, f, k)
     for s_, o in (('l', 'r'), ('r', 'l')):
-        S, E, W, _, _ = best[s_]
-        S2, E2, W2, p2, f2 = LB.fit_arm_side(armF, fits[s_][0], side_names[s_], init=LB.mirror_params(best[o][3]))
-        if f2 < best[s_][4]: best[s_] = (S2, E2, W2, p2, f2)
+        S2, E2, W2, p2, f2, k2 = LB.fit_arm_side(armF, fits[s_][0], side_names[s_], init=LB.mirror_params(best[o][3]))
+        if f2 < best[s_][4]: best[s_] = (S2, E2, W2, p2, f2, k2)
     for s_ in ('l', 'r'):
-        S, E, W, p, f = best[s_]; b = fits[s_][0]
+        S, E, W, p, f, k = best[s_]; b = fits[s_][0]
         pts = np.vstack([b['humerus'], b['forearm'], b['hand']])
-        rigs['arm'][s_] = LB.ChainRig(S, E, W, p, pts)
+        rigs['arm'][s_] = LB.ChainRig(S, E, W, p, pts, seg_scale=k)
         rigs['arm'][s_].fingers = LB.fit_fingers(armF, rigs['arm'][s_], P, s_)
-        report['limbs']['arm_' + s_] = {'cost': float(f), 'rot_deg': np.degrees(np.linalg.norm(p.reshape(3, 3), axis=1)).round(1).tolist(), 'S': S.tolist(), 'E': E.tolist(), 'W': W.tolist(), 'params': p.tolist()}
+        report['limbs']['arm_' + s_] = {'cost': float(f), 'rot_deg': np.degrees(np.linalg.norm(p.reshape(3, 3), axis=1)).round(1).tolist(), 'S': S.tolist(), 'E': E.tolist(), 'W': W.tolist(), 'params': p.tolist(), 'hand_scale': float(k)}
         if verbose: print('  arm', s_, 'cost %.3f' % f, 'rot deg', report['limbs']['arm_' + s_]['rot_deg'])
     for s_, sg in side_names.items():
         names = [n for n in zi if n.endswith('.' + s_)]
@@ -240,6 +311,7 @@ def limb_rigs(sex, warp, legs, report, verbose=True):
         if verbose: print('  foot', s_, 'cost %.3f' % f, 'rot deg', report['limbs']['foot_' + s_]['rot_deg'])
     return rigs
 
+FINGER_BONE = re.compile(r'^(?:Proximal|Middle|Distal) phalanx of (\w+) finger of hand\.[lr]$')
 ARM_BONES = re.compile(r'^(Humerus|Radius|Ulna|.*(metacarpal bone|phalanx of .* of hand)|Scaphoid|Lunate|Triquetrum|Pisiform|Trapez|Capitate|Hamate)')
 
 def apply_limbs(p, name, rigs):
@@ -253,12 +325,25 @@ def apply_limbs(p, name, rigs):
         arm = rigs['arm'][s_]
         if not LB.is_trunk_bone(name):
             q = p
-            for rig in arm.fingers.values():          # fingers first, in the hand's own frame
-                q = rig.apply(q, pw=orig)
+            fm = FINGER_BONE.match(name)
+            if fm:
+                # a phalanx follows its own finger's rig only: a neighbour's rig would pull it across (the bunching defect)
+                if name[-1] == s_: q = arm.fingers[fm.group(1)].apply(q, pw=orig) if fm.group(1) in arm.fingers else q
+            else:
+                # soft tissue follows the finger rigs as a weighted average, so overlapping reaches do not add up
+                disp = np.zeros_like(p); wsum = np.zeros(len(p))
+                for rig in arm.fingers.values():      # fingers first, in the hand's own frame
+                    disp += rig.apply(p, pw=orig) - p; wsum += rig.weights(orig)[0]
+                q = p + disp / np.maximum(1.0, wsum)[:, None]
             q = arm.apply(q, pw=orig)
             p = p + gate * (q - p)
         p = rigs['foot'][s_].apply(p)
     return p
+
+# Structures that sit on or in the skin by design (or are not anatomy proper) are not pulled inwards.
+# Rigid bodies that are articulated to their neighbours: never shifted on their own (a phalanx moved 2 cm from its metacarpal is not a better fit).
+REFIT_EXEMPT = re.compile(r'(\bbone\b|\bphalanx\b|\bpatella\b|^vertebra|\bsacrum\b|\bcoccyx\b|^(first|second|third|fourth|fifth|sixth|seventh|eighth|ninth|tenth|eleventh|twelfth) rib|\bsternum\b|\bmanubrium\b|\bclavicle\b|\bscapula\b|^(humerus|radius|ulna|femur|tibia|fibula|skull|mandible|maxilla|hyoid bone)\b|^intervertebral|\bcartilage\b|^(malleus|incus|stapes)\b|\bregion\b|\bmalleolus\b|symphysis|\bdisc\b)', re.I)
+CONTAIN_EXEMPT = re.compile(r'(nail|hair|lash|brow|onyx|skin|cutis|epiderm|dermis|auricle|ear |ear$|pinna|lobule|eyeball|cornea|lens|tooth|teeth|molar|incisor|canine|premolar)', re.I)
 
 def in_region(o, side):
     key = 'Left' if side == 'left' else 'Right'
@@ -268,9 +353,11 @@ def main():
     os.makedirs(OUT, exist_ok=True)
     for sex, name in (('m', 'male'), ('f', 'female')):
         warp, legs, report = register(sex)
+        refine_legs(sex, warp, legs, report); print('  leg refine', json.dumps(report['leg_refine']), flush=True)
         rigs = limb_rigs(sex, warp, legs, report)
+        head = head_fit(sex, warp); report['head'] = head['info']; print('  head', head['info'], flush=True)
         d = f'{OUT}/{name}'; os.makedirs(d, exist_ok=True)
-        idx = []
+        idx = []; contained = {}; refitted = {}; skin = skin_solid(sex)
         for o in Z:
             if o['nt'] == 0: continue
             v, t = load(f'{SRC}/zanat/objs', o['i'])
@@ -280,12 +367,21 @@ def main():
             p = apply_hips(p, o['name'].strip(), legs)
             p = apply_legs(p, legs, o['name'].strip())
             p = apply_limbs(p, o['name'].strip(), rigs)
+            p = apply_head(p, head)
+            if not CONTAIN_EXEMPT.search(o['name']):
+                p, tshift, fr0, fr1 = (p, np.zeros(3), 0.0, 0.0) if REFIT_EXEMPT.search(o['name'].strip()) else LB.refit(p, skin)
+                if np.any(tshift): refitted[o['name']] = {'shift_mm': (tshift * 1000).round(1).tolist(), 'outside_before': round(fr0, 3), 'outside_after': round(fr1, 3)}
+                p, nmoved, mmove = LB.contain(p, skin)
+                if nmoved: contained[o['name']] = (nmoved, len(p), round(mmove * 1000, 2))
             pf = p.astype(np.float32)
             with open(f'{d}/{o["i"]}.bin', 'wb') as f:
                 f.write(struct.pack('<ii', len(pf), len(t))); f.write(pf.tobytes()); f.write(t.astype(np.uint32).tobytes())
             idx.append({'i': o['i'], 'name': o['name'], 'nv': len(pf), 'nt': len(t), 'min': pf.min(0).tolist(), 'max': pf.max(0).tolist()})
         json.dump(idx, open(f'{d}/index.json', 'w'))
+        report['refitted'] = refitted
+        report['contained'] = {k: {'moved': a, 'vertices': b, 'mean_move_mm': c} for k, (a, b, c) in contained.items()}
         json.dump(report, open(f'{d}/report.json', 'w'), indent=1)
+        print(name, 'stage 4: rigid refit of', len(refitted), 'structures, containment moved vertices in', len(contained), 'structures')
         print(name, json.dumps(report)[:400])
 
 if __name__ == '__main__': main()

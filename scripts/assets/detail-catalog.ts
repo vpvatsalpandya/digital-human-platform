@@ -49,7 +49,7 @@ export function baseName(raw: string): { base: string; side: 'left' | 'right' | 
   const m = n.match(/\.(l|r)$/);
   if (m) { side = m[1] === 'l' ? 'left' : 'right'; n = n.slice(0, -2); }
   else n = n.replace(/\.(j|i|g)$/, '');
-  n = n.replace(/^\((.*)\)$/, '$1').replace(/\*/g, '').replace(/'+$/, '').replace(/\s+/g, ' ').trim();
+  n = n.replace('(M2-segment)', '(M2)').replace(/^\((.*)\)$/, '$1').replace(/\*/g, '').replace(/'+$/, '').replace(/\s+/g, ' ').trim();
   return { base: n, side };
 }
 

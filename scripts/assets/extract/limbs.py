@@ -292,3 +292,23 @@ def contain(p, solid, margin=0.002, max_disp=0.012, iters=5):
     moved = np.linalg.norm(q - p, axis=1)
     m = moved > 1e-6
     return q, int(m.sum()), float(moved[m].mean()) if m.any() else 0.0
+
+
+def refit(p, solid, thr=0.15, tol=0.004, cap=0.030, reg=2e3):
+    """
+    Per-structure rigid refit. A structure that is still `thr` or more outside the skin (by more than `tol`) after stages 1-3 is shifted as a
+    whole by the translation (|t| <= `cap`, regularised) that brings most of it inside, so its shape is kept; the per-vertex `contain`
+    pass then only has the last few millimetres to take up. Structures that need more than `cap` stay visible to the QA numbers.
+    Returns (new points, translation in m, outside fraction before, after).
+    """
+    from scipy import optimize
+    f = SkinField(solid)
+    d0 = f.depth(p); fr0 = float((d0 < -tol).mean())
+    if fr0 < thr: return p, np.zeros(3), fr0, fr0
+    X = sample(p, 3000)
+    def cost(t): return 1e6 * np.mean(np.maximum(0.0, 0.006 - f.depth(X + t)) ** 2) + reg * float(t @ t)
+    best = min((optimize.minimize(cost, t0, method='Powell', bounds=[(-cap, cap)] * 3, options={'xtol': 1e-4, 'ftol': 1e-8}) for t0 in (np.zeros(3), -np.sign(p.mean(0) * [1, 0, 0]) * 0.01)), key=lambda r: r.fun)
+    t = best.x
+    fr1 = float((f.depth(p + t) < -tol).mean())
+    if fr1 >= fr0: return p, np.zeros(3), fr0, fr0
+    return p + t, t, fr0, fr1

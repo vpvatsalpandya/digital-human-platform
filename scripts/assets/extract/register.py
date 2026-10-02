@@ -160,7 +160,7 @@ NOT_PELVIC = ('Sacrum', 'Coccyx', 'Vertebra', 'Atlas', 'Axis', 'Intervertebral',
 def apply_hips(p, name, legs):
     """Pelvis: the hip bone takes its own fitted transform; soft tissue near it follows, fading into the thigh transform below the joint."""
     if any(k in name for k in NOT_PELVIC) and not name.startswith('Hip bone.'): return p
-    orig = p.copy()
+    orig = p.copy(); disp = np.zeros_like(p); wsum = np.zeros(len(p))
     for side in ('left', 'right'):
         T, hipy, kneey = legs[side]
         s_, R_, t_ = T['hip']; q = s_ * (orig @ R_.T) + t_
@@ -171,9 +171,11 @@ def apply_hips(p, name, legs):
         w = 1 - LB.smoothstep((d - 0.015) / 0.05)
         wy = np.clip((hipy + 0.01 - orig[:, 1]) / 0.05, 0, 1)
         wx = np.clip((np.abs(orig[:, 0]) - 0.01) / 0.04, 0, 1) * ((orig[:, 0] > 0) if side == 'left' else (orig[:, 0] < 0))
-        w = (w * (1 - wy * wx))[:, None]
-        p = p + w * (q - orig)
-    return p
+        w = (w * (1 - wy * wx))
+        disp = disp + w[:, None] * (q - orig); wsum = wsum + w
+    # a midline structure (pubic symphysis, interpubic disc, pubic ligaments) is near both hip bones: it follows their weighted average,
+    # not the sum of both displacements (which used to carry it up to ~3 cm in front of the pubic bodies)
+    return orig + disp / np.maximum(1.0, wsum)[:, None]
 
 
 # ───────────────────── head: cranial vault vs the HRA brain ─────────────────────
@@ -216,6 +218,34 @@ def apply_head(p, head):
     w = LB.smoothstep((p[:, 1] - head['y_lo']) / (head['y_hi'] - head['y_lo']))[:, None]
     moved = c0 + q[0] * (p - c0) + q[1:4]
     return p + w * (moved - p)
+
+LEG_BONES = {'femur': ['Femur.{s}'], 'shank': ['Tibia.{s}', 'Fibula.{s}']}
+
+def refine_legs(sex, warp, legs, report, margin=0.008, cap=0.035):
+    """
+    Stage 3b: the per-bone ICP matches the HRA bones, but the HRA skin of the leg is not always centred on them (the male right ankle and
+    the female shank sat 1-2 cm medial of the skin's centre line, which put the medial ligaments, bursae and veins outside the skin).
+    Each leg segment (thigh, shank) is therefore shifted rigidly by the translation (|t| <= `cap`, regularised) that puts its bones
+    at least `margin` inside that leg's skin, measured on the skin depth field restricted to the leg's own body half.
+    """
+    from scipy import optimize
+    solid = skin_solid(sex); report['leg_refine'] = {}
+    for side, sg, zs in (('left', 1.0, 'l'), ('right', -1.0, 'r')):
+        field = LB.SkinField(LB.leg_field(solid, sg)); T, hipy, kneey = legs[side]; shifts = {}
+        for key, names in LEG_BONES.items():
+            X = LB.sample(np.vstack([warp(zmesh(n.format(s=zs))) for n in names if n.format(s=zs) in zi]), 4000)
+            s_, R_, t_ = T[key]; Q = s_ * (X @ R_.T) + t_
+            def cost(t): return 1e6 * np.mean(np.maximum(0.0, margin - field.depth(Q + t)) ** 2) + 2e3 * float(t @ t)
+            c0 = cost(np.zeros(3))
+            cp = cap if key == 'shank' else 0.4 * cap          # the thigh must stay on the acetabulum: it may only shift by ~1.4 cm
+            res = optimize.minimize(cost, np.zeros(3), method='Powell', bounds=[(-cp, cp)] * 3, options={'xtol': 1e-4, 'ftol': 1e-8})
+            t = res.x if res.fun < c0 else np.zeros(3)
+            d0 = field.depth(Q); d1 = field.depth(Q + t)
+            T[key] = (s_, R_, t_ + t); shifts[key] = t
+            report['leg_refine'][f'{side}_{key}'] = {'shift_mm': (t * 1000).round(1).tolist(), 'outside_before': float((d0 < -0.004).mean()), 'outside_after': float((d1 < -0.004).mean()),
+                                                    'shallowest5_before_mm': float(np.percentile(d0, 5) * 1000), 'shallowest5_after_mm': float(np.percentile(d1, 5) * 1000)}
+        s_, R_, t_ = T['patella']; T['patella'] = (s_, R_, t_ + 0.5 * (shifts['femur'] + shifts['shank']))
+    return legs
 
 CARPALS = ['Scaphoid bone', 'Lunate bone', 'Triquetrum bone', 'Pisiform bone', 'Trapezium bone', 'Trapezoid bone', 'Capitate bone', 'Hamate bone']
 ORD = ['First', 'Second', 'Third', 'Fourth', 'Fifth']
@@ -321,10 +351,11 @@ def main():
     os.makedirs(OUT, exist_ok=True)
     for sex, name in (('m', 'male'), ('f', 'female')):
         warp, legs, report = register(sex)
+        refine_legs(sex, warp, legs, report); print('  leg refine', json.dumps(report['leg_refine']), flush=True)
         rigs = limb_rigs(sex, warp, legs, report)
         head = head_fit(sex, warp); report['head'] = head['info']; print('  head', head['info'], flush=True)
         d = f'{OUT}/{name}'; os.makedirs(d, exist_ok=True)
-        idx = []; contained = {}; skin = skin_solid(sex)
+        idx = []; contained = {}; refitted = {}; skin = skin_solid(sex)
         for o in Z:
             if o['nt'] == 0: continue
             v, t = load(f'{SRC}/zanat/objs', o['i'])
@@ -336,6 +367,8 @@ def main():
             p = apply_limbs(p, o['name'].strip(), rigs)
             p = apply_head(p, head)
             if not CONTAIN_EXEMPT.search(o['name']):
+                p, tshift, fr0, fr1 = LB.refit(p, skin)
+                if np.any(tshift): refitted[o['name']] = {'shift_mm': (tshift * 1000).round(1).tolist(), 'outside_before': round(fr0, 3), 'outside_after': round(fr1, 3)}
                 p, nmoved, mmove = LB.contain(p, skin)
                 if nmoved: contained[o['name']] = (nmoved, len(p), round(mmove * 1000, 2))
             pf = p.astype(np.float32)
@@ -343,9 +376,10 @@ def main():
                 f.write(struct.pack('<ii', len(pf), len(t))); f.write(pf.tobytes()); f.write(t.astype(np.uint32).tobytes())
             idx.append({'i': o['i'], 'name': o['name'], 'nv': len(pf), 'nt': len(t), 'min': pf.min(0).tolist(), 'max': pf.max(0).tolist()})
         json.dump(idx, open(f'{d}/index.json', 'w'))
+        report['refitted'] = refitted
         report['contained'] = {k: {'moved': a, 'vertices': b, 'mean_move_mm': c} for k, (a, b, c) in contained.items()}
         json.dump(report, open(f'{d}/report.json', 'w'), indent=1)
-        print(name, 'stage 4 containment moved vertices in', len(contained), 'structures')
+        print(name, 'stage 4: rigid refit of', len(refitted), 'structures, containment moved vertices in', len(contained), 'structures')
         print(name, json.dumps(report)[:400])
 
 if __name__ == '__main__': main()

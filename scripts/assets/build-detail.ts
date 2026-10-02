@@ -293,6 +293,22 @@ async function main() {
         allenSide.set(list[0]!.name, 'right'); allenSide.set(list[1]!.name, 'left');
       }
     }
+    const vhSwap = new Set<string>();
+    {
+      const pairs = new Map<string, { name: string; side: string; cx: number }[]>();
+      for (const o of hraIdx) {
+        if (usedH.has(o.i) || o.nt === 0 || o.name.startsWith('Allen_') || !o.name.startsWith('VH_')) continue;
+        const { side } = humanizeHra(o.name); if (side === 'none') continue;
+        const key = o.name.replace(/(left|right)_/i, '').replace(/_[LR]$/, '');
+        const { min, max } = boundsOf(readBin(hraDir, o.i).positions);
+        const list = pairs.get(key) ?? []; list.push({ name: o.name, side, cx: (min[0] + max[0]) / 2 }); pairs.set(key, list);
+      }
+      for (const list of pairs.values()) {
+        if (list.length !== 2 || list[0]!.side === list[1]!.side) continue;
+        const l = list.find((x) => x.side === 'left')!, r = list.find((x) => x.side === 'right')!;
+        if (l.cx < r.cx - 0.01) { vhSwap.add(l.name); vhSwap.add(r.name); }
+      }
+    }
     for (const o of hraIdx) {
       if (usedH.has(o.i) || o.nt === 0) continue;
       const cls = classifyHra(o.name, body);
@@ -328,7 +344,9 @@ async function main() {
         continue;
       }
       const { base, side: labelled } = humanizeHra(o.name);
-      const side = allenSide.get(o.name) ?? sideByGeometry(labelled, readBin(hraDir, o.i), true);
+      // VH_* names are anatomical sides, so a "left hepatic duct" keeps its name wherever the subject's organ sits. A few pairs
+      // (round ligaments of the uterus) are labelled from the viewer's side, which shows as the pair being in the wrong order along x.
+      const side = vhSwap.has(o.name) ? (labelled === 'left' ? 'right' : labelled === 'right' ? 'left' : labelled) : labelled;
       const id = uniqueId(`${slug(base)}${side === 'left' ? '-l' : side === 'right' ? '-r' : ''}`, cls.category);
       entries.push({ id, name: titleCase(`${side === 'none' ? '' : side + ' '}${base.toLowerCase()}`.trim()), base, side, cls, provenance: 'hra', sourceName: 'Human Reference Atlas 3D Reference Object Library', sourceLicence: HLIC, pieces: [readBin(hraDir, o.i)] });
     }

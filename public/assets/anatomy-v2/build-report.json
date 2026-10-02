@@ -1,8 +1,8 @@
 {
  "male": {
   "structures": 3543,
-  "triangles": 1677287,
-  "bytes": 9796910,
+  "triangles": 1677324,
+  "bytes": 9795727,
   "byGroup": {
    "core-upgrades": 12,
    "muscles": 509,
@@ -22,57 +22,57 @@
   "groups": [
    {
     "id": "core-upgrades",
-    "bytes": 102408,
+    "bytes": 102470,
     "count": 12
    },
    {
     "id": "muscles",
-    "bytes": 2286912,
+    "bytes": 2288558,
     "count": 509
    },
    {
     "id": "organ-parts",
-    "bytes": 1299487,
+    "bytes": 1299640,
     "count": 315
    },
    {
     "id": "lymphatic",
-    "bytes": 113179,
+    "bytes": 113276,
     "count": 162
    },
    {
     "id": "nerves",
-    "bytes": 505839,
+    "bytes": 506280,
     "count": 261
    },
    {
     "id": "arteries",
-    "bytes": 992184,
+    "bytes": 992102,
     "count": 440
    },
    {
     "id": "fascia-bursae",
-    "bytes": 415867,
+    "bytes": 415755,
     "count": 166
    },
    {
     "id": "veins",
-    "bytes": 580953,
+    "bytes": 580584,
     "count": 254
    },
    {
     "id": "joints",
-    "bytes": 496622,
+    "bytes": 496799,
     "count": 413
    },
    {
     "id": "skeleton",
-    "bytes": 1393175,
+    "bytes": 1392789,
     "count": 277
    },
    {
     "id": "skin-layers",
-    "bytes": 62548,
+    "bytes": 62744,
     "count": 21
    },
    {
@@ -87,7 +87,7 @@
    },
    {
     "id": "schematic",
-    "bytes": 617918,
+    "bytes": 614912,
     "count": 405
    }
   ],
@@ -123,9 +123,9 @@
   }
  },
  "female": {
-  "structures": 3566,
-  "triangles": 1679893,
-  "bytes": 9832402,
+  "structures": 3570,
+  "triangles": 1680000,
+  "bytes": 9826374,
   "byGroup": {
    "core-upgrades": 14,
    "muscles": 509,
@@ -140,62 +140,62 @@
    "skin-layers": 21,
    "brain-regions": 282,
    "inner-ear": 26,
-   "schematic": 423
+   "schematic": 427
   },
   "groups": [
    {
     "id": "core-upgrades",
-    "bytes": 115370,
+    "bytes": 115756,
     "count": 14
    },
    {
     "id": "muscles",
-    "bytes": 2283882,
+    "bytes": 2284548,
     "count": 509
    },
    {
     "id": "organ-parts",
-    "bytes": 1311270,
+    "bytes": 1311364,
     "count": 322
    },
    {
     "id": "lymphatic",
-    "bytes": 113151,
+    "bytes": 113179,
     "count": 162
    },
    {
     "id": "nerves",
-    "bytes": 504675,
+    "bytes": 503466,
     "count": 261
    },
    {
     "id": "arteries",
-    "bytes": 974052,
+    "bytes": 971630,
     "count": 437
    },
    {
     "id": "fascia-bursae",
-    "bytes": 415703,
+    "bytes": 414240,
     "count": 166
    },
    {
     "id": "veins",
-    "bytes": 588246,
+    "bytes": 586167,
     "count": 253
    },
    {
     "id": "joints",
-    "bytes": 496069,
+    "bytes": 495917,
     "count": 413
    },
    {
     "id": "skeleton",
-    "bytes": 1394004,
+    "bytes": 1393321,
     "count": 277
    },
    {
     "id": "skin-layers",
-    "bytes": 79448,
+    "bytes": 79432,
     "count": 21
    },
    {
@@ -210,8 +210,8 @@
    },
    {
     "id": "schematic",
-    "bytes": 626571,
-    "count": 423
+    "bytes": 627393,
+    "count": 427
    }
   ],
   "skipped": {

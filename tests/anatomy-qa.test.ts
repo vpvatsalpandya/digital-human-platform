@@ -99,7 +99,7 @@ describe.runIf(built)('left / right placement and duplicates', () => {
       const bad: string[] = [];
       for (const s of m.structures) {
         const side = s.id.endsWith('-l') ? 1 : s.id.endsWith('-r') ? -1 : 0;
-        if (!side || !s.centroid) continue;
+        if (!side || !s.centroid || /hepatic|portal/.test(s.id)) continue; // the porta hepatis lies right of the midline, so a left hepatic duct sits there too
         // Midline-straddling or deliberately bilateral aggregates are exempt by width.
         const w = s.bounds ? s.bounds[3]! - s.bounds[0]! : 0;
         if (w > 0.05 || Math.abs(s.centroid[0]) < 0.013) continue; // wide paths (vagus plexus) and midline structures (±1.3 cm) are exempt
@@ -123,7 +123,10 @@ describe.runIf(built)('left / right placement and duplicates', () => {
       for (const s of m.structures) { if (seen.has(s.id)) dup.push(s.id); seen.add(s.id); }
       expect(dup).toEqual([]);
       const byHash = new Map<string, string>(); const same: string[] = [];
+      // core aggregates that a detail group declares it replaces (femur-l → bone-femur-l …) share a mesh by design
+      const replaced = new Set(m.groups?.flatMap((g) => g.replaces ?? []) ?? []);
       for (const s of m.structures) {
+        if (replaced.has(s.id)) continue;
         const h = s.bounds?.map((v) => v.toFixed(4)).join(','); if (!h || !isRealAnatomy(s.provenance)) continue;
         const prev = byHash.get(h); if (prev) same.push(`${prev}=${s.id}`); else byHash.set(h, s.id);
       }
@@ -154,7 +157,8 @@ describe.runIf(built)('names and labelling', () => {
     });
     it(`${b}: no two structures share a display name (a duplicate would list twice in search and overlap on screen)`, () => {
       const seen = new Map<string, string>(); const dup: string[] = [];
-      for (const s of m.structures) { const k = s.name.toLowerCase(); const p = seen.get(k); if (p) dup.push(`${p}=${s.id} "${s.name}"`); else seen.set(k, s.id); }
+      const replaced = new Set(m.groups?.flatMap((g) => g.replaces ?? []) ?? []);
+      for (const s of m.structures) { if (replaced.has(s.id)) continue; const k = s.name.toLowerCase(); const p = seen.get(k); if (p) dup.push(`${p}=${s.id} "${s.name}"`); else seen.set(k, s.id); }
       expect(dup).toEqual([]);
     });
     it(`${b}: laterality in the name agrees with the id`, () => {

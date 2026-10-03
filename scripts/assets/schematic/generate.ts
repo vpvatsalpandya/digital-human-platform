@@ -20,7 +20,7 @@ export interface Item {
   id: string; name: string; aliases?: string[]; side: 'left' | 'right' | 'none';
   systems: SystemId[]; region: string; category: SchematicCategory; mesh: Piece;
 }
-export const SCHEMATIC_CATEGORIES = ['schematic nerve', 'schematic plexus', 'schematic ganglion', 'schematic vessel', 'schematic tooth', 'schematic eye', 'schematic capsule', 'schematic cartilage', 'schematic ligament', 'schematic tendon', 'schematic muscle', 'schematic conduction', 'schematic suture', 'schematic organ'] as const;
+export const SCHEMATIC_CATEGORIES = ['schematic nerve', 'schematic plexus', 'schematic ganglion', 'schematic vessel', 'schematic tooth', 'schematic eye', 'schematic capsule', 'schematic cartilage', 'schematic ligament', 'schematic tendon', 'schematic muscle', 'schematic conduction', 'schematic suture', 'schematic organ', 'schematic membrane', 'schematic inset'] as const;
 export type Body_ = Body;
 export type SchematicCategory = (typeof SCHEMATIC_CATEGORIES)[number];
 

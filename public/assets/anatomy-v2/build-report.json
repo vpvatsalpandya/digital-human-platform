@@ -1,8 +1,8 @@
 {
  "male": {
-  "structures": 3543,
+  "structures": 3571,
   "triangles": 1677243,
-  "bytes": 9788309,
+  "bytes": 9877404,
   "byGroup": {
    "core-upgrades": 12,
    "muscles": 509,
@@ -17,7 +17,7 @@
    "skin-layers": 21,
    "brain-regions": 282,
    "inner-ear": 26,
-   "schematic": 405
+   "schematic": 433
   },
   "groups": [
    {
@@ -87,8 +87,8 @@
    },
    {
     "id": "schematic",
-    "bytes": 614272,
-    "count": 405
+    "bytes": 703367,
+    "count": 433
    }
   ],
   "skipped": {
@@ -123,9 +123,9 @@
   }
  },
  "female": {
-  "structures": 3570,
+  "structures": 3596,
   "triangles": 1679989,
-  "bytes": 9821214,
+  "bytes": 9909997,
   "byGroup": {
    "core-upgrades": 14,
    "muscles": 509,
@@ -140,7 +140,7 @@
    "skin-layers": 21,
    "brain-regions": 282,
    "inner-ear": 26,
-   "schematic": 427
+   "schematic": 453
   },
   "groups": [
    {
@@ -210,8 +210,8 @@
    },
    {
     "id": "schematic",
-    "bytes": 627829,
-    "count": 427
+    "bytes": 716612,
+    "count": 453
    }
   ],
   "skipped": {

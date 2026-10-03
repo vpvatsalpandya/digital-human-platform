@@ -60,7 +60,7 @@ async function main() {
     writeFileSync(path.join(ROOT, 'public/assets/anatomy-v2', body, outFile), blob);
     manifest.groups.push({
       id: GROUP, title: 'Schematic stand-ins (generated, not real anatomy)',
-      description: 'Spinal nerves C1–Co1, cervical, lumbar and sacral plexuses, autonomic plexuses and ganglia, vagus, phrenic and splanchnic branches, third molars and small vessel branches. Drawn in violet from the positions of real structures; indicative courses only.',
+      description: 'Spinal nerves C1–Co1, cervical, lumbar and sacral plexuses, autonomic plexuses and ganglia, vagus, phrenic and splanchnic branches, third molars, small vessel branches, joint capsules and cartilage, sutures, and gap-fill placeholders (metopic suture, umbilical remnants, pleural cavities, fibrous pericardium, peritoneal sheets, nipples, and a representative inset of skin appendages). Drawn in violet from the positions of real structures; indicative courses only.',
       url: `/assets/anatomy-v2/${body}/${outFile}`, bytes: blob.byteLength, count: structures.length,
     });
     manifest.structures.push(...structures);

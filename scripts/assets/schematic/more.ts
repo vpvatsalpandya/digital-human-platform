@@ -331,9 +331,11 @@ export async function generateMore(b: Body, body: 'male' | 'female', items: Item
     const mb = B('manubrium-of-sternum')[1];
     const found: V3[] = [];
     for (const s of SIDES) {
-      const ys = body === 'female' ? [mb - 0.2, mb - 0.04] : [mb - 0.075, mb - 0.03];
+      // male: the pectoral skin about 4 cm below the sternal angle; female: the most forward skin over the centre of the real HRA mammary gland
+      const mg = body === 'female' && has(`mammary-gland-${s[2]}`) ? C(`mammary-gland-${s[2]}`) : null;
+      const ys = mg ? [mg[1] - 0.02, mg[1] + 0.02] : [mb - 0.075, mb - 0.03], xs = mg ? [Math.abs(mg[0]) - 0.02, Math.abs(mg[0]) + 0.02] : [0.06, 0.13];
       let best: V3 | null = null;
-      for (let y = ys[0]!; y <= ys[1]!; y += 0.004) for (let ax = 0.06; ax <= 0.13; ax += 0.004) { const z = skinFront(s[1] * ax, y, 0.004); if (Number.isFinite(z) && (!best || z > best[2])) best = [s[1] * ax, y, z]; }
+      for (let y = ys[0]!; y <= ys[1]!; y += 0.004) for (let ax = xs[0]!; ax <= xs[1]!; ax += 0.004) { const z = skinFront(s[1] * ax, y, 0.004); if (Number.isFinite(z) && (!best || z > best[2])) best = [s[1] * ax, y, z]; }
       if (best) found.push(best);
     }
     if (found.length === 2) {

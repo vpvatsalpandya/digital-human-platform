@@ -112,11 +112,11 @@ for system in gap_eval.ck.CHECK:
 if not nrem: w('| | none | | |')
 w('')
 w('### Items present only as a schematic stand-in (not real)\n')
-w('| System | Item | Bodies |\n|---|---|---|')
+w('| System | Item | Bodies | Note |\n|---|---|---|---|')
 for system in gap_eval.ck.CHECK:
     for k, (label, spec_s) in enumerate(gap_eval.ck.CHECK[system]):
         on = [b for b in ('male', 'female') if EV[b][system][k][2] == 'schematic']
-        if on: w(f"| {system} | {label} | {', '.join(on)} |")
+        if on: w(f"| {system} | {label} | {', '.join(on)} | {getattr(gap_eval.ck, 'NOTE', {}).get(label, '')} |")
 w('')
 w('### Full checklist with status\n')
 w('<details><summary>Every checklist item (male / female status)</summary>\n')

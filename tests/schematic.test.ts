@@ -64,7 +64,7 @@ describe.runIf(built)('schematic group', () => {
         expect(sch.length).toBeGreaterThan(300);
         for (const s of sch) {
           expect(s.provenance, s.id).toBe('generated');
-          expect(s.category, s.id).toMatch(/^schematic (nerve|plexus|ganglion|vessel|tooth|eye|capsule|cartilage|ligament|tendon|muscle|conduction|suture|organ)$/);
+          expect(s.category, s.id).toMatch(/^schematic (nerve|plexus|ganglion|vessel|tooth|eye|capsule|cartilage|ligament|tendon|muscle|conduction|suture|organ|membrane|inset)$/);
           expect(s.name, s.id).toMatch(/\(schematic/);
           expect(s.source?.name, s.id).toMatch(/Generated/i);
           expect(ALLOWED_PACK_LICENCES).toContain(s.source!.licence);
@@ -196,7 +196,7 @@ describe.runIf(built)('schematic group', () => {
         expect(g.count).toBe(sch.length);
         const size = statSync(`public${g.url}`).size;
         expect(size).toBe(g.bytes);
-        expect(size).toBeLessThan(640 * 1024); // this group; any lazy group must stay under 3 MB (anatomy-v2.test.ts)
+        expect(size).toBeLessThan(768 * 1024); // this group; any lazy group must stay under 3 MB (anatomy-v2.test.ts)
         for (const s of sch) expect(s.packed!.o + s.packed!.vb + s.packed!.ib, s.id).toBeLessThanOrEqual(size);
         expect(m.groups!.reduce((a, x) => a + x.bytes, 0)).toBeLessThan(9.7 * 1024 * 1024); // per-body lazy total
         for (const x of m.groups!) expect(x.auto ?? false, x.id).toBe(x.id === 'core-upgrades' || x.id === 'skin-layers');

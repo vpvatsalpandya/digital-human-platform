@@ -18,7 +18,7 @@ const merged = (b: 'male' | 'female'): BodyManifest => mergeManifests(read(`${CO
 const text = (s: ManifestStructure) => `${s.id} ${s.name} ${s.latinName ?? ''}`.toLowerCase();
 
 // Terms that identify sex-specific anatomy, matched on id + name + Latin name.
-const MALE_ONLY = /\b(penis|penile|testis|testes|testicular|epididym|scrot|prostat|seminal|vas-?deferens|ductus-deferens|spermatic|bulbourethral|cowper|glans-penis|corpus-(cavernosum|spongiosum)-(of-)?penis|foreskin|prepuce-of-penis|tunica-vaginalis|cremaster|ejaculatory)/;
+const MALE_ONLY = /\b(male-urethra|membranous-part-of-male-urethra|navicular-fossa|penis|penile|testis|testes|testicular|epididym|scrot|prostat|seminal|vas-?deferens|ductus-deferens|spermatic|bulbourethral|cowper|glans-penis|corpus-(cavernosum|spongiosum)-(of-)?penis|foreskin|prepuce-of-penis|tunica-vaginalis|cremaster|ejaculatory)/;
 const FEMALE_ONLY = /\b(uter(us|ine)|ovar(y|ies|ian)|fallopian|vagin|vulva|labi(um|a)-(majus|minus|majora|minora)|labium|clitor|vestibular-bulb|greater-vestibular|bartholin|cervix-of-uterus|endometri|myometri|broad-ligament|round-ligament-of-uterus|suspensory-ligament-of-ovary|mammary|breast|hymen|fimbri|infundibulum-of-uterine|ampulla-of-uterine|cardinal|uterosacral|mons-pubis|female)/;
 // Words that look sex-specific to a regex but are anatomy both sexes have.
 const BOTH_SEXES_OK = /(intercornual|urethral-sphincter|membranous-urethra|tendon sheath|round-ligament-of-liver|vestibul(e|ar)-(of|ligament|fold|nerve|artery|vein|aqueduct|window|membrane|ganglion|nuclei|nucleus)|vestibulo|infundibulum-of-(hypothalam|pituitar|right-ventricle|cerebr|frontal)|pituitary|cardinal-(vein|ligament-of-the-heart)|ovarian-vein-wrong)/;

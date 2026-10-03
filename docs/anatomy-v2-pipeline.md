@@ -57,9 +57,26 @@ python3 scripts/assets/gap-audit.py . > docs/gap-audit.md
 Stage 5 of the registration, `extract/snap_in.py`, runs once on `/workspace/work/registered` (after `register.py` and the limb fits, before
 `assets:build:v2`; it keeps no state, so re-run it on a fresh registration). It takes real soft-tissue structures (bursae, veins, nerves, ligaments, tendons,
 muscles, glands, sheaths, fasciae; reference planes, movement and region labels are never touched) with >= 20 % of their vertices more than 4 mm outside the
-united skin and brings them in: rigidly for short structures (male right subcutaneous bursa of the medial malleolus 36.9 mm; female left 10.9 mm), softly for
-long ones (male right great saphenous vein, up to 38 mm at the distal end, mean 5 mm), and the nail folds (`perionyx`, which sit on the skin but are smaller than
-the 4 mm QA voxel) to the surface. The log is printed; nothing else moves.
+united skin and brings them in: rigidly for short structures, softly for long ones, and the nail folds (`perionyx`, which sit on the skin but are smaller than
+the 4 mm QA voxel) to the surface. The log is printed; nothing else moves. It is a safety net, not a substitute for a correct fit: before the ankle fix below it
+had to carry the male right bursa of the medial malleolus 36.9 mm and the great saphenous vein 38.5 mm; with the bones registered correctly it only touches the
+nail folds (male 2, female 1).
+
+#### Ankle / shank fix (anatomy-fixes-4)
+
+Root cause of the male right ankle (distal tibia 3-4 cm medial of the talus, medial malleolus up to 36 mm outside the skin): in `register.apply_legs` the
+per-leg transform is multiplied by a midline gate `wx = clip((|x| - 1 cm) / 4 cm)` that keeps the pelvic floor and the other leg out of a leg's transform. It was
+applied all the way down the leg. The global spine fit leaves the Z-Anatomy body about 16 mm off the HRA midline, so the right medial malleolus (`|x|` 29 mm) lay in
+the 1-5 cm ramp and received only 49 % of the shank transform (talus 90 %, navicular 87 %) while the lateral malleolus received 100 %: the tibia was sheared by up
+to 43 mm (malleolar span 107 mm against 73 mm on the left), the foot bones were fitted to a torn tibia/foot cloud (foot cost 0.60 against 0.16 on the left) and the
+medial soft tissue followed. The left ankle was fine only because the offset happens to push that side out of the ramp. The female left ankle had the mirror
+problem (tibia weight 0.44, malleolar span 77 mm against 54 mm on the right, tibia 13 mm outside the skin). The distal femur / medial knee tissue was sheared the same
+way (up to 26 mm). `leg_refine` did not see it because it measures the rigid transform, not the blended result.
+
+Fix: below the knee the gate is opened completely (`SHANK_GATE_TOP`: fading in over the 12 cm above the knee); the side test (`x > 0` / `x < 0`) stays, so the
+legs still do not borrow each other's tissue. The groin and thigh keep the ramp. `scripts/qa/anklefit.py` reports the numbers (tibia/fibula distal to the talar dome and
+lateral facet, malleolar span, depth of the distal tibia in the skin, % of shank/foot vertices outside the skin, left/right differences) and
+`tests/anatomy-qa.test.ts` pins the left/right mirror of the tibia and fibula relative to the talus.
 
 `assets:build:v2` deletes and rewrites the whole pack, so always run `assets:build:schematic` straight after it. `rebuild-core.ts`
 edits the core pack (`hra-v1`) in place and is idempotent, but it must come after `assets:build:v2` because it merges the registered

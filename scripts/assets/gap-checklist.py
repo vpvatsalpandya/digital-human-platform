@@ -163,6 +163,9 @@ Deep fascia: intermuscular septa=lateral-intermuscular-septum-of-arm
 '''),
  'Cardiovascular (heart, arteries, veins)': L('''
 Heart=heart
+Pericardial cavity=pericardial-cavity
+Transverse pericardial sinus=transverse-pericardial-sinus
+Oblique pericardial sinus=oblique-pericardial-sinus
 Right atrium / left atrium=cardiac-atrium
 Aortic valve=aortic-valve
 Interventricular septum=interventricular-septum
@@ -350,6 +353,7 @@ Conjunctiva=palpebral-conjunctiva*
 Auricle / auricular cartilage=auricular-cartilage
 External acoustic meatus=external-acoustic-meatus
 Tympanic membrane=tympanic-membrane
+Tympanic cavity (middle ear)=tympanic-cavity
 Malleus / incus / stapes=malleus
 Round window=round-window
 Scala tympani=scala-tympani
@@ -410,6 +414,7 @@ Omenta / peritoneum=greater-omentum*|omentum*|lesser-omentum*
 Mesentery=mesentery
 Mesocolons (transverse, sigmoid)=transverse-mesocolon|sigmoid-mesocolon
 Lesser omentum=lesser-omentum
+Omental bursa (lesser sac)=omental-bursa
 Gastrosplenic / splenorenal ligaments=gastrosplenic-ligament|splenorenal-ligament
 Round ligament of liver=round-ligament-of-liver
 Ligamentum venosum=ligamentum-venosum
@@ -422,6 +427,18 @@ Urinary bladder=urinary-bladder
 Urethra=urethra*|female-urethra
 Membranous part of male urethra=membranous-part-of-male-urethra
 Navicular fossa of male urethra=navicular-fossa-of-male-urethra
+Bulbar part of male urethra=bulbar-part-of-male-urethra
+Penile (spongy) part of male urethra=penile-part-of-male-urethra
+Bulbourethral gland=bulbourethral-gland
+Duct of bulbourethral gland=duct-of-bulbourethral-gland
+Rectovesical pouch=rectovesical-pouch
+Rectouterine pouch (of Douglas)=rectouterine-pouch
+Vesicouterine pouch=vesicouterine-pouch
+Retropubic space (of Retzius)=retropubic-space
+Breast envelope (fat and glandular tissue)=breast-envelope
+Suspensory ligaments of breast (Cooper)=suspensory-ligaments-of-breast
+Lactiferous ducts=lactiferous-ducts
+Axillary tail of breast=axillary-tail-of-breast
 Prostate=prostate
 Seminal gland=seminal-gland
 Ductus deferens=ductus-deferens
@@ -485,12 +502,29 @@ Dermal capillary loops (representative inset)=dermal-capillary-loop*
 
 # Why something stays missing (shown in the audit); keyed by the label.
 REASON = {
- 'Breast / mammary gland': 'no open mesh of the breast / mammary gland (female) in the sources; the nipple and areola are schematic',
+ 'Breast / mammary gland': 'the HRA female body has a real mammary gland mesh; the nipple, areola, envelope, ducts and ligaments are schematic',
  'Mammary gland': 'no open mesh of the mammary gland in the sources',
 }
 # Placeholders that are real tissue-level concepts but are drawn as REPRESENTATIVE insets only (category "schematic inset"):
 # microscopic skin appendages, about 3x life size at one skin patch; they are not anatomical positions and never counted as real.
 NOTE = {
+ 'Tympanic cavity (middle ear)': 'schematic; hollow envelope around the real ossicles',
+ 'Pericardial cavity': 'schematic; potential space between heart and fibrous pericardium',
+ 'Transverse pericardial sinus': 'schematic; small recess of the pericardial cavity',
+ 'Oblique pericardial sinus': 'schematic; small recess of the pericardial cavity',
+ 'Omental bursa (lesser sac)': 'schematic; thin pocket behind the stomach',
+ 'Bulbar part of male urethra': 'schematic; cut from the real urethra centre line',
+ 'Penile (spongy) part of male urethra': 'schematic; cut from the real urethra centre line',
+ 'Bulbourethral gland': 'schematic; pea-sized, placed clear of neighbours',
+ 'Duct of bulbourethral gland': 'schematic',
+ 'Rectovesical pouch': 'schematic; peritoneal recess, male',
+ 'Rectouterine pouch (of Douglas)': 'schematic; peritoneal recess, female',
+ 'Vesicouterine pouch': 'schematic; peritoneal recess, female',
+ 'Retropubic space (of Retzius)': 'schematic; space behind the pubic symphysis',
+ 'Breast envelope (fat and glandular tissue)': 'schematic; thin plate under the skin, anchored on the nipple',
+ 'Suspensory ligaments of breast (Cooper)': 'schematic',
+ 'Lactiferous ducts': 'schematic; 15 ducts, branching',
+ 'Axillary tail of breast': 'schematic',
  'Metopic suture (usually closed in adults)': 'schematic; closed in most adults, persists in a minority',
  'Umbilical artery (patent part)': 'schematic; adult remnant: the patent proximal part gives the superior vesical arteries',
  'Medial umbilical ligament': 'schematic; obliterated distal umbilical artery',
@@ -505,5 +539,5 @@ NOTE = {
 
 # Sex-specific entries are "n/a" on the other body (not counted as missing).
 SEX = {}
-for _l in ('Uterus','Uterine tube','Ovary','Vagina','Vestibule of vagina','Clitoris (glans, body, crura)','Bulb of vestibule','Greater vestibular gland','Labia minora','Labia majora','Mammary gland','Uterine artery','Ovarian artery / vein','Dorsal nerve of clitoris','Breast / mammary gland'): SEX[_l] = 'female'
-for _l in ('Membranous part of male urethra','Navicular fossa of male urethra','Prostate','Seminal gland','Ductus deferens','Testis','Epididymis','Penis (corpus cavernosum)','Testicular artery','Dorsal nerve of penis'): SEX[_l] = 'male'
+for _l in ('Uterus','Uterine tube','Ovary','Vagina','Vestibule of vagina','Clitoris (glans, body, crura)','Bulb of vestibule','Greater vestibular gland','Labia minora','Labia majora','Mammary gland','Uterine artery','Ovarian artery / vein','Dorsal nerve of clitoris','Breast / mammary gland','Rectouterine pouch (of Douglas)','Vesicouterine pouch','Breast envelope (fat and glandular tissue)','Suspensory ligaments of breast (Cooper)','Lactiferous ducts','Axillary tail of breast'): SEX[_l] = 'female'
+for _l in ('Membranous part of male urethra','Navicular fossa of male urethra','Bulbar part of male urethra','Penile (spongy) part of male urethra','Bulbourethral gland','Duct of bulbourethral gland','Rectovesical pouch','Prostate','Seminal gland','Ductus deferens','Testis','Epididymis','Penis (corpus cavernosum)','Testicular artery','Dorsal nerve of penis'): SEX[_l] = 'male'

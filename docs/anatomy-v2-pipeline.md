@@ -51,6 +51,7 @@ npx tsx scripts/qa/dump.ts /workspace/qa/dump                    (the rebuilt co
 python3 scripts/qa/skin_field.py                                 (signed skin-depth field the schematic containment pass reads, ~10 s)
 npm run assets:build:schematic && npx tsx scripts/qa/dump.ts /workspace/qa/dump
 python3 scripts/qa/outside.py                                    (>= 20 % outside the skin: expect none)
+python3 scripts/qa/gapcheck.py                                   (outside-skin share and nearest real neighbours of the gap-fill stand-ins, schematic/gaps.ts)
 python3 scripts/assets/gap-audit.py . > docs/gap-audit.md
 ```
 
@@ -232,8 +233,26 @@ search tag "schematic") and is built in `schematic/more.ts` with the same helper
   normal. They are labelled "representative inset (schematic)", are not anatomical and belong to the histology module for real detail.
 
 Checked and already present, so not added: four parathyroid glands, adeno- and neurohypophysis, pleura, round ligament of the liver, ligamentum venosum,
-falciform, coronary and triangular ligaments, greater omentum, prostatic urethra, the HRA mammary glands (female). Not added: bulbourethral glands, spongy and
-bulbar urethra as separate parts (the real penile urethra mesh exists), pericardial cavity, a breast beyond the real gland.
+falciform, coronary and triangular ligaments, greater omentum, prostatic urethra, corpus spongiosum of penis, the HRA mammary glands (female).
+
+### Last atlas gaps (anatomy-fixes-4, `schematic/gaps.ts`)
+
+The remaining items from the gap audit are added as generated placeholders with the same flags as above (`provenance: generated`, `(schematic)` in the name,
+violet, Schematic badge and note, search tag, never counted as real anatomy; `tests/schematic-gaps.test.ts` pins this). Two new categories, both violet:
+`schematic gland` (`#cf9cff`) and `schematic cavity` (`#b9a2f2`). Female +17, male +14 (per body: 7 shared, the rest sex-specific):
+
+| Group | Items | Body | How they are placed |
+|---|---|---|---|
+| Breast (`schematic gland` / `schematic ligament`) | `breast-envelope-l/r` (thin fat and glandular plate), `suspensory-ligaments-of-breast-l/r` (Cooper's ligaments, about 40 septa), `lactiferous-ducts-l/r` (15 ducts, two branchings each), `axillary-tail-of-breast-l/r` | **female only** (no breast on the male body; `tests/anatomy-qa.test.ts` rejects "breast" there) | The footprint is an ellipse over the real HRA mammary gland that contains the nipple. The envelope is a cap 3.5 mm under the skin (along the skin normal from `skin-field`), 3 mm thick, apex at the nipple, kept in front of the pectoralis major and rib cage (`chestZ`); ligaments run from the fascia over the pectoralis to the envelope, leaning towards the nipple; ducts start in the nipple and end in the gland between chest wall and skin; the tail is a tapering plate from the upper outer quadrant along the lateral chest. A fixed seed makes the ducts reproducible |
+| Male urethra and Cowper's glands (`schematic organ` / `schematic gland`) | `bulbar-part-of-male-urethra`, `penile-part-of-male-urethra`, `bulbourethral-gland-l/r`, `duct-of-bulbourethral-gland-l/r` | **male only** (`MALE_ONLY`) | Bulbar (18-50 mm) and penile (50 mm to 14 mm short of the tip) parts are cut from the centre line of the real urethra mesh, next to the existing membranous part and navicular fossa. Each gland (pea sized, 11 mm) is put 12 mm beside the membranous urethra, behind it, then pushed off the real structures around it (`relax`); the duct runs from the gland to the bulbar urethra. The corpus spongiosum already exists and is untouched |
+| Serous and fascial spaces (`schematic cavity`) | `pericardial-cavity`, `transverse-pericardial-sinus`, `oblique-pericardial-sinus`, `omental-bursa`, `retropubic-space`, `tympanic-cavity-l/r`; male `rectovesical-pouch`; female `rectouterine-pouch`, `vesicouterine-pouch` | both, except the pouches | Sized from the neighbouring real meshes. The pericardial cavity is a thin shell between the heart and the fibrous pericardium shell; sinuses, pouches and the retropubic space are small hollow ellipsoids pushed off the real structures around them; the omental bursa is a thin sheet between stomach and pancreas; the tympanic cavity is a hollow envelope around the real ossicles |
+
+`relax(p, cloud, sc, maxMove)` pushes a placement point out of the clearance ellipsoid `sc` around all nearby real vertices (muscle, fascia, skin and generated
+shapes excluded) by at most `maxMove`, so the shapes sit clear of neighbours where the registered meshes leave room. They cannot always: the registered bladder
+touches the pubic symphysis (retropubic space is squeezed, 17-28 % of its vertices within 1 mm of the bladder), and the tympanic cavity necessarily touches the
+membrane, the labyrinth and the temporal bone. `scripts/qa/gapcheck.py` prints outside-skin share and the real structures within 1 mm of every new shape. Containment
+(`skinfield.ts`) is unchanged: after the 17+14 additions the outside-skin test (`outside.py`, >= 20 % of vertices > 4 mm outside) still gives **0 male / 0 female**.
+Schematic group size grows to 0.78 MB (male) and 0.86 MB (female), per-body lazy total 9.5 / 9.6 MB (limit 9.7 MB, group limit 1 MB).
 
 ### Containment of stand-ins and the female external genitalia
 
@@ -246,8 +265,7 @@ of vagina, pubic symphysis and bladder, about 1.5 cm to the body right of x = 0 
 in front of the groin-cleft floor of the skin; before, up to a third of their vertices were outside the skin. The jugular-notch marker in `core_rebase.py` now sits
 14.5 mm behind the skin surface at the notch.
 
-Remaining known limits: the male right ankle is mis-registered (distal tibia about 4 cm medial of the talus, up to 35 mm outside the skin; the bursa and vein
-are snapped to the skin instead of fixing the bone); the skin mesh is sparse on the trunk, so containment is only as exact as the 4 mm field.
+Remaining known limits: the skin mesh is sparse on the trunk, so containment is only as exact as the 4 mm field (the male right ankle mis-registration was fixed in the ankle / shank fix above).
 
 ### Gap audit
 

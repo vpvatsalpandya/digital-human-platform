@@ -1,6 +1,6 @@
 {
  "body": "male",
- "version": "2026-10-02",
+ "version": "2026-10-03",
  "pack": "hra-v1",
  "licence": "CC-BY-SA-4.0",
  "attribution": "Organs, brain, skin, pelvis and great vessels: Human Reference Atlas 3D Reference Object Library, HuBMAP Consortium, CC BY 4.0, with brain regions from the Allen Human Reference Atlas. Skeleton, muscles, stomach, adrenal glands and testes: Z-Anatomy, CC BY-SA 4.0 (itself derived from BodyParts3D, © The Database Center for Life Science, CC BY-SA 2.1 Japan), registered into the reference-atlas body frame. Derivatives are released under CC BY-SA 4.0.",
@@ -154,7 +154,7 @@
   {
    "system": "surface",
    "url": "/assets/hra-v1/male/system-surface.lod2.bin",
-   "bytes": 3488,
+   "bytes": 3500,
    "structureIds": [
     "jugular-notch",
     "umbilicus"
@@ -2668,15 +2668,15 @@
    "centroid": [
     0,
     0.5870800018310547,
-    0.07193686999380589
+    0.060661979019641876
    ],
    "bounds": [
     -0.011753184720873833,
     0.5753268003463745,
-    0.06018368527293205,
+    0.048908792436122894,
     0.011753184720873833,
     0.5988332033157349,
-    0.08369005471467972
+    0.07241516560316086
    ],
    "laterality": "none",
    "fmaId": "FMA:7487",
@@ -2701,9 +2701,9 @@
     },
     {
      "url": "/assets/hra-v1/male/jugular-notch.lod2.glb",
-     "bytes": 1756,
-     "triangles": 44,
-     "hash": "d9a7aad07268abbb"
+     "bytes": 1768,
+     "triangles": 40,
+     "hash": "c69ee5670e81c233"
     }
    ]
   },

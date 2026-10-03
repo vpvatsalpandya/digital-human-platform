@@ -33,15 +33,23 @@ async function main() {
 
     const b = await openBody(ROOT, body);
     const items = await generate(b, body);
-    // Pull any generated shape that sticks out of the skin back inside (nipples, areolae, eyes, teeth and the ear sit on the surface by design).
+    // Pull any generated shape that sticks out of the skin back inside (eyes and teeth sit on the surface by design and are left alone).
     const field = loadSkinField(body);
     if (!field) console.warn(`${body}: no skin field (python3 scripts/qa/skin_field.py): containment pass skipped`);
     else {
       let n = 0, worst = 0;
       for (const it of items) {
-        if (/^(nipple|areola)-/.test(it.id) || it.category === 'schematic eye' || it.category === 'schematic tooth') continue;
+        if (it.category === 'schematic eye' || it.category === 'schematic tooth' || /^(nipple|areola)-/.test(it.id)) continue;
         const r = containPiece(it.mesh, field);
         if (r.moved) { n++; worst = Math.max(worst, r.max); console.log(`  contained ${it.id}: ${r.moved} vertices, largest move ${(r.max * 1000).toFixed(1)} mm`); }
+      }
+      // nipples and areolae are thin, convex shapes on the skin: slide each pair straight back (-z) until at most 10 % of its vertices are more than 4 mm outside
+      for (const side of ['l', 'r']) {
+        const pair = items.filter((it) => it.id === `nipple-${side}` || it.id === `areola-${side}`);
+        if (!pair.length) continue;
+        const frac = (sh: number) => { let o = 0, t = 0; for (const it of pair) for (let i = 0; i < it.mesh.positions.length; i += 3) { t++; if (field.depth([it.mesh.positions[i]!, it.mesh.positions[i + 1]!, it.mesh.positions[i + 2]! - sh]) < -0.004) o++; } return o / t; };
+        let sh = 0; while (frac(sh) > 0.1 && sh < 0.02) sh += 0.0005;
+        if (sh > 0) { for (const it of pair) for (let i = 2; i < it.mesh.positions.length; i += 3) it.mesh.positions[i] = it.mesh.positions[i]! - sh; console.log(`  slid nipple/areola-${side} back ${(sh * 1000).toFixed(1)} mm`); }
       }
       console.log(`${body}: containment moved ${n} stand-ins (largest move ${(worst * 1000).toFixed(1)} mm)`);
     }

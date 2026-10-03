@@ -1,8 +1,8 @@
 {
  "male": {
   "structures": 3571,
-  "triangles": 1677243,
-  "bytes": 9877955,
+  "triangles": 1677240,
+  "bytes": 9877951,
   "byGroup": {
    "core-upgrades": 12,
    "muscles": 509,
@@ -57,7 +57,7 @@
    },
    {
     "id": "veins",
-    "bytes": 579244,
+    "bytes": 579259,
     "count": 254
    },
    {
@@ -72,7 +72,7 @@
    },
    {
     "id": "skin-layers",
-    "bytes": 62786,
+    "bytes": 62767,
     "count": 21
    },
    {
@@ -124,8 +124,8 @@
  },
  "female": {
   "structures": 3596,
-  "triangles": 1679989,
-  "bytes": 9910804,
+  "triangles": 1679987,
+  "bytes": 9910785,
   "byGroup": {
    "core-upgrades": 14,
    "muscles": 509,
@@ -195,7 +195,7 @@
    },
    {
     "id": "skin-layers",
-    "bytes": 79403,
+    "bytes": 79384,
     "count": 21
    },
    {

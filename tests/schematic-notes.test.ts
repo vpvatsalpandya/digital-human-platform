@@ -16,7 +16,7 @@ describe('schematic structure-card notes', () => {
   it.runIf(built)('every gap-fill placeholder has a note and is flagged generated, never real', () => {
     for (const b of ['male', 'female']) {
       const m = read(b);
-      for (const id of ['metopic-suture', 'umbilical-artery-l', 'medial-umbilical-ligament-r', 'ligamentum-arteriosum', 'pleural-cavity-l', 'fibrous-pericardium', 'mesentery', 'nipple-l', 'areola-r', 'pituitary-infundibulum', 'hair-follicle-inset', 'sweat-gland-inset', 'sebaceous-gland-inset', 'arrector-pili-inset', 'dermal-nerve-ending-inset', 'dermal-capillary-loop-inset']) {
+      for (const id of ['metopic-suture', 'umbilical-artery-l', 'medial-umbilical-ligament-r', 'ligamentum-arteriosum', 'pleural-cavity-l', 'fibrous-pericardium', 'mesentery', 'nipple-l', 'areola-r', 'pituitary-infundibulum', 'hair-follicle-inset', 'sweat-gland-inset', 'sebaceous-gland-inset', 'arrector-pili-inset', 'dermal-nerve-ending-inset', 'dermal-capillary-loop-inset', 'pericardial-cavity', 'transverse-pericardial-sinus', 'oblique-pericardial-sinus', 'omental-bursa', 'retropubic-space', 'tympanic-cavity-l', 'tympanic-cavity-r']) {
         const s = m.find((x) => x.id === id);
         expect(s, `${b} ${id}`).toBeDefined();
         expect(s!.provenance).toBe('generated');
@@ -33,5 +33,18 @@ describe('schematic structure-card notes', () => {
     expect(male).not.toContain('female-urethra');
     expect(female).toContain('female-urethra');
     expect(male.filter((i) => /clitor|vestibule-of-vagina|bulb-of-vestibule|greater-vestibular|labium|vagina/.test(i))).toEqual([]);
+    for (const id of ['bulbar-part-of-male-urethra', 'penile-part-of-male-urethra', 'bulbourethral-gland-l', 'bulbourethral-gland-r', 'duct-of-bulbourethral-gland-l', 'duct-of-bulbourethral-gland-r', 'rectovesical-pouch']) { expect(male, id).toContain(id); expect(female, id).not.toContain(id); }
+    for (const id of ['breast-envelope-l', 'breast-envelope-r', 'suspensory-ligaments-of-breast-l', 'suspensory-ligaments-of-breast-r', 'lactiferous-ducts-l', 'lactiferous-ducts-r', 'axillary-tail-of-breast-l', 'axillary-tail-of-breast-r', 'rectouterine-pouch', 'vesicouterine-pouch']) { expect(female, id).toContain(id); expect(male, id).not.toContain(id); }
+  });
+  it.runIf(built)('every gap-fill gland, ligament, urethra part and pouch has a note, is generated and never counts as real', () => {
+    const ids = { male: ['bulbar-part-of-male-urethra', 'penile-part-of-male-urethra', 'bulbourethral-gland-l', 'bulbourethral-gland-r', 'duct-of-bulbourethral-gland-l', 'duct-of-bulbourethral-gland-r', 'rectovesical-pouch'],
+      female: ['breast-envelope-l', 'breast-envelope-r', 'suspensory-ligaments-of-breast-l', 'suspensory-ligaments-of-breast-r', 'lactiferous-ducts-l', 'lactiferous-ducts-r', 'axillary-tail-of-breast-l', 'axillary-tail-of-breast-r', 'rectouterine-pouch', 'vesicouterine-pouch'] };
+    for (const b of ['male', 'female'] as const) for (const id of ids[b]) {
+      const s = read(b).find((x) => x.id === id);
+      expect(s, `${b} ${id}`).toBeDefined();
+      expect(s!.provenance).toBe('generated'); expect(isRealAnatomy(s!.provenance as never)).toBe(false);
+      expect(s!.category).toMatch(/^schematic (gland|ligament|organ|cavity)$/); expect(s!.name).toMatch(/\(schematic\)$/);
+      expect(schematicNote(s as never), id).toBeTruthy();
+    }
   });
 });

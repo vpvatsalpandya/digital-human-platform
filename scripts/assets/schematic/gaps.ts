@@ -141,12 +141,15 @@ export async function generateGaps(b: Body, body: 'male' | 'female', items: Item
     };
     const xy = (phi: number, rho: number): [number, number] => [N[0] + rho * reach(phi) * Math.cos(phi), N[1] + rho * reach(phi) * Math.sin(phi)];
     const OUT = 0.0035, TH = 0.003; // the plate lies 3.5 mm under the skin and is 3 mm thick
-    const top = (x: number, y: number) => skinZ(x, y) - OUT;
-    const bottom = (x: number, y: number) => Math.min(top(x, y) - 0.0015, Math.max(top(x, y) - TH, chestZ(x, y) + 0.001));
+    /** The point `d` metres under the skin at (x, y), along the skin normal. */
+    const under = (x: number, y: number, d: number): V3 => { const zf = skinZ(x, y); if (!field) return [x, y, zf - d]; const p: V3 = [x, y, zf], g = field.grad(p, 0.006); return add3(p, scale3(g, d)); };
+    const top = (x: number, y: number) => under(x, y, OUT)[2];
+    const topP = (x: number, y: number): V3 => under(x, y, OUT);
+    const bottomP = (x: number, y: number): V3 => { const t = topP(x, y), q = under(x, y, OUT + TH); return [q[0], q[1], Math.min(t[2] - 0.0015, Math.max(q[2], chestZ(q[0], q[1]) + 0.001))]; };
     // envelope: a cap that follows the skin over the gland, apex under the nipple
-    const cap = (zf: (x: number, y: number) => number) => (u: number, w: number): V3 => { const [x, y] = xy(u * Math.PI * 2, w); return [x, y, zf(x, y)]; };
+    const cap = (f: (x: number, y: number) => V3) => (u: number, w: number): V3 => { const [x, y] = xy(u * Math.PI * 2, w); return f(x, y); };
     add({ id: `breast-envelope-${s[2]}`, name: `${s[3]} breast envelope (fat and glandular tissue)`, side: s[0], systems: ['integumentary', 'reproductive'], region: 'thorax', category: 'schematic gland',
-      mesh: gridShell(cap(top), cap(bottom), 36, 10, true), aliases: ['breast', 'mamma', 'corpus mammae', 'breast fat', 'adipose tissue of breast', 'mammary fat pad', 'glandular tissue of breast'] });
+      mesh: gridShell(cap(topP), cap(bottomP), 36, 10, true), aliases: ['breast', 'mamma', 'corpus mammae', 'breast fat', 'adipose tissue of breast', 'mammary fat pad', 'glandular tissue of breast'] });
     // Cooper's ligaments: fibrous septa from the fascia over the pectoralis to the dermis, leaning towards the nipple
     const cb = new MeshBuilder();
     const rings: [number, number][] = [[0.3, 8], [0.55, 13], [0.8, 18]];
@@ -183,15 +186,15 @@ export async function generateGaps(b: Body, body: 'male' | 'female', items: Item
     add({ id: `lactiferous-ducts-${s[2]}`, name: `${s[3]} lactiferous ducts (15, branching to the nipple)`, side: s[0], systems: ['reproductive', 'integumentary'], region: 'thorax', category: 'schematic gland', mesh: db.build(),
       aliases: ['milk ducts', 'ductus lactiferi', 'lactiferous sinuses', 'mammary ducts', 'breast ducts'] });
     // axillary tail (tail of Spence): a tongue of breast tissue from the upper outer quadrant towards the axilla
-    const phiT = Math.atan2(0.57, 0.82 * s[1]), start = xy(phiT, 0.5), endR = reach(phiT) + 0.035;
+    const phiT = Math.atan2(0.67, 0.74 * s[1]), start = xy(phiT, 0.5), endR = reach(phiT) + 0.028;
     const endP: [number, number] = [N[0] + endR * Math.cos(phiT), N[1] + endR * Math.sin(phiT)];
-    const tail = (zf: (x: number, y: number) => number) => (u: number, w: number): V3 => {
+    const tail = (f: (x: number, y: number) => V3) => (u: number, w: number): V3 => {
       const cx = start[0] + (endP[0] - start[0]) * u, cy = start[1] + (endP[1] - start[1]) * u, hw = 0.016 * (1 - 0.55 * u);
       const px = -Math.sin(phiT), py = Math.cos(phiT), off = (2 * w - 1) * hw, x = cx + px * off, y = cy + py * off;
-      return [x, y, zf(x, y)];
+      return f(x, y);
     };
     add({ id: `axillary-tail-of-breast-${s[2]}`, name: `${s[3]} axillary tail of breast (tail of Spence)`, side: s[0], systems: ['integumentary', 'reproductive'], region: 'thorax', category: 'schematic gland',
-      mesh: gridShell(tail((x, y) => skinZ(x, y) - 0.0045), tail((x, y) => Math.max(skinZ(x, y) - 0.0085, chestZ(x, y) + 0.001)), 14, 6, false),
+      mesh: gridShell(tail((x, y) => under(x, y, 0.0045)), tail((x, y) => { const q = under(x, y, 0.0085); return [q[0], q[1], Math.max(q[2], chestZ(q[0], q[1]) + 0.001)]; }), 14, 6, false),
       aliases: ['tail of Spence', 'axillary process of breast', 'processus axillaris', 'axillary tail of Spence'] });
   }
 
@@ -285,14 +288,14 @@ export async function generateGaps(b: Body, body: 'male' | 'female', items: Item
     const sym = await P('pubic-symphysis'), bl = await P('urinary-bladder'), sC = C('pubic-symphysis'), bC = C('urinary-bladder');
     const y0 = sC[1] + 0.014, zs = zRange(sym, sC[1], 0.016), zb = zRange(bl, y0, 0.012);
     const z0 = zs ? (zs[0] + (zb ? Math.max(zb[1], zs[0] - 0.014) : zs[0] - 0.012)) / 2 : sC[2] - 0.008;
-    await pouch('retropubic-space', 'Retropubic space (space of Retzius)', [(sC[0] + bC[0]) / 2, y0, Math.min(z0, (zs ? zs[0] : sC[2]) - 0.004)], [0.02, 0.016, 0.0045], ['urinary', 'connective'], 'pelvis', ['space of Retzius', 'spatium retropubicum', 'prevesical space', 'cave of Retzius']);
+    await pouch('retropubic-space', 'Retropubic space (space of Retzius)', [(sC[0] + bC[0]) / 2, y0, Math.min(z0, (zs ? zs[0] : sC[2]) - 0.004)], [0.02, 0.016, 0.0035], ['urinary', 'connective'], 'pelvis', ['space of Retzius', 'spatium retropubicum', 'prevesical space', 'cave of Retzius']);
   }
   // tympanic cavities: the middle-ear cavity around the ossicles, medial to the tympanic membrane
   for (const s of SIDES) {
     if (!has(`malleus-${s[2]}`) || !has(`incus-${s[2]}`) || !has(`stapes-${s[2]}`)) continue;
     const ps = [...(await P(`malleus-${s[2]}`)), ...(await P(`incus-${s[2]}`)), ...(await P(`stapes-${s[2]}`))], c = mean(ps);
-    for (let k = 0; k < 60; k++) { const a = (k / 60) * Math.PI * 2; ps.push([c[0] + 0.0019 * Math.cos(a), c[1] + 0.0045 * Math.sin(a), c[2]], [c[0], c[1] + 0.0045 * Math.cos(a), c[2] + 0.0055 * Math.sin(a)]); }
-    cav({ id: `tympanic-cavity-${s[2]}`, name: `${s[3]} tympanic cavity (middle ear)`, side: s[0], systems: b.need(`tympanic-membrane-${s[2]}`).systems, region: 'head', mesh: radialShell(c, ps, 0.0016, 0.0007, 24, 14),
+    for (let k = 0; k < 60; k++) { const a = (k / 60) * Math.PI * 2; ps.push([c[0] + 0.0014 * Math.cos(a), c[1] + 0.0032 * Math.sin(a), c[2]], [c[0], c[1] + 0.0032 * Math.cos(a), c[2] + 0.004 * Math.sin(a)]); }
+    cav({ id: `tympanic-cavity-${s[2]}`, name: `${s[3]} tympanic cavity (middle ear)`, side: s[0], systems: b.need(`tympanic-membrane-${s[2]}`).systems, region: 'head', mesh: radialShell(c, ps, 0.0011, 0.0005, 24, 14),
       aliases: ['middle ear', 'cavitas tympanica', 'middle ear cavity', 'tympanum'] });
   }
 }

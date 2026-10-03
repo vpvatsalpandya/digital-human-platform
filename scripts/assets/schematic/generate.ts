@@ -193,7 +193,7 @@ export async function generate(b: Body, body: 'male' | 'female'): Promise<Item[]
     void sh; pathPts.push(impar());
     return pathPts;
   };
-  const canalBodyX = (d: { centroid: number[] }) => d.centroid[0];
+  const canalBodyX = (d: { centroid: number[] }): number => d.centroid[0]!;
   const trunkLow = (sg: number): V3 => {
     const t = trunkPts[sg > 0 ? 'l' : 'r']!; return t.reduce((a, p) => (p[1] < a[1] ? p : a));
   };

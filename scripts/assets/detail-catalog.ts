@@ -70,8 +70,8 @@ export function regionOf(paths: string[]): string | undefined {
 }
 
 /** Sex-specific anatomy. Used to keep each body free of the other sex's structures (see tests/anatomy-sex.test.ts). */
-export const MALE_ONLY = /\bmale urethra|navicular fossa|penis|penile|prostat|scrot|testicular|testis|testes|spermatic|seminal|deferens|epididym|ejaculatory|glans|prepuce|foreskin|cremaster|dartos|bulbospongios|ischiocavernos|bulbourethral|cowper|colliculus of urethra|utricle of prostate|prostatic utricle|fibromuscular stroma/i;
-export const FEMALE_ONLY = /\buter(us|ine)\b|uterus|ovar(y|ian)|vagina|fallopian|clitor|vulva|labi(um|a) (majus|minus|majora|minora)|\blabia\b|cervix|cervical os|mesosalpinx|mesovarium|broad ligament|hymen|bartholin|vestibular bulb|bulb of vestibule/i;
+export const MALE_ONLY = /\bmale urethra|bulbar (part of )?(male )?urethra|spongy (part of )?(male )?urethra|rectovesical|navicular fossa|penis|penile|prostat|scrot|testicular|testis|testes|spermatic|seminal|deferens|epididym|ejaculatory|glans|prepuce|foreskin|cremaster|dartos|bulbospongios|ischiocavernos|bulbourethral|cowper|colliculus of urethra|utricle of prostate|prostatic utricle|fibromuscular stroma/i;
+export const FEMALE_ONLY = /\buter(us|ine)\b|uterus|ovar(y|ian)|vagina|fallopian|clitor|vulva|labi(um|a) (majus|minus|majora|minora)|\blabia\b|cervix|cervical os|mesosalpinx|mesovarium|broad ligament|hymen|bartholin|vestibular bulb|bulb of vestibule|rectouterine|vesicouterine|lactiferous|suspensory ligaments? of (the )?breast|axillary tail of (the )?breast|breast envelope/i;
 
 const has = (paths: string[], s: string) => paths.some((p) => p.includes(s));
 

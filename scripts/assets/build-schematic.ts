@@ -13,6 +13,7 @@ import { generate, SCHEMATIC_CATEGORIES } from './schematic/generate';
 import { openBody } from './schematic/io';
 import { boundsOfPiece, encodePiece, MeshoptEncoder } from './schematic/encode';
 import { signedVolume } from './schematic/geom';
+import { containPiece, loadSkinField } from './schematic/skinfield';
 
 const ROOT = process.cwd();
 const GROUP = 'schematic';
@@ -32,6 +33,18 @@ async function main() {
 
     const b = await openBody(ROOT, body);
     const items = await generate(b, body);
+    // Pull any generated shape that sticks out of the skin back inside (nipples, areolae, eyes, teeth and the ear sit on the surface by design).
+    const field = loadSkinField(body);
+    if (!field) console.warn(`${body}: no skin field (python3 scripts/qa/skin_field.py): containment pass skipped`);
+    else {
+      let n = 0, worst = 0;
+      for (const it of items) {
+        if (/^(nipple|areola)-/.test(it.id) || it.category === 'schematic eye' || it.category === 'schematic tooth') continue;
+        const r = containPiece(it.mesh, field);
+        if (r.moved) { n++; worst = Math.max(worst, r.max); console.log(`  contained ${it.id}: ${r.moved} vertices, largest move ${(r.max * 1000).toFixed(1)} mm`); }
+      }
+      console.log(`${body}: containment moved ${n} stand-ins (largest move ${(worst * 1000).toFixed(1)} mm)`);
+    }
     const existing = new Set<string>([...b.detail.structures.map((s) => s.id).filter((i) => !i.startsWith('x-')), ...b.core.structures.map((s) => s.id)]);
     const chunks: Uint8Array[] = []; let size = 0;
     const structures = [];

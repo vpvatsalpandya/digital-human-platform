@@ -99,7 +99,9 @@ def main():
         top = mv[np.abs(mv[:, 0]) < 0.012]; jy = top[:, 1].max() - 0.004
         def front(x, y, r=0.008):
             m = (np.hypot(skin[:, 0] - x, skin[:, 1] - y) < r); return skin[m, 2].max() - 0.004
-        jug = [0.0, jy, front(0.0, jy)]
+        # the notch is a dip between the clavicular heads: the marker (a ball about 12 mm in radius) sits wholly behind the skin of the notch floor
+        col = skin[(np.abs(skin[:, 0]) < 0.004) & (np.abs(skin[:, 1] - jy) < 0.006)]
+        jug = [0.0, jy, (col[:, 2].max() if len(col) else front(0.0, jy) + 0.004) - 0.0145]
         umb = [o for o in uidx if o['name'].endswith('adipose_tissue_umbilicus_area')][0]
         ux = (umb['min'][0] + umb['max'][0]) / 2; uy = (umb['min'][1] + umb['max'][1]) / 2
         lm = {'jugular-notch': jug, 'umbilicus': [ux, uy, front(ux, uy)]}

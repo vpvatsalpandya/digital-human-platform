@@ -2,7 +2,7 @@
  "male": {
   "structures": 3571,
   "triangles": 1677243,
-  "bytes": 9877404,
+  "bytes": 9877955,
   "byGroup": {
    "core-upgrades": 12,
    "muscles": 509,
@@ -87,7 +87,7 @@
    },
    {
     "id": "schematic",
-    "bytes": 703367,
+    "bytes": 703918,
     "count": 433
    }
   ],
@@ -125,7 +125,7 @@
  "female": {
   "structures": 3596,
   "triangles": 1679989,
-  "bytes": 9909998,
+  "bytes": 9910804,
   "byGroup": {
    "core-upgrades": 14,
    "muscles": 509,
@@ -210,7 +210,7 @@
    },
    {
     "id": "schematic",
-    "bytes": 716613,
+    "bytes": 717419,
     "count": 453
    }
   ],

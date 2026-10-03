@@ -14,6 +14,7 @@
  */
 import { MeshBuilder, gridShell, v, type Piece, type V3 } from './geom';
 import { nearest, points, slabMean, type openBody } from './io';
+import { loadSkinField } from './skinfield';
 import { SIDES, branch, lerp, pt, tubeMesh, type Item } from './generate';
 
 type Body = Awaited<ReturnType<typeof openBody>>;
@@ -209,40 +210,52 @@ export async function generateMore(b: Body, body: 'male' | 'female', items: Item
   }
 
   // ---- female external genitalia and urethra ---------------------------------------------------------------------
+  // Placed about the body's own pelvic midline (the HRA female pelvis is not centred on x = 0: symphysis, vagina and bladder sit
+  // about 1.5 cm to the body's right) and behind the real skin: the skin mesh has a groin cleft between the thighs, and the vulva
+  // belongs on the floor of that cleft and above the crotch, not in the air of the cleft.
   if (body === 'female' && has('vagina') && has('pubic-symphysis')) {
     const vag = await P('vagina'), sym = B('pubic-symphysis'), skin = await P('skin');
+    const xm = (C('vagina')[0] + C('pubic-symphysis')[0] + C('urinary-bladder')[0]) / 3;
     const lowest = [...vag].sort((p, q) => p[1] - q[1]).slice(0, Math.max(5, Math.floor(vag.length * 0.03)));
     const I = mean(lowest);
-    const frontZ = (y: number): number => { let z = -Infinity; for (const p of skin) if (Math.abs(p[0]) < 0.012 && Math.abs(p[1] - y) < 0.006 && p[2] > z) z = p[2]; return z; };
-    const vy = I[1] - 0.004, V: V3 = [0, vy, Math.min(frontZ(vy) - 0.005, I[2] + 0.04)];
+    const yLow = I[1] - 0.008; // the crotch: nothing of the vulva lies below this
+    /** Front surface of the midline at height y: the floor of the groin cleft (lowest of the per-column forward skin heights near the midline). */
+    const floorZ = (y: number): number => {
+      const cols = new Map<number, number>();
+      for (const p of skin) if (Math.abs(p[0] - xm) < 0.014 && Math.abs(p[1] - y) < 0.006 && p[2] > I[2] - 0.012) { const k = Math.round((p[0] - xm) / 0.004); const z = cols.get(k); if (z === undefined || p[2] > z) cols.set(k, p[2]); }
+      return cols.size ? Math.min(...cols.values()) : sym[5] - 0.012;
+    };
+    /** Centre of an ellipsoid with half-extents (hx, hy, hz): kept above the crotch and behind the skin floor. */
+    const place = (cx: number, cy: number, cz: number, hy: number, hz: number): V3 => {
+      const y = Math.max(cy, yLow + hy);
+      return [cx, y, Math.min(cz, floorZ(y) - hz - 0.003)];
+    };
+    const blob = (c: V3, r: number, sc: V3): Piece => { const m = new MeshBuilder(); m.sphere(c, r, sc); return m.build(); };
+    const vy = I[1] + 0.003, V: V3 = [xm, vy, floorZ(vy) - 0.007];
     const tri = has('trigone-of-urinary-bladder') ? B('trigone-of-urinary-bladder') : B('urinary-bladder');
-    const neck: V3 = [0, tri[1] + 0.004, (tri[2] + tri[5]) / 2];
-    const U: V3 = [0, V[1] + 0.012, V[2] - 0.002];
+    const neck: V3 = [xm, tri[1] + 0.004, (tri[2] + tri[5]) / 2];
+    const U: V3 = [xm, V[1] + 0.012, Math.min(V[2] - 0.002, floorZ(V[1] + 0.012) - 0.006)];
     add({ id: 'female-urethra', name: 'Female urethra', systems: ['urinary'], region: 'pelvis', category: 'schematic organ', mesh: tube([neck, lerp(neck, U, 0.5), U], 0.0032, 0.0028), aliases: ['urethra', 'urethra feminina', 'external urethral orifice'] });
     // clitoris: glans under the clitoral hood, body to the pubic arch, two crura along the ischiopubic rami
-    const G: V3 = [0, V[1] + 0.03, Math.min(frontZ(V[1] + 0.03) - 0.005, V[2] + 0.004)];
-    const S0: V3 = [0, sym[1] - 0.002, sym[5] - 0.007];
-    const gb = new MeshBuilder(); gb.sphere(G, 0.0055, [1, 1, 1]);
-    add({ id: 'glans-of-clitoris', name: 'Glans of clitoris', systems: ['reproductive'], region: 'pelvis', category: 'schematic organ', mesh: gb.build(), aliases: ['clitoris', 'clitoral glans', 'glans clitoridis'] });
+    const Gy = V[1] + 0.03, G: V3 = [xm, Gy, Math.min(floorZ(Gy) - 0.0055 - 0.004, V[2] + 0.004)];
+    add({ id: 'glans-of-clitoris', name: 'Glans of clitoris', systems: ['reproductive'], region: 'pelvis', category: 'schematic organ', mesh: blob(G, 0.0055, [1, 1, 1]), aliases: ['clitoris', 'clitoral glans', 'glans clitoridis'] });
+    const S0: V3 = [xm, sym[1] - 0.002, sym[5] - 0.007];
     add({ id: 'body-of-clitoris', name: 'Body of clitoris', systems: ['reproductive'], region: 'pelvis', category: 'schematic organ', mesh: tube([G, lerp(G, S0, 0.5), S0], 0.0045, 0.0055), aliases: ['clitoris', 'corpus clitoridis', 'corpora cavernosa of clitoris'] });
     for (const s of SIDES) {
       const hip = await P(`hip-bone-${s[2]}`);
-      const tub = hip.filter((p) => p[1] < sym[1] + 0.02 && p[2] < sym[2] && Math.sign(p[0]) === s[1]).reduce<V3 | null>((q, p) => (!q || p[1] < q[1] ? p : q), null) ?? [s[1] * 0.06, sym[1] - 0.05, sym[2]];
+      const tub = hip.filter((p) => p[1] < sym[1] + 0.02 && p[2] < sym[2] && Math.sign(p[0] - xm) === s[1]).reduce<V3 | null>((q, p) => (!q || p[1] < q[1] ? p : q), null) ?? [xm + s[1] * 0.06, sym[1] - 0.05, sym[2]];
       const T: V3 = [tub[0] - s[1] * 0.012, tub[1] + 0.012, tub[2] + 0.012];
       add({ id: `crus-of-clitoris-${s[2]}`, name: `${s[3]} crus of clitoris`, side: s[0], systems: ['reproductive'], region: 'pelvis', category: 'schematic organ', mesh: tube([S0, lerp(S0, T, 0.5), T], 0.0055, 0.0065), aliases: ['clitoral crus', 'crus clitoridis'] });
-      const bc: V3 = [s[1] * 0.017, V[1] + 0.002, V[2] - 0.016];
-      const bb = new MeshBuilder(); bb.sphere(bc, 0.01, [0.7, 2.2, 0.9]);
-      add({ id: `bulb-of-vestibule-${s[2]}`, name: `${s[3]} bulb of vestibule`, side: s[0], systems: ['reproductive'], region: 'pelvis', category: 'schematic organ', mesh: bb.build(), aliases: ['vestibular bulb', 'bulbus vestibuli', 'clitoral bulb'] });
-      const gc: V3 = [s[1] * 0.019, V[1] - 0.014, V[2] - 0.022];
-      const gl = new MeshBuilder(); gl.sphere(gc, 0.0055, [1, 1, 1]);
-      add({ id: `greater-vestibular-gland-${s[2]}`, name: `${s[3]} greater vestibular gland`, side: s[0], systems: ['reproductive'], region: 'pelvis', category: 'schematic organ', mesh: gl.build(), aliases: ["Bartholin's gland", 'glandula vestibularis major'] });
-      const lm = new MeshBuilder(); lm.sphere([s[1] * 0.0085, V[1] + 0.004, V[2] - 0.003], 0.008, [0.28, 2.2, 0.6]);
-      add({ id: `labium-minus-${s[2]}`, name: `${s[3]} labium minus`, side: s[0], systems: ['reproductive'], region: 'pelvis', category: 'schematic organ', mesh: lm.build(), aliases: ['labia minora', 'nymphae', 'labium minus pudendi'] });
-      const lj = new MeshBuilder(); lj.sphere([s[1] * 0.021, V[1] + 0.003, V[2] - 0.009], 0.014, [0.45, 3.0, 0.8]);
-      add({ id: `labium-majus-${s[2]}`, name: `${s[3]} labium majus`, side: s[0], systems: ['reproductive'], region: 'pelvis', category: 'schematic organ', mesh: lj.build(), aliases: ['labia majora', 'labium majus pudendi'] });
+      const bc = place(xm + s[1] * 0.017, V[1] + 0.004, V[2] - 0.01, 0.0158, 0.005);
+      add({ id: `bulb-of-vestibule-${s[2]}`, name: `${s[3]} bulb of vestibule`, side: s[0], systems: ['reproductive'], region: 'pelvis', category: 'schematic organ', mesh: blob(bc, 0.01, [0.7, 1.6, 0.9]), aliases: ['vestibular bulb', 'bulbus vestibuli', 'clitoral bulb'] });
+      const gc = place(xm + s[1] * 0.019, V[1] - 0.002, V[2] - 0.016, 0.0055, 0.0055);
+      add({ id: `greater-vestibular-gland-${s[2]}`, name: `${s[3]} greater vestibular gland`, side: s[0], systems: ['reproductive'], region: 'pelvis', category: 'schematic organ', mesh: blob(gc, 0.0055, [1, 1, 1]), aliases: ["Bartholin's gland", 'glandula vestibularis major'] });
+      const lmc = place(xm + s[1] * 0.0085, V[1] + 0.008, V[2] - 0.003, 0.0152, 0.0048);
+      add({ id: `labium-minus-${s[2]}`, name: `${s[3]} labium minus`, side: s[0], systems: ['reproductive'], region: 'pelvis', category: 'schematic organ', mesh: blob(lmc, 0.008, [0.28, 1.9, 0.6]), aliases: ['labia minora', 'nymphae', 'labium minus pudendi'] });
+      const ljc = place(xm + s[1] * 0.021, V[1] + 0.02, V[2] - 0.009, 0.03, 0.0112);
+      add({ id: `labium-majus-${s[2]}`, name: `${s[3]} labium majus`, side: s[0], systems: ['reproductive'], region: 'pelvis', category: 'schematic organ', mesh: blob(ljc, 0.014, [0.45, 2.15, 0.8]), aliases: ['labia majora', 'labium majus pudendi'] });
     }
-    const vb = new MeshBuilder(); vb.sphere([0, V[1] + 0.002, V[2] - 0.004], 0.01, [0.6, 1.6, 0.5]);
-    add({ id: 'vestibule-of-vagina', name: 'Vestibule of vagina', systems: ['reproductive'], region: 'pelvis', category: 'schematic organ', mesh: vb.build(), aliases: ['vaginal vestibule', 'vestibulum vaginae', 'introitus', 'vaginal opening'] });
+    add({ id: 'vestibule-of-vagina', name: 'Vestibule of vagina', systems: ['reproductive'], region: 'pelvis', category: 'schematic organ', mesh: blob(place(xm, V[1] + 0.003, V[2] - 0.004, 0.0128, 0.005), 0.008, [0.6, 1.6, 0.6]), aliases: ['vaginal vestibule', 'vestibulum vaginae', 'introitus', 'vaginal opening'] });
   }
 
   // ==== gap-fill batch (anatomy-fixes-4) =====================================================================
@@ -434,8 +447,12 @@ export async function generateMore(b: Body, body: 'male' | 'female', items: Item
 
   // ---- representative inset of the skin appendages (NOT anatomical): drawn about 3x life size with thickened radii --------------------------
   if (has('umbilicus')) {
-    const x0 = 0.075, y0 = C('umbilicus')[1] + 0.06, sp0 = skinPlane(x0, y0), zs = sp0 ? sp0.z : skinFront(x0, y0, 0.03);
-    const loc = (a: number, d: number, bb = 0): V3 => [x0 + a, y0 + bb, zs - d];
+    const x0 = 0.03, y0 = C('umbilicus')[1] + 0.06, sf = loadSkinField(body), sp0 = skinPlane(x0, y0), zf = sf?.frontZ(x0, y0);
+    const zs = (zf ?? (sp0 ? sp0.z : skinFront(x0, y0, 0.03))) - 0.0045; // the 4 mm voxel field puts the surface within +-2 mm; stay clear of it
+    // local frame on the skin: outward normal from the skin field (or the fitted plane), e1 along the body's left, e2 up the surface
+    const g = sf ? sf.grad([x0, y0, zs], 0.016) : null, nOut: V3 = g ? norm3([-g[0], -g[1], -g[2]]) : sp0 ? sp0.n : [0, 0, 1];
+    const e1 = norm3(sub([1, 0, 0], scale3(nOut, nOut[0]))), e2 = v.cross(nOut, e1);
+    const loc = (a: number, d: number, bb = 0): V3 => [x0 + e1[0] * a + e2[0] * bb - nOut[0] * d, y0 + e1[1] * a + e2[1] * bb - nOut[1] * d, zs + e1[2] * a + e2[2] * bb - nOut[2] * d];
     const part = (build: (m: MeshBuilder) => void): Piece => { const m = new MeshBuilder(); build(m); return m.build(); };
     const tb = (m: MeshBuilder, ps: [number, number, number][], r0: number, r1 = r0) => m.tube(ps.map((q, i) => pt(loc(q[0], q[1], q[2]), r0 + ((r1 - r0) * i) / Math.max(1, ps.length - 1))), { step: 0.0007, sides: 6 });
     const bal = (m: MeshBuilder, a: number, d: number, bb: number, r: number, sc: V3 = [1, 1, 1]) => m.sphere(loc(a, d, bb), r, sc);

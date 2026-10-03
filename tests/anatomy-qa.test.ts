@@ -18,8 +18,8 @@ const merged = (b: 'male' | 'female'): BodyManifest => mergeManifests(read(`${CO
 const text = (s: ManifestStructure) => `${s.id} ${s.name} ${s.latinName ?? ''}`.toLowerCase();
 
 // Terms that identify sex-specific anatomy, matched on id + name + Latin name.
-const MALE_ONLY = /\b(penis|penile|testis|testes|testicular|epididym|scrot|prostat|seminal|vas-?deferens|ductus-deferens|spermatic|bulbourethral|cowper|glans-penis|corpus-(cavernosum|spongiosum)-(of-)?penis|foreskin|prepuce-of-penis|tunica-vaginalis|cremaster|ejaculatory)/;
-const FEMALE_ONLY = /\b(uter(us|ine)|ovar(y|ies|ian)|fallopian|vagin|vulva|labi(um|a)-(majus|minus|majora|minora)|labium|clitor|vestibular-bulb|greater-vestibular|bartholin|cervix-of-uterus|endometri|myometri|broad-ligament|round-ligament-of-uterus|suspensory-ligament-of-ovary|mammary|breast|hymen|fimbri|infundibulum-of-uterine|ampulla-of-uterine|cardinal|uterosacral|mons-pubis|female)/;
+const MALE_ONLY = /\b(male-urethra|membranous-part-of-male-urethra|bulbar-part-of-male|penile-part-of-male|navicular-fossa|rectovesical|penis|penile|testis|testes|testicular|epididym|scrot|prostat|seminal|vas-?deferens|ductus-deferens|spermatic|bulbourethral|cowper|glans-penis|corpus-(cavernosum|spongiosum)-(of-)?penis|foreskin|prepuce-of-penis|tunica-vaginalis|cremaster|ejaculatory)/;
+const FEMALE_ONLY = /\b(uter(us|ine)|ovar(y|ies|ian)|fallopian|vagin|vulva|labi(um|a)-(majus|minus|majora|minora)|labium|clitor|vestibular-bulb|greater-vestibular|bartholin|cervix-of-uterus|endometri|myometri|broad-ligament|round-ligament-of-uterus|suspensory-ligament-of-ovary|mammary|breast|lactiferous|suspensory-ligaments-of-breast|axillary-tail|rectouterine|vesicouterine|hymen|fimbri|infundibulum-of-uterine|ampulla-of-uterine|cardinal|uterosacral|mons-pubis|female)/;
 // Words that look sex-specific to a regex but are anatomy both sexes have.
 const BOTH_SEXES_OK = /(intercornual|urethral-sphincter|membranous-urethra|tendon sheath|round-ligament-of-liver|vestibul(e|ar)-(of|ligament|fold|nerve|artery|vein|aqueduct|window|membrane|ganglion|nuclei|nucleus)|vestibulo|infundibulum-of-(hypothalam|pituitar|right-ventricle|cerebr|frontal)|pituitary|cardinal-(vein|ligament-of-the-heart)|ovarian-vein-wrong)/;
 const sexual = (re: RegExp, s: ManifestStructure) => re.test(s.id) && !BOTH_SEXES_OK.test(text(s));
@@ -205,6 +205,16 @@ describe.runIf(built)('registration sanity (manifest bounds)', () => {
     it(`${b}: a "left" structure lies on the left of its right partner (brain regions included; the vagus trunks run down to the abdomen and cross the midline)`, () => {
       const wrong = m.structures.filter((s) => /-l$/.test(s.id) && !/vagus/.test(s.id)).flatMap((s) => { const r = by.get(s.id.slice(0, -1) + 'r'); if (!r) return []; const cx = (x: ManifestStructure) => (x.bounds[0] + x.bounds[3]) / 2; return cx(s) > cx(r) ? [] : [s.id]; });
       expect(wrong).toEqual([]);
+    });
+    it(`${b}: the ankle is not torn (tibia and fibula extent relative to the talus mirrors left to right within 15 mm)`, () => {
+      // Regression: a midline gate in the leg registration left the medial malleolus of one ankle half-registered (male right: tibia 30 mm off its mirror image).
+      const need = (id: string) => by.get(id)!;
+      for (const [n, medial] of [['tibia', true], ['fibula', false]] as const) {
+        const l = need(`${n}-l`), r = need(`${n}-r`), tl = need('talus-l'), tr = need('talus-r');
+        // distance from the talus centroid to the bone's medial (tibia) / lateral (fibula) extreme, measured outward from the midline's own side
+        const dl = (medial ? l.bounds[0]! : l.bounds[3]!) - tl.centroid![0]!, dr = -((medial ? r.bounds[3]! : r.bounds[0]!) - tr.centroid![0]!);
+        expect(Math.abs(dl - dr), `${n} ${(dl * 1000).toFixed(0)} vs ${(dr * 1000).toFixed(0)} mm`).toBeLessThan(0.015);
+      }
     });
     it(`${b}: the brain regions sit inside the cranial vault (bounds, 2 mm margin)`, () => {
       const vault = ['frontal-bone', 'occipital-bone', 'parietal-bone-l', 'parietal-bone-r', 'temporal-bone-l', 'temporal-bone-r', 'sphenoid-bone'].map((i) => by.get(i)).filter(Boolean) as ManifestStructure[];

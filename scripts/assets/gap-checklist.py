@@ -78,7 +78,7 @@ Cranial sutures: coronal=coronal-suture
 Cranial sutures: sagittal=sagittal-suture
 Cranial sutures: lambdoid=lambdoid-suture
 Cranial sutures: squamous=squamous-suture
-Metopic suture (closed in adults)=metopic-suture
+Metopic suture (usually closed in adults)=metopic-suture
 Cranial sutures: sphenofrontal / sphenoparietal=sphenofrontal-suture|sphenoparietal-suture
 Cranial sutures: occipitomastoid=occipitomastoid-suture
 Cranial sutures: frontonasal / frontomaxillary=frontonasal-suture|frontomaxillary-suture
@@ -163,6 +163,9 @@ Deep fascia: intermuscular septa=lateral-intermuscular-septum-of-arm
 '''),
  'Cardiovascular (heart, arteries, veins)': L('''
 Heart=heart
+Pericardial cavity=pericardial-cavity
+Transverse pericardial sinus=transverse-pericardial-sinus
+Oblique pericardial sinus=oblique-pericardial-sinus
 Right atrium / left atrium=cardiac-atrium
 Aortic valve=aortic-valve
 Interventricular septum=interventricular-septum
@@ -228,7 +231,9 @@ Intercostal arteries=posterior-intercostal-arteries
 Lumbar arteries=lumbar-arteries
 Thoracoacromial artery=thoracoacromial-artery
 Deep circumflex iliac artery=deep-circumflex-iliac-artery
-Umbilical artery=umbilical-artery*|medial-umbilical-ligament
+Umbilical artery (patent part)=umbilical-artery*
+Medial umbilical ligament=medial-umbilical-ligament
+Ligamentum arteriosum=ligamentum-arteriosum
 Superior vena cava=superior-vena-cava
 Inferior vena cava=inferior-vena-cava
 Brachiocephalic vein=left-brachiocephalic-vein
@@ -348,6 +353,7 @@ Conjunctiva=palpebral-conjunctiva*
 Auricle / auricular cartilage=auricular-cartilage
 External acoustic meatus=external-acoustic-meatus
 Tympanic membrane=tympanic-membrane
+Tympanic cavity (middle ear)=tympanic-cavity
 Malleus / incus / stapes=malleus
 Round window=round-window
 Scala tympani=scala-tympani
@@ -370,6 +376,8 @@ Main bronchi=left-main-bronchus
 Segmental bronchi (e.g. anterior, right)=anterior-segmental-bronchus-of-right-lung-biii
 Lung lobes=lung
 Pleura=pleura*|parietal-pleura*|serous-membrane*
+Pleural cavity=pleural-cavity
+Fibrous pericardium=fibrous-pericardium
 Larynx: thyroid cartilage=thyroid-cartilage
 Vocal fold / vocalis=vocalis|vocal-fold
 Larynx: vestibular fold=vestibular-fold
@@ -403,7 +411,13 @@ Pancreas=pancreas
 Coronary ligament of liver=coronary-ligament-of-liver
 Falciform ligament=falciform-ligament*
 Omenta / peritoneum=greater-omentum*|omentum*|lesser-omentum*
-Mesenteries=mesentery*|mesocolon*
+Mesentery=mesentery
+Mesocolons (transverse, sigmoid)=transverse-mesocolon|sigmoid-mesocolon
+Lesser omentum=lesser-omentum
+Omental bursa (lesser sac)=omental-bursa
+Gastrosplenic / splenorenal ligaments=gastrosplenic-ligament|splenorenal-ligament
+Round ligament of liver=round-ligament-of-liver
+Ligamentum venosum=ligamentum-venosum
 '''),
  'Urinary and reproductive': L('''
 Kidney=kidney
@@ -411,6 +425,20 @@ Renal pyramids / calyces=renal-pyramid*|minor-calyx*|calyx*|renal-calyx*
 Ureter=ureter
 Urinary bladder=urinary-bladder
 Urethra=urethra*|female-urethra
+Membranous part of male urethra=membranous-part-of-male-urethra
+Navicular fossa of male urethra=navicular-fossa-of-male-urethra
+Bulbar part of male urethra=bulbar-part-of-male-urethra
+Penile (spongy) part of male urethra=penile-part-of-male-urethra
+Bulbourethral gland=bulbourethral-gland
+Duct of bulbourethral gland=duct-of-bulbourethral-gland
+Rectovesical pouch=rectovesical-pouch
+Rectouterine pouch (of Douglas)=rectouterine-pouch
+Vesicouterine pouch=vesicouterine-pouch
+Retropubic space (of Retzius)=retropubic-space
+Breast envelope (fat and glandular tissue)=breast-envelope
+Suspensory ligaments of breast (Cooper)=suspensory-ligaments-of-breast
+Lactiferous ducts=lactiferous-ducts
+Axillary tail of breast=axillary-tail-of-breast
 Prostate=prostate
 Seminal gland=seminal-gland
 Ductus deferens=ductus-deferens
@@ -446,6 +474,7 @@ Thyroid gland=thyroid-gland
 Parathyroid glands=~parathyroid
 Adrenal gland=adrenal-gland
 Pituitary gland=adenohypophysis|neurohypophysis
+Pituitary infundibulum (stalk)=pituitary-infundibulum
 Pineal gland=pineal*
 Pancreas (endocrine part)=pancreas
 '''),
@@ -459,27 +488,56 @@ Membranous layer of subcutaneous tissue=membranous-subcutaneous-shell
 Subcutaneous abdominal fat=subcutaneous-abdominal-fat*
 Hair (eyebrows, eyelashes, pubic hair)=pubic-hairs
 Nails=nail*
-Sweat glands=sweat-gland*
-Sebaceous glands=sebaceous-gland*
-Hair follicles=hair-follicle*
-Arrector pili=arrector*
+Nipple=nipple
+Areola=areola
+Sweat glands (representative inset)=sweat-gland*
+Sebaceous glands (representative inset)=sebaceous-gland*
+Hair follicles (representative inset)=hair-follicle*
+Arrector pili (representative inset)=arrector*
 Breast / mammary gland=mammary-gland
-Dermal nerve endings / capillary loops=dermal-*
+Dermal nerve endings (representative inset)=dermal-nerve-ending*
+Dermal capillary loops (representative inset)=dermal-capillary-loop*
 '''),
 }
 
 # Why something stays missing (shown in the audit); keyed by the label.
 REASON = {
- 'Sweat glands': 'microscopic appendage: no open mesh exists and a schematic of one gland per pore is not meaningful',
- 'Sebaceous glands': 'microscopic appendage: no open mesh',
- 'Hair follicles': 'microscopic appendage: no open mesh (scalp hair is also not shipped)',
- 'Arrector pili': 'microscopic: no open mesh',
- 'Dermal nerve endings / capillary loops': 'microscopic: out of scope for a gross-anatomy model',
- 'Metopic suture (closed in adults)': 'closed in adults (fused frontal bone); not present in an adult skeleton',
- 'Umbilical artery': 'fetal vessel, obliterated after birth (remains as the medial umbilical ligament); not modelled',
+ 'Breast / mammary gland': 'the HRA female body has a real mammary gland mesh; the nipple, areola, envelope, ducts and ligaments are schematic',
+ 'Mammary gland': 'no open mesh of the mammary gland in the sources',
+}
+# Placeholders that are real tissue-level concepts but are drawn as REPRESENTATIVE insets only (category "schematic inset"):
+# microscopic skin appendages, about 3x life size at one skin patch; they are not anatomical positions and never counted as real.
+NOTE = {
+ 'Tympanic cavity (middle ear)': 'schematic; hollow envelope around the real ossicles',
+ 'Pericardial cavity': 'schematic; potential space between heart and fibrous pericardium',
+ 'Transverse pericardial sinus': 'schematic; small recess of the pericardial cavity',
+ 'Oblique pericardial sinus': 'schematic; small recess of the pericardial cavity',
+ 'Omental bursa (lesser sac)': 'schematic; thin pocket behind the stomach',
+ 'Bulbar part of male urethra': 'schematic; cut from the real urethra centre line',
+ 'Penile (spongy) part of male urethra': 'schematic; cut from the real urethra centre line',
+ 'Bulbourethral gland': 'schematic; pea-sized, placed clear of neighbours',
+ 'Duct of bulbourethral gland': 'schematic',
+ 'Rectovesical pouch': 'schematic; peritoneal recess, male',
+ 'Rectouterine pouch (of Douglas)': 'schematic; peritoneal recess, female',
+ 'Vesicouterine pouch': 'schematic; peritoneal recess, female',
+ 'Retropubic space (of Retzius)': 'schematic; space behind the pubic symphysis',
+ 'Breast envelope (fat and glandular tissue)': 'schematic; thin plate under the skin, anchored on the nipple',
+ 'Suspensory ligaments of breast (Cooper)': 'schematic',
+ 'Lactiferous ducts': 'schematic; 15 ducts, branching',
+ 'Axillary tail of breast': 'schematic',
+ 'Metopic suture (usually closed in adults)': 'schematic; closed in most adults, persists in a minority',
+ 'Umbilical artery (patent part)': 'schematic; adult remnant: the patent proximal part gives the superior vesical arteries',
+ 'Medial umbilical ligament': 'schematic; obliterated distal umbilical artery',
+ 'Pleural cavity': 'schematic; potential space around each lung',
+ 'Sweat glands (representative inset)': 'representative inset (about 3x life size), not anatomical',
+ 'Sebaceous glands (representative inset)': 'representative inset, not anatomical',
+ 'Hair follicles (representative inset)': 'representative inset, not anatomical',
+ 'Arrector pili (representative inset)': 'representative inset, not anatomical',
+ 'Dermal nerve endings (representative inset)': 'representative inset, not anatomical',
+ 'Dermal capillary loops (representative inset)': 'representative inset, not anatomical',
 }
 
 # Sex-specific entries are "n/a" on the other body (not counted as missing).
 SEX = {}
-for _l in ('Uterus','Uterine tube','Ovary','Vagina','Vestibule of vagina','Clitoris (glans, body, crura)','Bulb of vestibule','Greater vestibular gland','Labia minora','Labia majora','Mammary gland','Uterine artery','Ovarian artery / vein','Dorsal nerve of clitoris','Breast / mammary gland'): SEX[_l] = 'female'
-for _l in ('Prostate','Seminal gland','Ductus deferens','Testis','Epididymis','Penis (corpus cavernosum)','Testicular artery','Dorsal nerve of penis'): SEX[_l] = 'male'
+for _l in ('Uterus','Uterine tube','Ovary','Vagina','Vestibule of vagina','Clitoris (glans, body, crura)','Bulb of vestibule','Greater vestibular gland','Labia minora','Labia majora','Mammary gland','Uterine artery','Ovarian artery / vein','Dorsal nerve of clitoris','Breast / mammary gland','Rectouterine pouch (of Douglas)','Vesicouterine pouch','Breast envelope (fat and glandular tissue)','Suspensory ligaments of breast (Cooper)','Lactiferous ducts','Axillary tail of breast'): SEX[_l] = 'female'
+for _l in ('Membranous part of male urethra','Navicular fossa of male urethra','Bulbar part of male urethra','Penile (spongy) part of male urethra','Bulbourethral gland','Duct of bulbourethral gland','Rectovesical pouch','Prostate','Seminal gland','Ductus deferens','Testis','Epididymis','Penis (corpus cavernosum)','Testicular artery','Dorsal nerve of penis'): SEX[_l] = 'male'

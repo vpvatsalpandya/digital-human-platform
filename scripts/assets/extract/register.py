@@ -137,6 +137,8 @@ def register(sex):
         report['legs'][side] = {'nn_mean_mm': {k: v for k, v in out.items() if k.endswith('_mm')}, 'scale': {k: float(out[k][0]) for k in ('femur', 'shank', 'patella', 'hip')}}
     return warp, legs, report
 
+SHANK_GATE_TOP = 0.12      # m above the knee over which the shank opens the midline gate
+
 def apply_legs(p, legs, name=''):
     """Stage 3: thigh and shank transforms blended over the knee, and in over the groin."""
     orig = p.copy()
@@ -149,7 +151,13 @@ def apply_legs(p, legs, name=''):
         if name.startswith('Patella.') and name[-1] == side[0]: q = tr('patella', orig)
         wy = np.clip((hipy + 0.01 - orig[:, 1]) / 0.05, 0, 1)
         if name.startswith('Femur.') and name[-1] == side[0]: wy = np.ones_like(wy)
-        wx = np.clip((np.abs(orig[:, 0]) - 0.01) / 0.04, 0, 1) * ((orig[:, 0] > 0) if side == 'left' else (orig[:, 0] < 0))
+        # The midline gate keeps the pelvic floor and the other leg out of this leg's transform. It belongs to the groin and thigh only:
+        # the global spine fit leaves the Z-Anatomy body ~16 mm off the HRA midline, so one ankle (male right: |x| 29 mm) used to lie inside
+        # the 10-50 mm ramp and its medial malleolus took half of the shank transform, tearing the tibia up to 43 mm from the talus.
+        # Below the knee the gate is therefore opened completely (fading in over the lower thigh), the side test (x>0 / x<0) stays.
+        ramp = np.clip((np.abs(orig[:, 0]) - 0.01) / 0.04, 0, 1)
+        open_ = LB.smoothstep((kneey + SHANK_GATE_TOP - orig[:, 1]) / SHANK_GATE_TOP)
+        wx = (ramp + (1 - ramp) * open_) * ((orig[:, 0] > 0) if side == 'left' else (orig[:, 0] < 0))
         w = (wy * wx)[:, None]
         p = p + w * (q - orig)
     return p

@@ -47,9 +47,19 @@ npm run assets:build:v2 && npm run assets:build:schematic   (adds the generated 
 npx tsx scripts/qa/dump.ts /workspace/qa/dump                    (decode the merged body for the QA scripts, ~5 s)
 python3 scripts/assets/extract/core_rebase.py <registered> /workspace/qa/dump /workspace/work/core-rebase
 npx tsx scripts/assets/rebuild-core.ts --in /workspace/work/core-rebase   (re-bake the core aggregates in the united frame)
-npm run assets:build:schematic && npx tsx scripts/qa/dump.ts /workspace/qa/dump   (schematic reads the rebuilt core skin)
+npx tsx scripts/qa/dump.ts /workspace/qa/dump                    (the rebuilt core skin)
+python3 scripts/qa/skin_field.py                                 (signed skin-depth field the schematic containment pass reads, ~10 s)
+npm run assets:build:schematic && npx tsx scripts/qa/dump.ts /workspace/qa/dump
+python3 scripts/qa/outside.py                                    (>= 20 % outside the skin: expect none)
 python3 scripts/assets/gap-audit.py . > docs/gap-audit.md
 ```
+
+Stage 5 of the registration, `extract/snap_in.py`, runs once on `/workspace/work/registered` (after `register.py` and the limb fits, before
+`assets:build:v2`; it keeps no state, so re-run it on a fresh registration). It takes real soft-tissue structures (bursae, veins, nerves, ligaments, tendons,
+muscles, glands, sheaths, fasciae; reference planes, movement and region labels are never touched) with >= 20 % of their vertices more than 4 mm outside the
+united skin and brings them in: rigidly for short structures (male right subcutaneous bursa of the medial malleolus 36.9 mm; female left 10.9 mm), softly for
+long ones (male right great saphenous vein, up to 38 mm at the distal end, mean 5 mm), and the nail folds (`perionyx`, which sit on the skin but are smaller than
+the 4 mm QA voxel) to the surface. The log is printed; nothing else moves.
 
 `assets:build:v2` deletes and rewrites the whole pack, so always run `assets:build:schematic` straight after it. `rebuild-core.ts`
 edits the core pack (`hra-v1`) in place and is idempotent, but it must come after `assets:build:v2` because it merges the registered
@@ -184,8 +194,43 @@ bladder, skin and hip bones. `tests/anatomy-qa.test.ts` holds the allow/deny lis
 
 `schematic/more.ts` also adds articular cartilage pads (two per joint, each side, nine joint types: glenohumeral, humeroulnar, humeroradial,
 radiocarpal, tibiofemoral, patellofemoral, talocrural, subtalar, first carpometacarpal; 36 pads per body) as thin domed shells at the closest approach of the
-registered bones, and nine more cranial sutures (17 meshes per body, left/right where paired) traced where the registered skull bones meet. The metopic suture is closed in adults and not
-drawn; the umbilical artery is fetal; the skin's glands, follicles, arrector pili and nerve endings are below mesh resolution and belong to the histology module.
+registered bones, and nine more cranial sutures (17 meshes per body, left/right where paired) traced where the registered skull bones meet. 
+
+### Gap-fill placeholders (anatomy-fixes-4)
+
+Everything below is generated (`provenance: generated`, `(schematic)` in the name, violet, Schematic badge, never counted as real anatomy, found by the
+search tag "schematic") and is built in `schematic/more.ts` with the same helpers as the other stand-ins. The StructureCard shows a one-line note
+(`src/modules/atlas/schematic-notes.ts`).
+
+- `metopic-suture` (frontal bone, midline): usually closed in adults, persists in a minority.
+- `umbilical-artery-l/r` (patent proximal part, from the internal iliac towards the bladder apex) and `medial-umbilical-ligament-l/r` (the obliterated remnant
+  up the anterior abdominal wall to the umbilicus): adult anatomy, so documented here instead of dropped as "fetal".
+- `ligamentum-arteriosum` (aortic arch to the left pulmonary artery), `pituitary-infundibulum`.
+- `nipple-l/r`, `areola-l/r` (both sexes; female over the centre of the real HRA mammary gland, male about 4 cm below the sternal angle; slid back until at most 10 % of the shape is outside).
+- Serous membranes (category `schematic membrane`): `pleural-cavity-l/r`, `fibrous-pericardium` (shells around the real lungs and heart), peritoneal sheets
+  `mesentery`, `transverse-mesocolon`, `sigmoid-mesocolon`, `lesser-omentum`, `gastrosplenic-ligament`, `splenorenal-ligament`.
+- Male only (deny/allow lists: `MALE_ONLY` in `detail-catalog.ts` and `tests/anatomy-qa.test.ts`): `membranous-part-of-male-urethra`, `navicular-fossa-of-male-urethra`.
+- Skin appendages (category `schematic inset`): six REPRESENTATIVE insets (hair follicle, sebaceous gland, arrector pili, sweat gland, dermal capillary loop,
+  dermal nerve ending), about 3x life size, in one patch of abdominal skin 6 cm above the umbilicus, 4.5 mm under the voxel surface, in a frame tilted to the skin
+  normal. They are labelled "representative inset (schematic)", are not anatomical and belong to the histology module for real detail.
+
+Checked and already present, so not added: four parathyroid glands, adeno- and neurohypophysis, pleura, round ligament of the liver, ligamentum venosum,
+falciform, coronary and triangular ligaments, greater omentum, prostatic urethra, the HRA mammary glands (female). Not added: bulbourethral glands, spongy and
+bulbar urethra as separate parts (the real penile urethra mesh exists), pericardial cavity, a breast beyond the real gland.
+
+### Containment of stand-ins and the female external genitalia
+
+`scripts/qa/skin_field.py` writes a signed skin-depth field (4 mm voxels) from the dump; `schematic/skinfield.ts` uses it in `build-schematic.ts` to pull every
+generated shape that is more than 3 mm outside the skin back to 0.5 mm inside (cap 20 mm, smoothed over two vertex rings; eyes and teeth excepted; nipples and
+areolae are slid back rigidly). Without the field file the pass is skipped with a warning, so run `skin_field.py` before the last `assets:build:schematic`.
+
+The female external genitalia (mons pubis, labia, clitoris, vestibule, greater vestibular glands, bulbs) are now built about the true pelvic midline (mean x
+of vagina, pubic symphysis and bladder, about 1.5 cm to the body right of x = 0 in the HRA female) instead of x = 0, above the lowest point of the vagina minus 8 mm and
+in front of the groin-cleft floor of the skin; before, up to a third of their vertices were outside the skin. The jugular-notch marker in `core_rebase.py` now sits
+14.5 mm behind the skin surface at the notch.
+
+Remaining known limits: the male right ankle is mis-registered (distal tibia about 4 cm medial of the talus, up to 35 mm outside the skin; the bursa and vein
+are snapped to the skin instead of fixing the bone); the skin mesh is sparse on the trunk, so containment is only as exact as the 4 mm field.
 
 ### Gap audit
 

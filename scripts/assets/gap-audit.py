@@ -75,7 +75,7 @@ line('… real anatomy (HRA, BodyParts3D, Z-Anatomy, OpenEar, IE-Map)', 'real', 
 line('… generated (schematic stand-ins + skin-layer shells)', 'generated')
 line('… of which schematic stand-ins (nerves, vessels, capsules, eye, cartilage, conduction, …)', 'schematic')
 line('… procedural landmarks (points, not meshes)', 'procedural')
-w(f"\nReal inner-ear and ear-canal structures in the pack (OpenEar + IE-Map): **{r['male']['ear']}** male / **{r['female']['ear']}** female. Net change in real anatomy since 68c259c: **+{r['male']['real']-PREV['male']['real']}** male / **+{r['female']['real']-PREV['female']['real']}** female; schematic stand-ins **+{r['male']['schematic']-PREV['male']['schematic']}** / **+{r['female']['schematic']-PREV['female']['schematic']}**. Generated structures are flagged `generated` in the manifest, violet with a badge in the UI, and are never counted as real anatomy.\n")
+w(f"\nReal inner-ear and ear-canal structures in the pack (OpenEar + IE-Map): **{r['male']['ear']}** male / **{r['female']['ear']}** female. Net change in real anatomy since 68c259c: **{r['male']['real']-PREV['male']['real']:+d}** male / **{r['female']['real']-PREV['female']['real']:+d}** female; schematic stand-ins **+{r['male']['schematic']-PREV['male']['schematic']}** / **+{r['female']['schematic']-PREV['female']['schematic']}**. Generated structures are flagged `generated` in the manifest, violet with a badge in the UI, and are never counted as real anatomy.\n")
 
 w('## 2. Detail pack by category (after)\n')
 for body in ('male', 'female'):

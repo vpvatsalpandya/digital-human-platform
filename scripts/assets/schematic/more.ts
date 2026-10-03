@@ -19,12 +19,12 @@ import { SIDES, branch, lerp, pt, tubeMesh, type Item } from './generate';
 
 type Body = Awaited<ReturnType<typeof openBody>>;
 
-const sub = (a: V3, b: V3): V3 => [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
-const add3 = (a: V3, b: V3): V3 => [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
-const mean = (ps: V3[]): V3 => { const c: V3 = [0, 0, 0]; for (const p of ps) { c[0] += p[0]; c[1] += p[1]; c[2] += p[2]; } return [c[0] / ps.length, c[1] / ps.length, c[2] / ps.length]; };
+export const sub = (a: V3, b: V3): V3 => [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
+export const add3 = (a: V3, b: V3): V3 => [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
+export const mean = (ps: V3[]): V3 => { const c: V3 = [0, 0, 0]; for (const p of ps) { c[0] += p[0]; c[1] += p[1]; c[2] += p[2]; } return [c[0] / ps.length, c[1] / ps.length, c[2] / ps.length]; };
 
 /** Points of A that lie within `d` of some point of B, and for each the nearest point of B. */
-function contact(A: V3[], B: V3[], d: number): { a: V3[]; b: V3[] } {
+export function contact(A: V3[], B: V3[], d: number): { a: V3[]; b: V3[] } {
   const cell = d, key = (x: number, y: number, z: number) => `${Math.floor(x / cell)},${Math.floor(y / cell)},${Math.floor(z / cell)}`;
   const grid = new Map<string, V3[]>();
   for (const p of B) { const k = key(p[0], p[1], p[2]); (grid.get(k) ?? grid.set(k, []).get(k)!).push(p); }
@@ -41,7 +41,7 @@ function contact(A: V3[], B: V3[], d: number): { a: V3[]; b: V3[] } {
 }
 
 /** Domed pad of thickness t on a surface patch: centre c, outward normal n, semi-axes r1, r2 along e1, e2. */
-function pad(c: V3, n: V3, e1: V3, r1: number, r2: number, t: number): Piece {
+export function pad(c: V3, n: V3, e1: V3, r1: number, r2: number, t: number): Piece {
   const e2 = v.cross(n, e1);
   const surf = (th: number, dome: number) => (u: number, w: number): V3 => {
     const ang = u * Math.PI * 2, rho = w;
@@ -52,11 +52,11 @@ function pad(c: V3, n: V3, e1: V3, r1: number, r2: number, t: number): Piece {
 }
 
 
-const norm3 = (a: V3): V3 => { const l = Math.hypot(a[0], a[1], a[2]) || 1; return [a[0] / l, a[1] / l, a[2] / l]; };
-const scale3 = (a: V3, k: number): V3 => [a[0] * k, a[1] * k, a[2] * k];
+export const norm3 = (a: V3): V3 => { const l = Math.hypot(a[0], a[1], a[2]) || 1; return [a[0] / l, a[1] / l, a[2] / l]; };
+export const scale3 = (a: V3, k: number): V3 => [a[0] * k, a[1] * k, a[2] * k];
 
 /** Principal axis of a point cloud (power iteration on the covariance). */
-function principalAxis(ps: V3[]): V3 {
+export function principalAxis(ps: V3[]): V3 {
   const m = mean(ps); const C = [0, 0, 0, 0, 0, 0];
   for (const p of ps) { const d = sub(p, m); C[0]! += d[0] * d[0]; C[1]! += d[0] * d[1]; C[2]! += d[0] * d[2]; C[3]! += d[1] * d[1]; C[4]! += d[1] * d[2]; C[5]! += d[2] * d[2]; }
   let a: V3 = [0.577, 0.577, 0.577];
@@ -64,7 +64,7 @@ function principalAxis(ps: V3[]): V3 {
   return a;
 }
 /** Centre line of an elongated structure: points binned along the principal axis, ordered from `from`'s end. */
-function centreLine(ps: V3[], n: number, from?: V3): V3[] {
+export function centreLine(ps: V3[], n: number, from?: V3): V3[] {
   const ax = principalAxis(ps), m = mean(ps);
   const ts = ps.map((p) => v.dot(sub(p, m), ax)); const t0 = Math.min(...ts), t1 = Math.max(...ts);
   const bins: V3[][] = Array.from({ length: n }, () => []);
@@ -73,9 +73,9 @@ function centreLine(ps: V3[], n: number, from?: V3): V3[] {
   if (from && v.len(sub(line[0]!, from)) > v.len(sub(line[line.length - 1]!, from))) line = line.reverse();
   return line;
 }
-const pathLen = (l: V3[]) => l.slice(1).reduce((a, p, i) => a + v.len(sub(p, l[i]!)), 0);
+export const pathLen = (l: V3[]) => l.slice(1).reduce((a, p, i) => a + v.len(sub(p, l[i]!)), 0);
 /** The part of a polyline between arc lengths s0 and s1 (metres from its start). */
-function subLine(l: V3[], s0: number, s1: number): V3[] {
+export function subLine(l: V3[], s0: number, s1: number): V3[] {
   const out: V3[] = []; let acc = 0;
   const at = (s: number): V3 => { let a = 0; for (let i = 1; i < l.length; i++) { const d = v.len(sub(l[i]!, l[i - 1]!)); if (a + d >= s || i === l.length - 1) return lerp(l[i - 1]!, l[i]!, Math.min(1, Math.max(0, (s - a) / Math.max(1e-9, d)))); a += d; } return l[l.length - 1]!; };
   out.push(at(s0));
@@ -84,14 +84,14 @@ function subLine(l: V3[], s0: number, s1: number): V3[] {
   return out;
 }
 /** Closest pair between two clouds (subsampled). */
-function closestPair(A: V3[], B: V3[], cap = 1800): { a: V3; b: V3; d: number } {
+export function closestPair(A: V3[], B: V3[], cap = 1800): { a: V3; b: V3; d: number } {
   const sa = A.filter((_, i) => i % Math.ceil(A.length / cap) === 0), sb = B.filter((_, i) => i % Math.ceil(B.length / cap) === 0);
   let best = { a: sa[0]!, b: sb[0]!, d: Infinity };
   for (const p of sa) for (const q of sb) { const d = (p[0] - q[0]) ** 2 + (p[1] - q[1]) ** 2 + (p[2] - q[2]) ** 2; if (d < best.d) best = { a: p, b: q, d }; }
   return { ...best, d: Math.sqrt(best.d) };
 }
 /** Thin closed shell around a point cloud, star-shaped about `c`: radius = envelope of the points + tOut (outer) / tIn (inner). */
-function radialShell(c: V3, ps: V3[], tOut: number, tIn: number, nu = 28, nv = 18): Piece {
+export function radialShell(c: V3, ps: V3[], tOut: number, tIn: number, nu = 28, nv = 18): Piece {
   const R: number[][] = Array.from({ length: nv + 1 }, () => new Array<number>(nu).fill(0));
   for (const p of ps) {
     const d = sub(p, c), r = v.len(d); if (r < 1e-6) continue;
@@ -112,7 +112,7 @@ function radialShell(c: V3, ps: V3[], tOut: number, tIn: number, nu = 28, nv = 1
   return gridShell((u, w) => rad(u, w, tOut), (u, w) => rad(u, w, tIn), nu, nv, true);
 }
 /** A thin two-sided sheet over a parametric surface P(u, w) (u, w in [0, 1]), thickness 2t along the local normal. */
-function sheet(P: (u: number, w: number) => V3, nu: number, nw: number, t: number): Piece {
+export function sheet(P: (u: number, w: number) => V3, nu: number, nw: number, t: number): Piece {
   const N = (u: number, w: number): V3 => {
     const e = 0.02, du = sub(P(Math.min(1, u + e), w), P(Math.max(0, u - e), w)), dw = sub(P(u, Math.min(1, w + e)), P(u, Math.max(0, w - e)));
     return norm3(v.cross(du, dw));
@@ -121,7 +121,7 @@ function sheet(P: (u: number, w: number) => V3, nu: number, nw: number, t: numbe
   return gridShell(off(1), off(-1), nu, nw, false);
 }
 /** Quadratic Bezier through a start, a control and an end point. */
-const bez = (a: V3, c: V3, b: V3, t: number): V3 => lerp(lerp(a, c, t), lerp(c, b, t), t);
+export const bez = (a: V3, c: V3, b: V3, t: number): V3 => lerp(lerp(a, c, t), lerp(c, b, t), t);
 
 const JOINTS: { id: string; name: string; a: string; b: string; an: string; bn: string; near: number; aliases: string[]; sided: boolean }[] = [
   { id: 'glenohumeral', name: 'glenohumeral joint', a: 'scapula', b: 'bone-humerus', an: 'glenoid fossa', bn: 'humeral head', near: 0.012, aliases: ['shoulder joint cartilage'], sided: true },

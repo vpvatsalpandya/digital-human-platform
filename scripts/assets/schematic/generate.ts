@@ -14,13 +14,14 @@ import { nearest, points, slabMean, type openBody } from './io';
 import type { SystemId } from '../../../src/engine/types';
 import { generateExtra } from './extra';
 import { generateMore } from './more';
+import { generateGaps } from './gaps';
 
 type Body = Awaited<ReturnType<typeof openBody>>;
 export interface Item {
   id: string; name: string; aliases?: string[]; side: 'left' | 'right' | 'none';
   systems: SystemId[]; region: string; category: SchematicCategory; mesh: Piece;
 }
-export const SCHEMATIC_CATEGORIES = ['schematic nerve', 'schematic plexus', 'schematic ganglion', 'schematic vessel', 'schematic tooth', 'schematic eye', 'schematic capsule', 'schematic cartilage', 'schematic ligament', 'schematic tendon', 'schematic muscle', 'schematic conduction', 'schematic suture', 'schematic organ'] as const;
+export const SCHEMATIC_CATEGORIES = ['schematic nerve', 'schematic plexus', 'schematic ganglion', 'schematic vessel', 'schematic tooth', 'schematic eye', 'schematic capsule', 'schematic cartilage', 'schematic ligament', 'schematic tendon', 'schematic muscle', 'schematic conduction', 'schematic suture', 'schematic organ', 'schematic membrane', 'schematic inset', 'schematic gland', 'schematic cavity'] as const;
 export type Body_ = Body;
 export type SchematicCategory = (typeof SCHEMATIC_CATEGORIES)[number];
 
@@ -192,7 +193,7 @@ export async function generate(b: Body, body: 'male' | 'female'): Promise<Item[]
     void sh; pathPts.push(impar());
     return pathPts;
   };
-  const canalBodyX = (d: { centroid: number[] }) => d.centroid[0];
+  const canalBodyX = (d: { centroid: number[] }): number => d.centroid[0]!;
   const trunkLow = (sg: number): V3 => {
     const t = trunkPts[sg > 0 ? 'l' : 'r']!; return t.reduce((a, p) => (p[1] < a[1] ? p : a));
   };
@@ -344,5 +345,6 @@ export async function generate(b: Body, body: 'male' | 'female'): Promise<Item[]
 
   await generateExtra(b, body, items, ends);
   await generateMore(b, body, items);
+  await generateGaps(b, body, items);
   return items;
 }

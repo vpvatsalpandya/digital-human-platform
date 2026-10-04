@@ -1,6 +1,6 @@
 {
  "body": "male",
- "version": "2026-10-02",
+ "version": "2026-10-03",
  "pack": "hra-v1",
  "licence": "CC-BY-SA-4.0",
  "attribution": "Organs, brain, skin, pelvis and great vessels: Human Reference Atlas 3D Reference Object Library, HuBMAP Consortium, CC BY 4.0, with brain regions from the Allen Human Reference Atlas. Skeleton, muscles, stomach, adrenal glands and testes: Z-Anatomy, CC BY-SA 4.0 (itself derived from BodyParts3D, © The Database Center for Life Science, CC BY-SA 2.1 Japan), registered into the reference-atlas body frame. Derivatives are released under CC BY-SA 4.0.",
@@ -27,7 +27,7 @@
   {
    "system": "muscular",
    "url": "/assets/hra-v1/male/system-muscular.lod2.bin",
-   "bytes": 143564,
+   "bytes": 143680,
    "structureIds": [
     "deltoid-r",
     "deltoid-l",
@@ -154,7 +154,7 @@
   {
    "system": "surface",
    "url": "/assets/hra-v1/male/system-surface.lod2.bin",
-   "bytes": 3488,
+   "bytes": 3500,
    "structureIds": [
     "jugular-notch",
     "umbilicus"
@@ -1086,7 +1086,7 @@
     "muscular"
    ],
    "centroid": [
-    -0.12033000215888023,
+    -0.12060000374913216,
     -0.20792999863624573,
     0.01992000173777342
    ],
@@ -1094,7 +1094,7 @@
     -0.1935500055551529,
     -0.49799999594688416,
     -0.031109998002648354,
-    -0.047109998762607574,
+    -0.04765000194311142,
     0.0821399986743927,
     0.07095000147819519
    ],
@@ -1110,21 +1110,21 @@
    "lods": [
     {
      "url": "/assets/hra-v1/male/quadriceps-femoris-r.lod0.glb",
-     "bytes": 44204,
+     "bytes": 44132,
      "triangles": 7784,
-     "hash": "59a3654399988cb6"
+     "hash": "2cb3cea8b716e290"
     },
     {
      "url": "/assets/hra-v1/male/quadriceps-femoris-r.lod1.glb",
-     "bytes": 44204,
+     "bytes": 44132,
      "triangles": 7784,
-     "hash": "59a3654399988cb6"
+     "hash": "2cb3cea8b716e290"
     },
     {
      "url": "/assets/hra-v1/male/quadriceps-femoris-r.lod2.glb",
-     "bytes": 15240,
+     "bytes": 15288,
      "triangles": 2400,
-     "hash": "003cb284c8b5b064"
+     "hash": "38fe120a37edb5ac"
     }
    ]
   },
@@ -1135,12 +1135,12 @@
     "muscular"
    ],
    "centroid": [
-    0.13738500326871872,
+    0.1374400034546852,
     -0.2091200016438961,
     0.016019999980926514
    ],
    "bounds": [
-    0.07649999856948853,
+    0.07660999894142151,
     -0.4987899959087372,
     -0.03491999953985214,
     0.1982700079679489,
@@ -1159,21 +1159,21 @@
    "lods": [
     {
      "url": "/assets/hra-v1/male/quadriceps-femoris-l.lod0.glb",
-     "bytes": 44028,
-     "triangles": 7778,
-     "hash": "48002bda35b27907"
+     "bytes": 44036,
+     "triangles": 7780,
+     "hash": "f377fb37c83e3329"
     },
     {
      "url": "/assets/hra-v1/male/quadriceps-femoris-l.lod1.glb",
-     "bytes": 44028,
-     "triangles": 7778,
-     "hash": "48002bda35b27907"
+     "bytes": 44036,
+     "triangles": 7780,
+     "hash": "f377fb37c83e3329"
     },
     {
      "url": "/assets/hra-v1/male/quadriceps-femoris-l.lod2.glb",
-     "bytes": 15240,
+     "bytes": 15252,
      "triangles": 2400,
-     "hash": "fdff3cf92a0e5996"
+     "hash": "1a2bdad0f451abe1"
     }
    ]
   },
@@ -1184,17 +1184,17 @@
     "muscular"
    ],
    "centroid": [
-    -0.14589500054717064,
-    -0.5088799893856049,
-    -0.07033000327646732
+    -0.16074500232934952,
+    -0.5088900029659271,
+    -0.07033000234514475
    ],
    "bounds": [
     -0.2272000014781952,
-    -0.6696699857711792,
+    -0.6696900129318237,
     -0.12970000505447388,
-    -0.06458999961614609,
+    -0.09429000318050385,
     -0.3480899930000305,
-    -0.01096000149846077
+    -0.01095999963581562
    ],
    "laterality": "right",
    "fmaId": "FMA:22541",
@@ -1208,21 +1208,21 @@
    "lods": [
     {
      "url": "/assets/hra-v1/male/gastrocnemius-r.lod0.glb",
-     "bytes": 22488,
+     "bytes": 22428,
      "triangles": 3406,
-     "hash": "166b2ca5c844335d"
+     "hash": "06eb661492c90140"
     },
     {
      "url": "/assets/hra-v1/male/gastrocnemius-r.lod1.glb",
-     "bytes": 22488,
+     "bytes": 22428,
      "triangles": 3406,
-     "hash": "166b2ca5c844335d"
+     "hash": "06eb661492c90140"
     },
     {
      "url": "/assets/hra-v1/male/gastrocnemius-r.lod2.glb",
-     "bytes": 16392,
+     "bytes": 16516,
      "triangles": 2400,
-     "hash": "def57bdbf7cb6683"
+     "hash": "17c95f17f3d988e9"
     }
    ]
   },
@@ -1233,12 +1233,12 @@
     "muscular"
    ],
    "centroid": [
-    0.1615699976682663,
+    0.16460999473929405,
     -0.5099949985742569,
     -0.07208000216633081
    ],
    "bounds": [
-    0.10129000246524811,
+    0.10736999660730362,
     -0.670989990234375,
     -0.12845000624656677,
     0.22184999287128448,
@@ -1257,21 +1257,21 @@
    "lods": [
     {
      "url": "/assets/hra-v1/male/gastrocnemius-l.lod0.glb",
-     "bytes": 22620,
-     "triangles": 3406,
-     "hash": "c018677e91d5fe8f"
+     "bytes": 22488,
+     "triangles": 3408,
+     "hash": "6f0c16e4076965ed"
     },
     {
      "url": "/assets/hra-v1/male/gastrocnemius-l.lod1.glb",
-     "bytes": 22620,
-     "triangles": 3406,
-     "hash": "c018677e91d5fe8f"
+     "bytes": 22488,
+     "triangles": 3408,
+     "hash": "6f0c16e4076965ed"
     },
     {
      "url": "/assets/hra-v1/male/gastrocnemius-l.lod2.glb",
-     "bytes": 16620,
-     "triangles": 2400,
-     "hash": "380d17cc34e815be"
+     "bytes": 16552,
+     "triangles": 2396,
+     "hash": "009b2caf57305051"
     }
    ]
   },
@@ -2668,15 +2668,15 @@
    "centroid": [
     0,
     0.5870800018310547,
-    0.07193686999380589
+    0.060661979019641876
    ],
    "bounds": [
     -0.011753184720873833,
     0.5753268003463745,
-    0.06018368527293205,
+    0.048908792436122894,
     0.011753184720873833,
     0.5988332033157349,
-    0.08369005471467972
+    0.07241516560316086
    ],
    "laterality": "none",
    "fmaId": "FMA:7487",
@@ -2701,9 +2701,9 @@
     },
     {
      "url": "/assets/hra-v1/male/jugular-notch.lod2.glb",
-     "bytes": 1756,
-     "triangles": 44,
-     "hash": "d9a7aad07268abbb"
+     "bytes": 1768,
+     "triangles": 40,
+     "hash": "c69ee5670e81c233"
     }
    ]
   },
